@@ -635,6 +635,7 @@
 					};
 					00B79AE3215C988200746AC6 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1250;
 						SystemCapabilities = {
 							com.apple.Push = {
 								enabled = 1;
@@ -1251,7 +1252,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.colournote.iosapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -1276,7 +1277,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.colournote.iosapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};

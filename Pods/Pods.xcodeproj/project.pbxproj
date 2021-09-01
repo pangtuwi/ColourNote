@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -914,7 +914,7 @@
 		12D93882E8089E3ECE53AD5115543A6D /* AEXML.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = AEXML.modulemap; sourceTree = "<group>"; };
 		1335DE36E0E719A9FE694FA8F8319107 /* TrackSegment+GPX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "TrackSegment+GPX.swift"; path = "Sources/Parser/GPX/Extensions/TrackSegment+GPX.swift"; sourceTree = "<group>"; };
 		13421B74686A698A4C5D6A1461822AE3 /* AnimatedViewPortJob.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimatedViewPortJob.swift; path = Source/Charts/Jobs/AnimatedViewPortJob.swift; sourceTree = "<group>"; };
-		13D090778DA924ED94F02474C525F3A9 /* Pods_FitForm.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_FitForm.framework; path = "Pods-FitForm.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		13D090778DA924ED94F02474C525F3A9 /* Pods_FitForm.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FitForm.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		142B43CAC322A7F37373DB8FF58EF513 /* BaseTypeable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BaseTypeable.swift; path = Sources/FitDataProtocol/Internal/BaseTypeable.swift; sourceTree = "<group>"; };
 		14423F3070375AF7B5F74D56523597F9 /* EncodingProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EncodingProtocol.swift; path = Sources/ANTMessageProtocol/Protocols/EncodingProtocol.swift; sourceTree = "<group>"; };
 		152FDF83F789B5A6ABE9D7896C9A5D18 /* Link.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Link.swift; path = Sources/Models/Link.swift; sourceTree = "<group>"; };
@@ -963,7 +963,7 @@
 		275ABE2EFB1047F6F08065D9E9E64A8E /* Parser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Parser.swift; path = Sources/AEXML/Parser.swift; sourceTree = "<group>"; };
 		2779AFAC668D3E2506B1A5EAB86D4F38 /* Point+GPX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Point+GPX.swift"; path = "Sources/Parser/GPX/Extensions/Point+GPX.swift"; sourceTree = "<group>"; };
 		27B013819D0602299BEF1BC9AC62A2A1 /* WeatherStatusType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WeatherStatusType.swift; path = Sources/FitDataProtocol/Types/WeatherStatusType.swift; sourceTree = "<group>"; };
-		2854F47DAFD930A437BFB310B3DF6E68 /* FitnessUnits.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = FitnessUnits.framework; path = FitnessUnits.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2854F47DAFD930A437BFB310B3DF6E68 /* FitnessUnits.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FitnessUnits.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2951C1624CAF4E298395E779CC0717B3 /* FlyeExerciseName.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FlyeExerciseName.swift; path = Sources/FitDataProtocol/Types/Exercise/FlyeExerciseName.swift; sourceTree = "<group>"; };
 		29987B3F7C992CD5522C9A414A5923E9 /* FileRequests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileRequests.swift; path = Source/SwiftyDropbox/Shared/Generated/FileRequests.swift; sourceTree = "<group>"; };
 		2A0113029671186DE0F7E2DAF03469F0 /* FitFileMerger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FitFileMerger.swift; path = Sources/FitDataProtocol/Merge/FitFileMerger.swift; sourceTree = "<group>"; };
@@ -994,7 +994,7 @@
 		333127369254AC760134E73A559AAC72 /* ConnectivityMessageKeys.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ConnectivityMessageKeys.swift; path = Sources/FitDataProtocol/Messages/Keys/ConnectivityMessageKeys.swift; sourceTree = "<group>"; };
 		338BD6F3B902B3C9C59862ED0728D3A6 /* XShapeRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = XShapeRenderer.swift; path = Source/Charts/Renderers/Scatter/XShapeRenderer.swift; sourceTree = "<group>"; };
 		33B42D2A5C3CB4F58F1A44C6235E45DA /* AntMessageProtocolExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AntMessageProtocolExtension.swift; path = Sources/FitDataProtocol/Extensions/AntMessageProtocolExtension.swift; sourceTree = "<group>"; };
-		33C1F46F600AC2631D53643684ECB800 /* SQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SQLite.framework; path = "SQLite.swift-iOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		33C1F46F600AC2631D53643684ECB800 /* SQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		33C3A8D1D5336A1A1D6439AD5B8E1F0A /* LapTrigger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LapTrigger.swift; path = Sources/FitDataProtocol/Types/LapTrigger.swift; sourceTree = "<group>"; };
 		340B677685351596F20A6070A680083A /* SessionManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionManager.swift; path = Source/SessionManager.swift; sourceTree = "<group>"; };
 		34E2F70F1AF0E6F5E52A023C4AD5E037 /* DropboxTransportClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DropboxTransportClient.swift; path = Source/SwiftyDropbox/Shared/Handwritten/DropboxTransportClient.swift; sourceTree = "<group>"; };
@@ -1018,7 +1018,7 @@
 		3B10FFA2B1EF2F74F5701996454164F7 /* CustomTasks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CustomTasks.swift; path = Source/SwiftyDropbox/Shared/Handwritten/CustomTasks.swift; sourceTree = "<group>"; };
 		3B3DFE43FF7B9F64CC30D26A35434200 /* OAuthDesktop.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OAuthDesktop.swift; path = Source/SwiftyDropbox/Platform/SwiftyDropbox_macOS/OAuthDesktop.swift; sourceTree = "<group>"; };
 		3B5A5DE3D4561E6B557B85B1396AFC68 /* RadarChartDataEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RadarChartDataEntry.swift; path = Source/Charts/Data/Implementations/Standard/RadarChartDataEntry.swift; sourceTree = "<group>"; };
-		3BDFF61C846D65CCEA522B8CE4C2BA07 /* SwiftyDropbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SwiftyDropbox.framework; path = SwiftyDropbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3BDFF61C846D65CCEA522B8CE4C2BA07 /* SwiftyDropbox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftyDropbox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BE134D6E2921B5BE7C41496CB62CD6D /* ChartData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartData.swift; path = Source/Charts/Data/Implementations/Standard/ChartData.swift; sourceTree = "<group>"; };
 		3C09AE9D2EF425AD24BF8F1CAC3ADC6A /* MeasurementZone.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MeasurementZone.swift; path = Sources/FitnessUnits/MeasurementZone.swift; sourceTree = "<group>"; };
 		3CC0C382BBCA8A5BB084E2E7B7197AE9 /* SQLite.swift-macOS-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "SQLite.swift-macOS-umbrella.h"; path = "../SQLite.swift-macOS/SQLite.swift-macOS-umbrella.h"; sourceTree = "<group>"; };
@@ -1027,7 +1027,7 @@
 		3DE067300B385D920FE03DD021BAAB89 /* Helpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Helpers.swift; path = Sources/SQLite/Helpers.swift; sourceTree = "<group>"; };
 		3E1BE8B7D278A8DCF64F89E9EE69E167 /* BodyLocation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BodyLocation.swift; path = Sources/FitDataProtocol/Types/BodyLocation.swift; sourceTree = "<group>"; };
 		3ED2B7EF5F9B0F82CF07072E9764DF9B /* ScatterChartDataSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScatterChartDataSet.swift; path = Source/Charts/Data/Implementations/Standard/ScatterChartDataSet.swift; sourceTree = "<group>"; };
-		3FA42EB0124A42E8561599212CC4107E /* FitDataProtocol.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = FitDataProtocol.framework; path = FitDataProtocol.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FA42EB0124A42E8561599212CC4107E /* FitDataProtocol.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FitDataProtocol.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3FB8DC75FEB29E14FCBE3EB4006C423D /* DisplayTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DisplayTypes.swift; path = Sources/FitDataProtocol/Types/DisplayTypes.swift; sourceTree = "<group>"; };
 		3FCA77FD840D7FCDE604A84F7A6E784C /* UsersRoutes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UsersRoutes.swift; path = Source/SwiftyDropbox/Shared/Generated/UsersRoutes.swift; sourceTree = "<group>"; };
 		400EA0AEBCCF0F542F364CF320623ABA /* Pods-FitForm-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-FitForm-resources.sh"; sourceTree = "<group>"; };
@@ -1066,7 +1066,7 @@
 		4D8F30FCF079D186CA2BC83840C7A8B7 /* IndexAxisValueFormatter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IndexAxisValueFormatter.swift; path = Source/Charts/Formatters/IndexAxisValueFormatter.swift; sourceTree = "<group>"; };
 		4F0FDE7C0A2B5B2C211B51E9C9DB76FB /* LungeExerciseName.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LungeExerciseName.swift; path = Sources/FitDataProtocol/Types/Exercise/LungeExerciseName.swift; sourceTree = "<group>"; };
 		4F22F8CEEB214017553070C05D670DB6 /* Version+TCX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Version+TCX.swift"; path = "Sources/Parser/TCX/Extensions/Version+TCX.swift"; sourceTree = "<group>"; };
-		4F88682B307366295AD07A0C6CD5F878 /* Pods_eFrt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_eFrt.framework; path = "Pods-eFrt.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F88682B307366295AD07A0C6CD5F878 /* Pods_eFrt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_eFrt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FBA2FD82347F833EF77C86A7CD0C56D /* FitMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FitMessage.swift; path = Sources/FitDataProtocol/Messages/FitMessage.swift; sourceTree = "<group>"; };
 		50B1DAC38288FB4DFDE6056B0F5088BE /* CopyrightNotice+GPX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "CopyrightNotice+GPX.swift"; path = "Sources/Parser/GPX/Extensions/CopyrightNotice+GPX.swift"; sourceTree = "<group>"; };
 		5118E4B28B52A96F8DECB695B4BB06AA /* TeamCommon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TeamCommon.swift; path = Source/SwiftyDropbox/Shared/Generated/TeamCommon.swift; sourceTree = "<group>"; };
@@ -1081,7 +1081,7 @@
 		536927DD79A344A31B1DD7A6828FE72C /* LeaderboardType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LeaderboardType.swift; path = Sources/FitDataProtocol/Types/LeaderboardType.swift; sourceTree = "<group>"; };
 		5439B854F763774D464E67D3DF459178 /* Operators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Operators.swift; path = Sources/Parser/Operators.swift; sourceTree = "<group>"; };
 		546974EF63F629D6B9AC7B7D0E855875 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		54981A365193F39C93B5C49A8B6F92FA /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Alamofire.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		54981A365193F39C93B5C49A8B6F92FA /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		55C35B633A5B115F3AABC26546F2D070 /* AnimatedMoveViewJob.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimatedMoveViewJob.swift; path = Source/Charts/Jobs/AnimatedMoveViewJob.swift; sourceTree = "<group>"; };
 		55ECEBABD654B724D6F182521BAE2DBD /* AEXML-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "AEXML-dummy.m"; sourceTree = "<group>"; };
 		561FD3183E4857DAA5A67A114CFCECB9 /* Alamofire-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Alamofire-prefix.pch"; sourceTree = "<group>"; };
@@ -1143,7 +1143,7 @@
 		7243773825BE3C4EF44FC01AF4D040AC /* DataDecoder-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "DataDecoder-prefix.pch"; sourceTree = "<group>"; };
 		725B293131A0DD2DE45B63B51B0960A9 /* Point.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Point.swift; path = Sources/Models/Point.swift; sourceTree = "<group>"; };
 		72830442B64078487D567E7026152696 /* DateAndTimeFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DateAndTimeFunctions.swift; path = Sources/SQLite/Typed/DateAndTimeFunctions.swift; sourceTree = "<group>"; };
-		72886E59B38137D304A83C64489F1FF5 /* Charts.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Charts.framework; path = "Charts-iOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		72886E59B38137D304A83C64489F1FF5 /* Charts.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Charts.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		730610BCA748CF49B760EF5F5A8407FB /* MarkerImage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MarkerImage.swift; path = Source/Charts/Components/MarkerImage.swift; sourceTree = "<group>"; };
 		737E00403120D3EEAB11288CF316DB6D /* Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Foundation.swift; path = Sources/SQLite/Foundation.swift; sourceTree = "<group>"; };
 		73FE7639A1629BC7FE08879131A53FC7 /* WorkoutStepDurationType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutStepDurationType.swift; path = Sources/FitDataProtocol/Types/WorkoutStepDurationType.swift; sourceTree = "<group>"; };
@@ -1159,7 +1159,7 @@
 		79331E7666EB833A238E776EB86E0E38 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		793E5B7A6CFBF3C6D0480CEADF97A5E7 /* Platform+Accessibility.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Platform+Accessibility.swift"; path = "Source/Charts/Utils/Platform+Accessibility.swift"; sourceTree = "<group>"; };
 		79CBF8FD60C88461BB611AE1DA3B4E25 /* DataDecoder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DataDecoder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		79EC611342EC3D0DFE06016BC44740F3 /* TrackKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = TrackKit.framework; path = TrackKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		79EC611342EC3D0DFE06016BC44740F3 /* TrackKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TrackKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AA8BFA2E032F13B33A47B5A11A3289A /* MetZoneMessageKeys.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MetZoneMessageKeys.swift; path = Sources/FitDataProtocol/Messages/Keys/MetZoneMessageKeys.swift; sourceTree = "<group>"; };
 		7B4D341C7531B6FAF0B6A3535157589F /* FitDataProtocol.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = FitDataProtocol.modulemap; sourceTree = "<group>"; };
 		7BFD84B8C7D9B348E265C1009C37AF51 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1211,7 +1211,7 @@
 		92DF35BD5496E0A74ED2B240E2E4814F /* SQLite.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = SQLite.h; path = Sources/SQLite/SQLite.h; sourceTree = "<group>"; };
 		93885A6FAE0E008F0163124EFF50D80A /* UnitMass.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnitMass.swift; path = Sources/FitnessUnits/Dimensional/UnitMass.swift; sourceTree = "<group>"; };
 		93A09C7B593DCC9C169AA5484AC0F5F7 /* SessionTriggerType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionTriggerType.swift; path = Sources/FitDataProtocol/Types/SessionTriggerType.swift; sourceTree = "<group>"; };
-		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		9432469966C996709BAB1011C85DE865 /* ResponseSerialization.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ResponseSerialization.swift; path = Source/ResponseSerialization.swift; sourceTree = "<group>"; };
 		950C7875DDD8E63F76A4CCFA52B8FBFB /* BubbleChartDataEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BubbleChartDataEntry.swift; path = Source/Charts/Data/Implementations/Standard/BubbleChartDataEntry.swift; sourceTree = "<group>"; };
 		955D6262EDDD16B03F8F70CA005072A9 /* DropboxTeamClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DropboxTeamClient.swift; path = Source/SwiftyDropbox/Shared/Handwritten/DropboxTeamClient.swift; sourceTree = "<group>"; };
@@ -1226,7 +1226,7 @@
 		9912D099FFF1A1FB6BD62AB4614D5514 /* CoreExerciseName.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CoreExerciseName.swift; path = Sources/FitDataProtocol/Types/Exercise/CoreExerciseName.swift; sourceTree = "<group>"; };
 		99203FAC3DE19E2883FC6FB4F49DB7AE /* SessionDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionDelegate.swift; path = Source/SessionDelegate.swift; sourceTree = "<group>"; };
 		99F851C181314220226AB87D25F70A92 /* SubSport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SubSport.swift; path = Sources/ANTMessageProtocol/Types/SubSport.swift; sourceTree = "<group>"; };
-		9ADC9F4455E772E625AE9FA554557666 /* AntMessageProtocol.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AntMessageProtocol.framework; path = AntMessageProtocol.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9ADC9F4455E772E625AE9FA554557666 /* AntMessageProtocol.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AntMessageProtocol.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9ADF1BC2C6202A420CB77A3F8360F753 /* BloodPressureMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BloodPressureMessage.swift; path = Sources/FitDataProtocol/Messages/BloodPressureMessage.swift; sourceTree = "<group>"; };
 		9B831D7321412A732D7783E9772799AA /* Activity+TCX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Activity+TCX.swift"; path = "Sources/Parser/TCX/Extensions/Activity+TCX.swift"; sourceTree = "<group>"; };
 		9BA8E48BF4AE3C1B448736C07DE2F48E /* Base.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Base.swift; path = Source/SwiftyDropbox/Shared/Generated/Base.swift; sourceTree = "<group>"; };
@@ -1288,16 +1288,16 @@
 		B2569BC7A32401E64F909884A2FF1E1C /* Lap+TCX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Lap+TCX.swift"; path = "Sources/Parser/TCX/Extensions/Lap+TCX.swift"; sourceTree = "<group>"; };
 		B27B028901E2349225FFAEAD6173AC2A /* FitnessUnits.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = FitnessUnits.modulemap; sourceTree = "<group>"; };
 		B301DA220E6AC360E8DDA948B0B8AAE6 /* HipStabilityExerciseName.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HipStabilityExerciseName.swift; path = Sources/FitDataProtocol/Types/Exercise/HipStabilityExerciseName.swift; sourceTree = "<group>"; };
-		B312F91028665D1180BE1C2A47D67454 /* SQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SQLite.framework; path = "SQLite.swift-macOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B312F91028665D1180BE1C2A47D67454 /* SQLite.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3DD0F14069797E536AF001407EBB1F4 /* Alamofire-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Alamofire-dummy.m"; sourceTree = "<group>"; };
 		B412AC60EAA040748160803890BC5B4A /* LineScatterCandleRadarChartDataSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LineScatterCandleRadarChartDataSet.swift; path = Source/Charts/Data/Implementations/Standard/LineScatterCandleRadarChartDataSet.swift; sourceTree = "<group>"; };
 		B4A423751B0E22F41EE0F82DBF68C67F /* UnitCadence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnitCadence.swift; path = Sources/FitnessUnits/Dimensionless/UnitCadence.swift; sourceTree = "<group>"; };
 		B54D07689AA2F2484F4B4962025255C7 /* EventMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EventMessage.swift; path = Sources/FitDataProtocol/Messages/EventMessage.swift; sourceTree = "<group>"; };
 		B593BD1D6A2C3D678E0D1E862A11E7F5 /* BarChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarChartRenderer.swift; path = Source/Charts/Renderers/BarChartRenderer.swift; sourceTree = "<group>"; };
-		B5E05AC4A50D33E0D7DD8719FEB64B43 /* AEXML.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AEXML.framework; path = AEXML.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5E05AC4A50D33E0D7DD8719FEB64B43 /* AEXML.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AEXML.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5F4662CFF04624E5C6ECE5EF6C14D2B /* MessageData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MessageData.swift; path = Sources/FitDataProtocol/Types/MessageData.swift; sourceTree = "<group>"; };
 		B67744EAA8460E00CB597E796A4AF96E /* SportMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SportMessage.swift; path = Sources/FitDataProtocol/Messages/SportMessage.swift; sourceTree = "<group>"; };
-		B71E273E8AEC3A7D72B9A96EF0427E51 /* DataDecoder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = DataDecoder.framework; path = DataDecoder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B71E273E8AEC3A7D72B9A96EF0427E51 /* DataDecoder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DataDecoder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B763D7EAAE7A5BA6FB72CD41E89877D2 /* XAxisRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = XAxisRenderer.swift; path = Source/Charts/Renderers/XAxisRenderer.swift; sourceTree = "<group>"; };
 		B7A28897A3B4878FBFDF992B4E61F7EC /* UnitAngle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnitAngle.swift; path = Sources/FitnessUnits/Dimensional/UnitAngle.swift; sourceTree = "<group>"; };
 		B85BB1731C7B695EDC4BB1CEE0226E2C /* ChartViewBase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartViewBase.swift; path = Source/Charts/Charts/ChartViewBase.swift; sourceTree = "<group>"; };
@@ -1448,7 +1448,7 @@
 		ECF37C477E24D3A60695811263A228AF /* Alamofire.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Alamofire.modulemap; sourceTree = "<group>"; };
 		ED8E2DAF17623AD9CD7F339952E71806 /* FTS4.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FTS4.swift; path = Sources/SQLite/Extensions/FTS4.swift; sourceTree = "<group>"; };
 		EDB3E5C579671741523CA26A495FA0FA /* TransformerHorizontalBarChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TransformerHorizontalBarChart.swift; path = Source/Charts/Utils/TransformerHorizontalBarChart.swift; sourceTree = "<group>"; };
-		EE0A156AD1F2D6E1DEACF8EC483170CF /* Charts.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Charts.framework; path = "Charts-macOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE0A156AD1F2D6E1DEACF8EC483170CF /* Charts.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Charts.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE4DEB8AD051829FD2086B93A5FDB09A /* Statement.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Statement.swift; path = Sources/SQLite/Core/Statement.swift; sourceTree = "<group>"; };
 		EE55D141A1FEB03558BF09ED1FABF6FA /* HorizontalBarChartRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HorizontalBarChartRenderer.swift; path = Source/Charts/Renderers/HorizontalBarChartRenderer.swift; sourceTree = "<group>"; };
 		EE9EB1AA1225EDBC8650FB39D8CEE4F5 /* HipRaiseExerciseName.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HipRaiseExerciseName.swift; path = Sources/FitDataProtocol/Types/Exercise/HipRaiseExerciseName.swift; sourceTree = "<group>"; };
@@ -1656,7 +1656,6 @@
 				807AAD0EBF8EEE3BC9A41C5B3AF1376C /* Nibble.swift */,
 				0CF97888ACFF585D97243A41535997F0 /* Support Files */,
 			);
-			name = DataDecoder;
 			path = DataDecoder;
 			sourceTree = "<group>";
 		};
@@ -2039,7 +2038,6 @@
 				2B8E5023E6E14C8542CB1427F69FF143 /* ZonesTargetMessageKeys.swift */,
 				A44BE3AF9AAC83BF5EE83E11AC2E2F20 /* Support Files */,
 			);
-			name = FitDataProtocol;
 			path = FitDataProtocol;
 			sourceTree = "<group>";
 		};
@@ -2071,7 +2069,6 @@
 				23034BB4D24F8C6255203FEEE6190D0F /* ValidatedMeasurement.swift */,
 				DE555A8AABC5A8AAFBDFF402BDFC37E8 /* Support Files */,
 			);
-			name = FitnessUnits;
 			path = FitnessUnits;
 			sourceTree = "<group>";
 		};
@@ -2156,7 +2153,6 @@
 				275ABE2EFB1047F6F08065D9E9E64A8E /* Parser.swift */,
 				F98BAA707AB4BB4D82587B37A3D4146A /* Support Files */,
 			);
-			name = AEXML;
 			path = AEXML;
 			sourceTree = "<group>";
 		};
@@ -2221,7 +2217,6 @@
 				4F22F8CEEB214017553070C05D670DB6 /* Version+TCX.swift */,
 				23C2F7BECB76774FEC3FA684D75B87AC /* Support Files */,
 			);
-			name = TrackKit;
 			path = TrackKit;
 			sourceTree = "<group>";
 		};
@@ -2265,7 +2260,6 @@
 				9F4002D98C62ABE4F09F2692F1736BC9 /* Validation.swift */,
 				64E3196FD1AF1A45959987C9B429EF59 /* Support Files */,
 			);
-			name = Alamofire;
 			path = Alamofire;
 			sourceTree = "<group>";
 		};
@@ -2289,7 +2283,6 @@
 				610083A2D1F1DEA7F2C146692564A087 /* standard */,
 				CE98699CFB26D7367A5635A83C903C66 /* Support Files */,
 			);
-			name = SQLite.swift;
 			path = SQLite.swift;
 			sourceTree = "<group>";
 		};
@@ -2323,7 +2316,6 @@
 				6B9D8721EF06EF02801B6A2099463F45 /* TransmissionType.swift */,
 				CA8A0EBFEF19BF55447E7C921C743E62 /* Support Files */,
 			);
-			name = AntMessageProtocol;
 			path = AntMessageProtocol;
 			sourceTree = "<group>";
 		};
@@ -2411,7 +2403,6 @@
 				3FCA77FD840D7FCDE604A84F7A6E784C /* UsersRoutes.swift */,
 				385080EFE81514022EC1C45A556799B1 /* Support Files */,
 			);
-			name = SwiftyDropbox;
 			path = SwiftyDropbox;
 			sourceTree = "<group>";
 		};
@@ -2494,7 +2485,6 @@
 				2E90B1DCDF2DB38671A710F2D94651BE /* Core */,
 				EF7BC194D63265000AD9F2E583122FEA /* Support Files */,
 			);
-			name = Charts;
 			path = Charts;
 			sourceTree = "<group>";
 		};
@@ -2911,12 +2901,18 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0930;
 				LastUpgradeCheck = 0930;
+				TargetAttributes = {
+					9ADBB8F2C4E09EB64221440F7D92B4FA = {
+						LastSwiftMigration = 1250;
+					};
+				};
 			};
 			buildConfigurationList = 2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 7DB346D0F39D3F0E887471402A8071AB;
@@ -3856,11 +3852,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/AEXML/AEXML-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/AEXML/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/AEXML/AEXML.modulemap";
 				PRODUCT_MODULE_NAME = AEXML;
@@ -3894,11 +3886,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/Charts-macOS/Charts-macOS-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/Charts-macOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MODULEMAP_FILE = "Target Support Files/Charts-macOS/Charts-macOS.modulemap";
 				PRODUCT_MODULE_NAME = Charts;
@@ -3932,11 +3920,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/FitnessUnits/FitnessUnits-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/FitnessUnits/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "Target Support Files/FitnessUnits/FitnessUnits.modulemap";
 				PRODUCT_MODULE_NAME = FitnessUnits;
@@ -3970,11 +3954,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/Alamofire/Alamofire-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/Alamofire/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/Alamofire/Alamofire.modulemap";
 				PRODUCT_MODULE_NAME = Alamofire;
@@ -4007,11 +3987,7 @@
 				INFOPLIST_FILE = "Target Support Files/Pods-eFrt/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = "Target Support Files/Pods-eFrt/Pods-eFrt.modulemap";
 				OTHER_LDFLAGS = "";
@@ -4048,11 +4024,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/FitDataProtocol/FitDataProtocol-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/FitDataProtocol/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "Target Support Files/FitDataProtocol/FitDataProtocol.modulemap";
 				PRODUCT_MODULE_NAME = FitDataProtocol;
@@ -4086,11 +4058,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/FitnessUnits/FitnessUnits-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/FitnessUnits/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "Target Support Files/FitnessUnits/FitnessUnits.modulemap";
 				PRODUCT_MODULE_NAME = FitnessUnits;
@@ -4124,11 +4092,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/FitDataProtocol/FitDataProtocol-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/FitDataProtocol/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "Target Support Files/FitDataProtocol/FitDataProtocol.modulemap";
 				PRODUCT_MODULE_NAME = FitDataProtocol;
@@ -4160,11 +4124,7 @@
 				INFOPLIST_FILE = "Target Support Files/SQLite.swift-iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/SQLite.swift-iOS/SQLite.swift-iOS.modulemap";
 				PRODUCT_MODULE_NAME = SQLite;
 				PRODUCT_NAME = SQLite;
@@ -4172,7 +4132,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -4196,11 +4156,7 @@
 				INFOPLIST_FILE = "Target Support Files/Charts-iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/Charts-iOS/Charts-iOS.modulemap";
 				PRODUCT_MODULE_NAME = Charts;
 				PRODUCT_NAME = Charts;
@@ -4235,11 +4191,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/AEXML/AEXML-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/AEXML/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/AEXML/AEXML.modulemap";
 				PRODUCT_MODULE_NAME = AEXML;
@@ -4273,11 +4225,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/SwiftyDropbox/SwiftyDropbox-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/SwiftyDropbox/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MODULEMAP_FILE = "Target Support Files/SwiftyDropbox/SwiftyDropbox.modulemap";
 				PRODUCT_MODULE_NAME = SwiftyDropbox;
@@ -4311,11 +4259,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/DataDecoder/DataDecoder-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/DataDecoder/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/DataDecoder/DataDecoder.modulemap";
 				PRODUCT_MODULE_NAME = DataDecoder;
@@ -4347,11 +4291,7 @@
 				INFOPLIST_FILE = "Target Support Files/Charts-iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/Charts-iOS/Charts-iOS.modulemap";
 				PRODUCT_MODULE_NAME = Charts;
 				PRODUCT_NAME = Charts;
@@ -4449,11 +4389,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/SwiftyDropbox/SwiftyDropbox-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/SwiftyDropbox/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MODULEMAP_FILE = "Target Support Files/SwiftyDropbox/SwiftyDropbox.modulemap";
 				PRODUCT_MODULE_NAME = SwiftyDropbox;
@@ -4487,11 +4423,7 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "Target Support Files/Pods-FitForm/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MODULEMAP_FILE = "Target Support Files/Pods-FitForm/Pods-FitForm.modulemap";
@@ -4527,11 +4459,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/Charts-macOS/Charts-macOS-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/Charts-macOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MODULEMAP_FILE = "Target Support Files/Charts-macOS/Charts-macOS.modulemap";
 				PRODUCT_MODULE_NAME = Charts;
@@ -4565,11 +4493,7 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "Target Support Files/Pods-FitForm/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MODULEMAP_FILE = "Target Support Files/Pods-FitForm/Pods-FitForm.modulemap";
@@ -4665,11 +4589,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/Alamofire/Alamofire-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/Alamofire/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/Alamofire/Alamofire.modulemap";
 				PRODUCT_MODULE_NAME = Alamofire;
@@ -4703,11 +4623,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/AntMessageProtocol/AntMessageProtocol-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/AntMessageProtocol/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "Target Support Files/AntMessageProtocol/AntMessageProtocol.modulemap";
 				PRODUCT_MODULE_NAME = AntMessageProtocol;
@@ -4741,11 +4657,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/SQLite.swift-macOS/SQLite.swift-macOS-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/SQLite.swift-macOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/SQLite.swift-macOS/SQLite.swift-macOS.modulemap";
 				PRODUCT_MODULE_NAME = SQLite;
@@ -4777,11 +4689,7 @@
 				INFOPLIST_FILE = "Target Support Files/SQLite.swift-iOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/SQLite.swift-iOS/SQLite.swift-iOS.modulemap";
 				PRODUCT_MODULE_NAME = SQLite;
 				PRODUCT_NAME = SQLite;
@@ -4789,7 +4697,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 5;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -4816,11 +4724,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/TrackKit/TrackKit-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/TrackKit/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MODULEMAP_FILE = "Target Support Files/TrackKit/TrackKit.modulemap";
 				PRODUCT_MODULE_NAME = TrackKit;
@@ -4854,11 +4758,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/DataDecoder/DataDecoder-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/DataDecoder/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/DataDecoder/DataDecoder.modulemap";
 				PRODUCT_MODULE_NAME = DataDecoder;
@@ -4892,11 +4792,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/SQLite.swift-macOS/SQLite.swift-macOS-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/SQLite.swift-macOS/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = "Target Support Files/SQLite.swift-macOS/SQLite.swift-macOS.modulemap";
 				PRODUCT_MODULE_NAME = SQLite;
@@ -4930,11 +4826,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/TrackKit/TrackKit-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/TrackKit/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MODULEMAP_FILE = "Target Support Files/TrackKit/TrackKit.modulemap";
 				PRODUCT_MODULE_NAME = TrackKit;
@@ -4967,11 +4859,7 @@
 				INFOPLIST_FILE = "Target Support Files/Pods-eFrt/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = "Target Support Files/Pods-eFrt/Pods-eFrt.modulemap";
 				OTHER_LDFLAGS = "";
@@ -5008,11 +4896,7 @@
 				GCC_PREFIX_HEADER = "Target Support Files/AntMessageProtocol/AntMessageProtocol-prefix.pch";
 				INFOPLIST_FILE = "Target Support Files/AntMessageProtocol/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MODULEMAP_FILE = "Target Support Files/AntMessageProtocol/AntMessageProtocol.modulemap";
 				PRODUCT_MODULE_NAME = AntMessageProtocol;
