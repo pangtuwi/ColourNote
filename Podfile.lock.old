@@ -1,0 +1,59 @@
+PODS:
+  - AEXML (4.3.3)
+  - Alamofire (4.5.1)
+  - AntMessageProtocol (0.2.7):
+    - DataDecoder
+    - FitnessUnits
+  - Charts (3.2.0):
+    - Charts/Core (= 3.2.0)
+  - Charts/Core (3.2.0)
+  - DataDecoder (4.3.1)
+  - FitDataProtocol (0.12.0):
+    - AntMessageProtocol (~> 0.2.7)
+    - DataDecoder (~> 4.3.1)
+    - FitnessUnits (~> 2.1.0)
+  - FitnessUnits (2.1.0)
+  - SQLite.swift (0.11.5):
+    - SQLite.swift/standard (= 0.11.5)
+  - SQLite.swift/standard (0.11.5)
+  - SwiftyDropbox (4.5.0):
+    - Alamofire (~> 4.5.0)
+  - TrackKit (2.4.1):
+    - AEXML (~> 4.3)
+
+DEPENDENCIES:
+  - Charts
+  - FitDataProtocol
+  - SQLite.swift
+  - SwiftyDropbox
+  - SwiftyDropbox (~> 4.5.0)
+  - TrackKit
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AEXML
+    - Alamofire
+    - AntMessageProtocol
+    - Charts
+    - DataDecoder
+    - FitDataProtocol
+    - FitnessUnits
+    - SQLite.swift
+    - SwiftyDropbox
+    - TrackKit
+
+SPEC CHECKSUMS:
+  AEXML: 601f41fcaa7bda7605cad153b0f43db9ec006c0f
+  Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a
+  AntMessageProtocol: 42b4e7fafcc994368975a4ecae7d135b5170c91b
+  Charts: 680c8328bd5e90cb14f67e00d2176f3113d19141
+  DataDecoder: 06dbc30908c9457a5a7c5f0adbc240bc5236edb4
+  FitDataProtocol: b1440fffdb9b48c7de8543591abd48526cd2777f
+  FitnessUnits: 3cf801f2f6427524afa763f22ade68bb6726dc63
+  SQLite.swift: 6e5356850bb1791459f8c16d6ee9195b28714a2e
+  SwiftyDropbox: ccdbd21dc81d59363b75241bf7c88fb906e8ffcb
+  TrackKit: 5d28e592aaf53087c84bacc8161570507c2bdc66
+
+PODFILE CHECKSUM: 8b26fa44b31b89cfd1cf13a708a4be262947f4ac
+
+COCOAPODS: 1.5.3

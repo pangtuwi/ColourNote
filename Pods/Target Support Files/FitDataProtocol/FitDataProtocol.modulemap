@@ -1,0 +1,6 @@
+framework module FitDataProtocol {
+  umbrella header "FitDataProtocol-umbrella.h"
+
+  export *
+  module * { export * }
+}

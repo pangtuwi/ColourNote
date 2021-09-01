@@ -1,0 +1,6 @@
+framework module AntMessageProtocol {
+  umbrella header "AntMessageProtocol-umbrella.h"
+
+  export *
+  module * { export * }
+}

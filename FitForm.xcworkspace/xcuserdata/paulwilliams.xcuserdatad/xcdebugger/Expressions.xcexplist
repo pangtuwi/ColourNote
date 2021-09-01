@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "closure #2 in DataLoader.loadFileList(whenDone:):DataLoader.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "Settings.eFrtServerURL()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "AnalysisDetailViewController.viewDidAppear(_:):AnalysisDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "Globals.SharedInstance.activityIDToDisplay">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "AnalysisDetailViewController.displayData(activity:):AnalysisDetailViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "displayedActivityID">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
