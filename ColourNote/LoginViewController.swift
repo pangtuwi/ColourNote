@@ -35,9 +35,10 @@ class LoginViewController: UIViewController {
             spinner.didMove(toParent: self)
             
             mySender = sender
-            DataLoader.sharedInstance.userExists(whenDone: userExists)
+            //DataLoader.sharedInstance.userExists(whenDone: userExists)
+            userExists (exists: true, message: "XXX Bypass above Code ")
         } else {
-            let alert = UIAlertController(title: "Username or Password not entered", message: "You need to enter an email address and passowrd to continuer", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Username or Password not entered", message: "You need to enter an email address and passowrd to continue", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "Ok", style: .default) { _ in
                 
             }

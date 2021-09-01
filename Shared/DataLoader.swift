@@ -54,6 +54,7 @@ class DataLoader {
     
     
     func userExists(whenDone: @escaping (_ inDB : Bool, _ message : String) -> Void) {
+       
         printMQ ("checking EFRT server for User")
         let parameters = UserCredentials.init()
         
