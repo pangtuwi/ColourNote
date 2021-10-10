@@ -26,6 +26,7 @@ class Globals{
     //Temporary Variables
     var LastTCXFileName : String
     var activityIDToDisplay : Int = 0
+    var noteIDToDisplay : Int = 0
     
     private init() { //This prevents others from using the default '()' initializer for this class.
         LastTCXFileName = ""

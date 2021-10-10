@@ -7,7 +7,12 @@
 		<key>ColourNote.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>16</integer>
+			<integer>1</integer>
+		</dict>
+		<key>ColourNoteProj.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
 		</dict>
 		<key>FitForm.xcscheme</key>
 		<dict>

@@ -53,14 +53,23 @@
 		006B568C2173D12B00F2BE6B /* ActivityLineChartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006B568B2173D12B00F2BE6B /* ActivityLineChartViewController.swift */; };
 		006B568F2175336D00F2BE6B /* ActivityHRBarChartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006B568E2175336D00F2BE6B /* ActivityHRBarChartViewController.swift */; };
 		006BF05E218DB6EF00E9B6AF /* HomeLast14ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006BF05D218DB6EF00E9B6AF /* HomeLast14ViewController.swift */; };
+		007A132E270A1C3400995D28 /* NoteRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007A132C270A1C3400995D28 /* NoteRecords.swift */; };
+		007A132F270A1C3400995D28 /* NoteListing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007A132D270A1C3400995D28 /* NoteListing.swift */; };
+		007A1332270A1EFD00995D28 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007A1331270A1EFD00995D28 /* Note.swift */; };
+		007A1333270A214000995D28 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007A1331270A1EFD00995D28 /* Note.swift */; };
+		007A1334270A21AD00995D28 /* NoteRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 007A132C270A1C3400995D28 /* NoteRecords.swift */; };
 		0096FE0E2131C5DC009D281D /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0096FE0D2131C5DC009D281D /* Globals.swift */; };
 		00A6188221D7EE2A005DBC77 /* DeviceToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A6188121D7EE2A005DBC77 /* DeviceToken.swift */; };
 		00A6188321D7EE2A005DBC77 /* DeviceToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A6188121D7EE2A005DBC77 /* DeviceToken.swift */; };
 		00A6188521D97EA3005DBC77 /* audiowide-regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 00A6188421D97EA3005DBC77 /* audiowide-regular.ttf */; };
 		00A6188621D97EA3005DBC77 /* audiowide-regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 00A6188421D97EA3005DBC77 /* audiowide-regular.ttf */; };
+		00AC59032712D7D500A6A2AD /* colornote.db in Resources */ = {isa = PBXBuildFile; fileRef = 00AC59022712D7D500A6A2AD /* colornote.db */; };
+		00AC59042712D7D500A6A2AD /* colornote.db in Resources */ = {isa = PBXBuildFile; fileRef = 00AC59022712D7D500A6A2AD /* colornote.db */; };
+		00AC590B2712F22E00A6A2AD /* NoteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AC590A2712F22E00A6A2AD /* NoteDetailViewController.swift */; };
+		00AC590C2712F22E00A6A2AD /* NoteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AC590A2712F22E00A6A2AD /* NoteDetailViewController.swift */; };
 		00B79AE7215C988200746AC6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B79AE6215C988200746AC6 /* AppDelegate.swift */; };
-		00B79AE9215C988200746AC6 /* ActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B79AE8215C988200746AC6 /* ActivityViewController.swift */; };
-		00B79AEB215C988200746AC6 /* TrainingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B79AEA215C988200746AC6 /* TrainingViewController.swift */; };
+		00B79AE9215C988200746AC6 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B79AE8215C988200746AC6 /* NoteViewController.swift */; };
+		00B79AEB215C988200746AC6 /* NotesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B79AEA215C988200746AC6 /* NotesListViewController.swift */; };
 		00B79AEE215C988200746AC6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 00B79AEC215C988200746AC6 /* Main.storyboard */; };
 		00B79AF0215C988600746AC6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00B79AEF215C988600746AC6 /* Assets.xcassets */; };
 		00B79AF3215C988600746AC6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 00B79AF1215C988600746AC6 /* LaunchScreen.storyboard */; };
@@ -88,8 +97,7 @@
 		00FA7327213AD22D007787BA /* TrackStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA7326213AD22D007787BA /* TrackStats.swift */; };
 		00FF8CB021DBEE9400BC79CE /* HomeWeeksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FF8CAF21DBEE9400BC79CE /* HomeWeeksViewController.swift */; };
 		00FF8CB221DC1DF200BC79CE /* HomeLastActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FF8CB121DC1DF200BC79CE /* HomeLastActivityViewController.swift */; };
-		931239495CDAECF8277F9D87 /* Pods_FitForm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EB117D307FA3F16FB74FC09 /* Pods_FitForm.framework */; };
-		E5BCF01F485ACB8363E748F8 /* Pods_eFrt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 429377CF2B68C864804A005C /* Pods_eFrt.framework */; };
+		3D2906F6F880C6189CB07704 /* Pods_ColourNote.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C40E23ED76D70B8B6B81D54 /* Pods_ColourNote.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -166,14 +174,19 @@
 		006B568B2173D12B00F2BE6B /* ActivityLineChartViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLineChartViewController.swift; sourceTree = "<group>"; };
 		006B568E2175336D00F2BE6B /* ActivityHRBarChartViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityHRBarChartViewController.swift; sourceTree = "<group>"; };
 		006BF05D218DB6EF00E9B6AF /* HomeLast14ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeLast14ViewController.swift; sourceTree = "<group>"; };
+		007A132C270A1C3400995D28 /* NoteRecords.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoteRecords.swift; sourceTree = "<group>"; };
+		007A132D270A1C3400995D28 /* NoteListing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoteListing.swift; sourceTree = "<group>"; };
+		007A1331270A1EFD00995D28 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		008F8F5B21CD5AB900CAF9FC /* eFrt.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = eFrt.entitlements; sourceTree = "<group>"; };
 		0096FE0D2131C5DC009D281D /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		00A6188121D7EE2A005DBC77 /* DeviceToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceToken.swift; sourceTree = "<group>"; };
 		00A6188421D97EA3005DBC77 /* audiowide-regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "audiowide-regular.ttf"; sourceTree = "<group>"; };
+		00AC59022712D7D500A6A2AD /* colornote.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = colornote.db; sourceTree = "<group>"; };
+		00AC590A2712F22E00A6A2AD /* NoteDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteDetailViewController.swift; sourceTree = "<group>"; };
 		00B79AE4215C988200746AC6 /* ColourNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColourNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00B79AE6215C988200746AC6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		00B79AE8215C988200746AC6 /* ActivityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
-		00B79AEA215C988200746AC6 /* TrainingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingViewController.swift; sourceTree = "<group>"; };
+		00B79AE8215C988200746AC6 /* NoteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteViewController.swift; sourceTree = "<group>"; };
+		00B79AEA215C988200746AC6 /* NotesListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesListViewController.swift; sourceTree = "<group>"; };
 		00B79AED215C988200746AC6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		00B79AEF215C988600746AC6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		00B79AF2215C988600746AC6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -196,15 +209,10 @@
 		00FA7326213AD22D007787BA /* TrackStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackStats.swift; sourceTree = "<group>"; };
 		00FF8CAF21DBEE9400BC79CE /* HomeWeeksViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWeeksViewController.swift; sourceTree = "<group>"; };
 		00FF8CB121DC1DF200BC79CE /* HomeLastActivityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeLastActivityViewController.swift; sourceTree = "<group>"; };
-		0A75CA7940EC81E2081B6A26 /* Pods-eFrt.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-eFrt.release.xcconfig"; path = "Pods/Target Support Files/Pods-eFrt/Pods-eFrt.release.xcconfig"; sourceTree = "<group>"; };
+		07F0D8CC3066939935B1F2DF /* Pods-ColourNote.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColourNote.release.xcconfig"; path = "Pods/Target Support Files/Pods-ColourNote/Pods-ColourNote.release.xcconfig"; sourceTree = "<group>"; };
+		136DFF3C386DEB23AC7EE4DB /* Pods-ColourNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColourNote.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ColourNote/Pods-ColourNote.debug.xcconfig"; sourceTree = "<group>"; };
 		14E8C744A91668438975E3B5 /* Pods_eFit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_eFit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		429377CF2B68C864804A005C /* Pods_eFrt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_eFrt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		8785E37DA1A360B84F8ACE39 /* Pods-FitForm.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FitForm.release.xcconfig"; path = "Pods/Target Support Files/Pods-FitForm/Pods-FitForm.release.xcconfig"; sourceTree = "<group>"; };
-		9EB117D307FA3F16FB74FC09 /* Pods_FitForm.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FitForm.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B222B70F7B7F83959D616A01 /* Pods-eFit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-eFit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-eFit/Pods-eFit.debug.xcconfig"; sourceTree = "<group>"; };
-		C45D352C87F35654A746C934 /* Pods-eFit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-eFit.release.xcconfig"; path = "Pods/Target Support Files/Pods-eFit/Pods-eFit.release.xcconfig"; sourceTree = "<group>"; };
-		D4B8A6157D3CB450D41BAA4A /* Pods-FitForm.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FitForm.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FitForm/Pods-FitForm.debug.xcconfig"; sourceTree = "<group>"; };
-		F92E5E7D43B9239BC2AD0C97 /* Pods-eFrt.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-eFrt.debug.xcconfig"; path = "Pods/Target Support Files/Pods-eFrt/Pods-eFrt.debug.xcconfig"; sourceTree = "<group>"; };
+		9C40E23ED76D70B8B6B81D54 /* Pods_ColourNote.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ColourNote.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,7 +220,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				931239495CDAECF8277F9D87 /* Pods_FitForm.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,7 +241,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5BCF01F485ACB8363E748F8 /* Pods_eFrt.framework in Frameworks */,
+				3D2906F6F880C6189CB07704 /* Pods_ColourNote.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,6 +290,7 @@
 		0055D3CA20EFCA1C00F2D5B9 = {
 			isa = PBXGroup;
 			children = (
+				00AC59022712D7D500A6A2AD /* colornote.db */,
 				00C25F86215EC20200571F00 /* Shared */,
 				00B79AE5215C988200746AC6 /* ColourNote */,
 				00B79AFC215C988600746AC6 /* eFitTests */,
@@ -374,7 +382,7 @@
 		006B568D2175334700F2BE6B /* ActivityView */ = {
 			isa = PBXGroup;
 			children = (
-				00B79AE8215C988200746AC6 /* ActivityViewController.swift */,
+				00B79AE8215C988200746AC6 /* NoteViewController.swift */,
 				00C3DC302171EB2C00D769EB /* ActivitySwipeViewController.swift */,
 			);
 			path = ActivityView;
@@ -400,16 +408,42 @@
 			path = HomeView;
 			sourceTree = "<group>";
 		};
+		007A132B270A1C3400995D28 /* NoteList */ = {
+			isa = PBXGroup;
+			children = (
+				007A132C270A1C3400995D28 /* NoteRecords.swift */,
+				007A132D270A1C3400995D28 /* NoteListing.swift */,
+			);
+			path = NoteList;
+			sourceTree = "<group>";
+		};
+		007A1330270A1EEF00995D28 /* Note */ = {
+			isa = PBXGroup;
+			children = (
+				007A1331270A1EFD00995D28 /* Note.swift */,
+			);
+			path = Note;
+			sourceTree = "<group>";
+		};
+		00AC59062712F1DA00A6A2AD /* NoteView */ = {
+			isa = PBXGroup;
+			children = (
+				00AC590A2712F22E00A6A2AD /* NoteDetailViewController.swift */,
+			);
+			path = NoteView;
+			sourceTree = "<group>";
+		};
 		00B79AE5215C988200746AC6 /* ColourNote */ = {
 			isa = PBXGroup;
 			children = (
-				00B79AE6215C988200746AC6 /* AppDelegate.swift */,
 				008F8F5B21CD5AB900CAF9FC /* eFrt.entitlements */,
+				00B79AE6215C988200746AC6 /* AppDelegate.swift */,
 				006B56902175346400F2BE6B /* Storyboards */,
+				00AC59062712F1DA00A6A2AD /* NoteView */,
 				006BF05C218DB6C700E9B6AF /* HomeView */,
 				004FFCF121F296EA0068EA93 /* AnalysisView */,
 				006B568D2175334700F2BE6B /* ActivityView */,
-				00B79AEA215C988200746AC6 /* TrainingViewController.swift */,
+				00B79AEA215C988200746AC6 /* NotesListViewController.swift */,
 				00E0BA312167E34A00D00D23 /* FitnessViewController.swift */,
 				00E0BA332167F5F400D00D23 /* SettingsViewController.swift */,
 				00B79AEF215C988600746AC6 /* Assets.xcassets */,
@@ -442,8 +476,11 @@
 		00C25F86215EC20200571F00 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				00CB889221D3CF420091A385 /* ActivityList */,
+				007A1330270A1EEF00995D28 /* Note */,
 				002D911C21AEFD9F00305423 /* Activity */,
+				00CB889221D3CF420091A385 /* ActivityList */,
+				007A132B270A1C3400995D28 /* NoteList */,
+				0069B0FE2253E77100CE7871 /* Configuration */,
 				00D59A30211B6C2600537469 /* ActivityData.swift */,
 				00D59A34211B7DB400537469 /* Zones.swift */,
 				00D59A36211B7E1200537469 /* Zone.swift */,
@@ -452,7 +489,6 @@
 				0031D81E2163F1E300554ABF /* DataLoader.swift */,
 				001A43A8217E446A0090E536 /* ActivityCount.swift */,
 				001A43AA217E5E450090E536 /* Sport.swift */,
-				0069B0FE2253E77100CE7871 /* Configuration */,
 				00C0B20621C52D270029554A /* Utils.swift */,
 				00A6188121D7EE2A005DBC77 /* DeviceToken.swift */,
 				0026038122E4BF5B0047E197 /* UserCredentials.swift */,
@@ -474,12 +510,8 @@
 			isa = PBXGroup;
 			children = (
 				0055D3F320EFCA1F00F2D5B9 /* FitFormUITests */,
-				D4B8A6157D3CB450D41BAA4A /* Pods-FitForm.debug.xcconfig */,
-				8785E37DA1A360B84F8ACE39 /* Pods-FitForm.release.xcconfig */,
-				B222B70F7B7F83959D616A01 /* Pods-eFit.debug.xcconfig */,
-				C45D352C87F35654A746C934 /* Pods-eFit.release.xcconfig */,
-				F92E5E7D43B9239BC2AD0C97 /* Pods-eFrt.debug.xcconfig */,
-				0A75CA7940EC81E2081B6A26 /* Pods-eFrt.release.xcconfig */,
+				136DFF3C386DEB23AC7EE4DB /* Pods-ColourNote.debug.xcconfig */,
+				07F0D8CC3066939935B1F2DF /* Pods-ColourNote.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -487,9 +519,8 @@
 		C41848A2F19BB799E8C51EDD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9EB117D307FA3F16FB74FC09 /* Pods_FitForm.framework */,
 				14E8C744A91668438975E3B5 /* Pods_eFit.framework */,
-				429377CF2B68C864804A005C /* Pods_eFrt.framework */,
+				9C40E23ED76D70B8B6B81D54 /* Pods_ColourNote.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -501,11 +532,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0055D3F920EFCA1F00F2D5B9 /* Build configuration list for PBXNativeTarget "ColourNoteProj" */;
 			buildPhases = (
-				2BB622372970AC6BE2E33B26 /* [CP] Check Pods Manifest.lock */,
 				0055D3CF20EFCA1C00F2D5B9 /* Sources */,
 				0055D3D020EFCA1C00F2D5B9 /* Frameworks */,
 				0055D3D120EFCA1C00F2D5B9 /* Resources */,
-				13E79F0FA8E122EDCAE25446 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -614,7 +643,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1000;
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 1250;
 				ORGANIZATIONNAME = "Paul Williams";
 				TargetAttributes = {
 					0055D3D220EFCA1C00F2D5B9 = {
@@ -682,6 +711,7 @@
 			files = (
 				0055D3DB20EFCA1F00F2D5B9 /* Assets.xcassets in Resources */,
 				0055D3DE20EFCA1F00F2D5B9 /* Main.storyboard in Resources */,
+				00AC59032712D7D500A6A2AD /* colornote.db in Resources */,
 				0065DFA1215808F300E0D5A9 /* FFFController.xib in Resources */,
 				00A6188521D97EA3005DBC77 /* audiowide-regular.ttf in Resources */,
 			);
@@ -707,6 +737,7 @@
 			files = (
 				00B79AF3215C988600746AC6 /* LaunchScreen.storyboard in Resources */,
 				00B79AF0215C988600746AC6 /* Assets.xcassets in Resources */,
+				00AC59042712D7D500A6A2AD /* colornote.db in Resources */,
 				00B79AEE215C988200746AC6 /* Main.storyboard in Resources */,
 				00A6188621D97EA3005DBC77 /* audiowide-regular.ttf in Resources */,
 			);
@@ -729,60 +760,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		13E79F0FA8E122EDCAE25446 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-FitForm/Pods-FitForm-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Charts-macOS/Charts.framework",
-				"${BUILT_PRODUCTS_DIR}/SQLite.swift-macOS/SQLite.framework",
-				"${BUILT_PRODUCTS_DIR}/AEXML/AEXML.framework",
-				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
-				"${BUILT_PRODUCTS_DIR}/AntMessageProtocol/AntMessageProtocol.framework",
-				"${BUILT_PRODUCTS_DIR}/DataDecoder/DataDecoder.framework",
-				"${BUILT_PRODUCTS_DIR}/FitDataProtocol/FitDataProtocol.framework",
-				"${BUILT_PRODUCTS_DIR}/FitnessUnits/FitnessUnits.framework",
-				"${BUILT_PRODUCTS_DIR}/SwiftyDropbox/SwiftyDropbox.framework",
-				"${BUILT_PRODUCTS_DIR}/TrackKit/TrackKit.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Charts.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SQLite.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AEXML.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AntMessageProtocol.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DataDecoder.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FitDataProtocol.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FitnessUnits.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyDropbox.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TrackKit.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-FitForm/Pods-FitForm-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2BB622372970AC6BE2E33B26 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-FitForm-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		E57A445E1B71669965F2BF95 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -794,7 +771,7 @@
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-eFrt-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-ColourNote-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -806,19 +783,16 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-eFrt/Pods-eFrt-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Charts-iOS/Charts.framework",
-				"${BUILT_PRODUCTS_DIR}/SQLite.swift-iOS/SQLite.framework",
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ColourNote/Pods-ColourNote-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Charts.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SQLite.framework",
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ColourNote/Pods-ColourNote-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-eFrt/Pods-eFrt-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ColourNote/Pods-ColourNote-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -836,6 +810,7 @@
 				0026038222E4BF5B0047E197 /* UserCredentials.swift in Sources */,
 				004ACA6D21CAC14400BE288A /* Efrt.swift in Sources */,
 				000718DA21B99F1A00E72158 /* UserConfig.swift in Sources */,
+				00AC590B2712F22E00A6A2AD /* NoteDetailViewController.swift in Sources */,
 				002A82EC214CD6B3000C4354 /* Helpers.swift in Sources */,
 				00FA7327213AD22D007787BA /* TrackStats.swift in Sources */,
 				001A43AB217E5E450090E536 /* Sport.swift in Sources */,
@@ -844,15 +819,18 @@
 				0065DFA0215808F300E0D5A9 /* FFFController.swift in Sources */,
 				002A82EE215431DC000C4354 /* TrainingStress.swift in Sources */,
 				000C8D25213181220021F9D2 /* WindowController.swift in Sources */,
+				007A1332270A1EFD00995D28 /* Note.swift in Sources */,
 				001A43A9217E446A0090E536 /* ActivityCount.swift in Sources */,
 				00D59A31211B6C2600537469 /* ActivityData.swift in Sources */,
 				005A301E212974F000502F95 /* TrainingViewController.swift in Sources */,
+				007A132E270A1C3400995D28 /* NoteRecords.swift in Sources */,
 				00D59A35211B7DB400537469 /* Zones.swift in Sources */,
 				002D911E21AEFDCB00305423 /* CycleActivity.swift in Sources */,
 				0096FE0E2131C5DC009D281D /* Globals.swift in Sources */,
 				00A6188221D7EE2A005DBC77 /* DeviceToken.swift in Sources */,
 				000DE38421A9471A00A72FEA /* Settings.swift in Sources */,
 				0055D3D720EFCA1C00F2D5B9 /* AppDelegate.swift in Sources */,
+				007A132F270A1C3400995D28 /* NoteListing.swift in Sources */,
 				00D59A37211B7E1200537469 /* Zone.swift in Sources */,
 				000C8D21212C87C30021F9D2 /* ActivityRecords.swift in Sources */,
 				004ACA7021CB015800BE288A /* ActivityListing.swift in Sources */,
@@ -884,10 +862,11 @@
 				006B568C2173D12B00F2BE6B /* ActivityLineChartViewController.swift in Sources */,
 				001A43AC217E63B30090E536 /* Sport.swift in Sources */,
 				00E0BA2B216413C800D00D23 /* DataLoader.swift in Sources */,
+				007A1334270A21AD00995D28 /* NoteRecords.swift in Sources */,
 				00671838230317B400898334 /* SpinnerViewController.swift in Sources */,
 				006B568F2175336D00F2BE6B /* ActivityHRBarChartViewController.swift in Sources */,
 				004ACA6B21CA486600BE288A /* TrackPoints.swift in Sources */,
-				00B79AEB215C988200746AC6 /* TrainingViewController.swift in Sources */,
+				00B79AEB215C988200746AC6 /* NotesListViewController.swift in Sources */,
 				00C0B20821C52D3C0029554A /* Utils.swift in Sources */,
 				00FF8CB221DC1DF200BC79CE /* HomeLastActivityViewController.swift in Sources */,
 				000718DE21B9A67400E72158 /* EfrtActivity.swift in Sources */,
@@ -902,6 +881,7 @@
 				00B79AE7215C988200746AC6 /* AppDelegate.swift in Sources */,
 				00E0BA322167E34A00D00D23 /* FitnessViewController.swift in Sources */,
 				00E0BA342167F5F400D00D23 /* SettingsViewController.swift in Sources */,
+				007A1333270A214000995D28 /* Note.swift in Sources */,
 				00353D4421F7CA6E00F32779 /* AnalysisDetailViewController.swift in Sources */,
 				00C25F8C215EC29800571F00 /* Zone.swift in Sources */,
 				006BF05E218DB6EF00E9B6AF /* HomeLast14ViewController.swift in Sources */,
@@ -913,10 +893,11 @@
 				000DE38521A9471A00A72FEA /* Settings.swift in Sources */,
 				00C25F8F215EC2A000571F00 /* TrainingStress.swift in Sources */,
 				00C25F8E215EC29D00571F00 /* TrackStats.swift in Sources */,
+				00AC590C2712F22E00A6A2AD /* NoteDetailViewController.swift in Sources */,
 				0026038322E4C0B70047E197 /* UserCredentials.swift in Sources */,
 				00FF8CB021DBEE9400BC79CE /* HomeWeeksViewController.swift in Sources */,
 				00C25F8D215EC29B00571F00 /* ActivityRecords.swift in Sources */,
-				00B79AE9215C988200746AC6 /* ActivityViewController.swift in Sources */,
+				00B79AE9215C988200746AC6 /* NoteViewController.swift in Sources */,
 				001A43AD217EEDEC0090E536 /* ActivityCount.swift in Sources */,
 				00E0BA2C21648BC200D00D23 /* Globals.swift in Sources */,
 				00C3DC312171EB2C00D769EB /* ActivitySwipeViewController.swift in Sources */,
@@ -1018,6 +999,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1079,6 +1061,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1109,13 +1092,13 @@
 		};
 		0055D3FA20EFCA1F00F2D5B9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D4B8A6157D3CB450D41BAA4A /* Pods-FitForm.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = KBXB5A7336;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = FitForm/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1130,13 +1113,13 @@
 		};
 		0055D3FB20EFCA1F00F2D5B9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8785E37DA1A360B84F8ACE39 /* Pods-FitForm.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = KBXB5A7336;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = FitForm/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1233,7 +1216,7 @@
 		};
 		00B79B0B215C988600746AC6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F92E5E7D43B9239BC2AD0C97 /* Pods-eFrt.debug.xcconfig */;
+			baseConfigurationReference = 136DFF3C386DEB23AC7EE4DB /* Pods-ColourNote.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = eFrt/eFrt.entitlements;
@@ -1241,7 +1224,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KBXB5A7336;
 				INFOPLIST_FILE = "$(SRCROOT)/ColourNote/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1259,7 +1242,7 @@
 		};
 		00B79B0C215C988600746AC6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0A75CA7940EC81E2081B6A26 /* Pods-eFrt.release.xcconfig */;
+			baseConfigurationReference = 07F0D8CC3066939935B1F2DF /* Pods-ColourNote.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = eFrt/eFrt.entitlements;
@@ -1267,7 +1250,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KBXB5A7336;
 				INFOPLIST_FILE = "$(SRCROOT)/ColourNote/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

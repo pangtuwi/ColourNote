@@ -33,30 +33,32 @@ class AnalysisViewController: UIViewController {
             //Settings.efrtBkGrey()
         headerContainer.backgroundColor = Globals.EFRT_BKGREY
         container1.backgroundColor = Globals.EFRT_BKGREY
-        container2.backgroundColor = Globals.EFRT_BKGREY
-        container3.backgroundColor = Globals.EFRT_BKGREY
-        container4.backgroundColor = Globals.EFRT_BKGREY
-        container5.backgroundColor = Globals.EFRT_BKGREY
+  //      container2.backgroundColor = Globals.EFRT_BKGREY
+   //     container3.backgroundColor = Globals.EFRT_BKGREY
+   //     container4.backgroundColor = Globals.EFRT_BKGREY
+   //     container5.backgroundColor = Globals.EFRT_BKGREY
         
-        let block1: UIViewController! = storyboard?.instantiateViewController(withIdentifier: "AnalysisHRChart")
+   /*     let block1: UIViewController! = storyboard?.instantiateViewController(withIdentifier: "AnalysisHRChart")
         block1.view.backgroundColor = Globals.EFRT_BKGREY
         block1.view.frame = self.container1.bounds 
         self.container1.addSubview(block1.view)
         self.addChild(block1)
         block1.didMove(toParent: self)
-        
+ */
+   /*
         let block2: UIViewController! = storyboard?.instantiateViewController(withIdentifier: "ActivityMap")
         block2.view.frame = self.container2.bounds
         self.container2.addSubview(block2.view)
         self.addChild(block2)
         block2.didMove(toParent: self)
         
-        let block3: UIViewController! = storyboard?.instantiateViewController(withIdentifier: "ActivityDetail")
-        block3.view.frame = self.container3.bounds
-        self.container3.addSubview(block3.view)
-        self.addChild(block3)
-        block3.didMove(toParent: self)
-        
+ */
+        let block1: UIViewController! = storyboard?.instantiateViewController(withIdentifier: "NoteDetail")
+        block1.view.frame = self.container1.bounds
+        self.container1.addSubview(block1.view)
+        self.addChild(block1)
+        block1.didMove(toParent: self)
+     /*
         let block4: UIViewController! = storyboard?.instantiateViewController(withIdentifier: "ActivityLineChart")
         block4.view.frame = self.container4.bounds
         self.container4.addSubview(block4.view)
@@ -68,6 +70,7 @@ class AnalysisViewController: UIViewController {
         self.container5.addSubview(block5.view)
         self.addChild(block5)
         block5.didMove(toParent: self)
+ */
     } //viewDidLoad
     
     
@@ -75,16 +78,26 @@ class AnalysisViewController: UIViewController {
         super.viewDidAppear(true)
         // var activity : Activity
 
-        if let activity = ActivityRecords.instance.getActivity(searchActivityId:
+    /*    if let activity = ActivityRecords.instance.getActivity(searchActivityId:
             Globals.sharedInstance.activityIDToDisplay) ?? ActivityRecords.instance.getLatestActivity() {
             
             //Set Labels
             dateLabel.text = "\(activity.activityName)"
             sportLabel.text = "\(activity.sportString())  |  \(sessionTimeString(timer_time: activity.duration))  |  \(activity.agoString())"
             TSSLabel.text = "\(activity.tss) TSS"
+ 
+ */
+            
+            if let note = NoteRecords.instance.getNote(searchNoteId:
+                Globals.sharedInstance.noteIDToDisplay) ?? NoteRecords.instance.getLatestNote() {
+                
+                //Set Labels
+                dateLabel.text = "\(note.noteName)"
+                sportLabel.text = "\(note.noteId)"
+                TSSLabel.text = "\(note.editedTime) EditTime"
             
             //Hide Unnecessary Blocks
-            if activity.shouldDrawMap() {
+     /*       if activity.shouldDrawMap() {
                 self.container2.isHidden = false
             } else {
                 self.container2.isHidden = true
@@ -103,6 +116,7 @@ class AnalysisViewController: UIViewController {
             } else {
                 self.container5.isHidden = true
             }
+ */
         }
     } //viewDidAppear
     
