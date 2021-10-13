@@ -22,7 +22,8 @@ class LoginViewController: UIViewController {
     
     @IBAction func signInButtonTapped(_ sender: Any) {
         //Get Values from Text Fields
-        let username = UITF_username.text
+        userExists (exists: true, message: "XXX Bypass above Code ")
+     /*   let username = UITF_username.text
         let password = UITF_password.text
         if (username?.count ?? 0 > 0) && (password?.count ?? 0 > 0) {
             Settings.setUserName(newUserName: username ?? "")
@@ -46,6 +47,7 @@ class LoginViewController: UIViewController {
          
             self.present(alert, animated: true, completion: nil)
         }
+ */
     } //Signin button tapped
     
     

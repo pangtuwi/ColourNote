@@ -28,7 +28,7 @@ class FitnessViewController: UIViewController {
     
     func displayChart () {
         
-        let data = CombinedChartData()
+    /*    let data = CombinedChartData()
         data.lineData = generateLineData()
         data.barData = generateBarData()
         
@@ -69,7 +69,7 @@ class FitnessViewController: UIViewController {
         l.drawInside = false
         l.font = .systemFont(ofSize: 16)
         
-        chart.notifyDataSetChanged()
+        chart.notifyDataSetChanged() */
     } //displayChart
     
     
