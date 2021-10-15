@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/paulwilliams/Documents/Programming/ColourNote/colornote.db">
-   </FileRef>
-   <FileRef
       location = "group:ColourNoteProj.xcodeproj">
    </FileRef>
    <FileRef

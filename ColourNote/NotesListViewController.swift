@@ -173,7 +173,7 @@ extension NotesListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 //        Globals.sharedInstance.activityIDToDisplay = activities[indexPath.row].activityId
         Globals.sharedInstance.noteIDToDisplay = notes[indexPath.row].noteId
-        tabBarController!.selectedIndex = 3
+        tabBarController!.selectedIndex = 2
         self.tableView.deselectRow(at: indexPath, animated: true)
     }
     

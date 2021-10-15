@@ -39,7 +39,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let notificationOption = launchOptions?[.remoteNotification]
         
         //Handle notifications when sent while app not running or in background
-        if let notification = notificationOption as? [String: AnyObject],
+       
+        /*if let notification = notificationOption as? [String: AnyObject],
             let _ = notification["aps"] as? [String: AnyObject] {
            // NewsItem.makeNewsItem(aps)
             DataLoader.sharedInstance.loadNewActivityList(whenDone: gotList)
@@ -48,14 +49,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             DataLoader.sharedInstance.downloadMissingEFRT()
         }
+        */
         
         //Set small Red circle (Icon badge Number) to Zero
         application.applicationIconBadgeNumber = 0
         
         let navigation = UINavigationBar.appearance()
         
-        let navigationFont = UIFont(name: "audiowide-regular", size: 20)
-        let navigationLargeFont = UIFont(name: "audiowide-regular", size: 34) //34 is Large Title size by default
+        let navigationFont = UIFont(name: "helveticaneue-thin", size: 20)
+        let navigationLargeFont = UIFont(name: "helveticaneue-thin", size: 24) //34 is Large Title size by default
         
         navigation.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black, NSAttributedString.Key.font: navigationFont!]
         
@@ -63,6 +65,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             navigation.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black, NSAttributedString.Key.font: navigationLargeFont!]
         }
         
+        (window?.rootViewController as? UITabBarController)?.selectedIndex = 1 //start on Notes Page
         return true
     }
     
