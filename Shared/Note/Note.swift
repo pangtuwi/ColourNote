@@ -15,6 +15,7 @@ class Note {
     var noteName : String
     let editedTime : Int
     var noteText : String
+    var colorIndex : Int
 
     
     init() {
@@ -22,14 +23,16 @@ class Note {
         noteName = ""
         editedTime = 0
         noteText = ""
+        colorIndex = 0
         
     }
     
-    init(noteId : Int, noteName : String, editedTime : Int, noteText : String) {
+    init(noteId : Int, noteName : String, editedTime : Int, noteText : String, colorIndex : Int ) {
         self.noteId = noteId
         self.noteName = noteName
         self.editedTime = editedTime
         self.noteText = noteText
+        self.colorIndex = colorIndex
     }
     
 }

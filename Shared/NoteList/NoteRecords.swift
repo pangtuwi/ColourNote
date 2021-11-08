@@ -34,6 +34,7 @@ class NoteRecords {
     let noteName = Expression<String>("title")
     let editedTime = Expression<Int>("modified_date")
     let noteText = Expression<String>("note")
+    let colorIndex = Expression<Int>("color_index")
     //let filename = Expression<String>("filename")
     //let sport = Expression<Int>("sport")
     //let duration = Expression<Int>("duration")
@@ -75,6 +76,7 @@ class NoteRecords {
                 table.column(noteName)
                 table.column(editedTime)
                 table.column(noteText)
+                table.column(colorIndex)
                // table.column(ignore)
             })
         } catch {
@@ -115,7 +117,8 @@ class NoteRecords {
                         noteId : note[self.noteId],
                         noteName : note[self.noteName],
                         editedTime: note[self.editedTime],
-                        noteText: note[self.noteText]))
+                        noteText: note[self.noteText],
+                        colorIndex: note[self.colorIndex]))
             
                 }
                 
@@ -310,7 +313,8 @@ class NoteRecords {
                 noteId : note[self.noteId],
                 noteName : note[self.noteName],
                 editedTime: note[self.editedTime],
-                noteText: note[self.noteText]))
+                noteText: note[self.noteText],
+                colorIndex: note[self.colorIndex]))
              }
          } catch {
              print("Select failed")

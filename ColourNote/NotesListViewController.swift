@@ -7,21 +7,30 @@
 //
 // https://www.raywenderlich.com/464-storyboards-tutorial-for-ios-part-1
 // https://stackoverflow.com/questions/24475792/how-to-use-pull-to-refresh-in-swift
+// https://stackoverflow.com/questions/56662886/how-to-filter-array-model-data-based-on-user-input-in-text-field
 
 
 import UIKit
 //import SwiftyDropbox
 
-class NotesListViewController: UITableViewController {
+class NotesListViewController: UITableViewController, UITextFieldDelegate {
     
-    //var myActivityData = ActivityData()
-    //var activities : [Activity] = []
     var notes : [Note] = []
+   // let array : Array<String> = ["1", "2", "3"];
+    var filteredNotes = [Note]() {
+        didSet{
+            self.tableView.reloadData()
+        }
+    }
     
     @IBOutlet weak var StatusLabel : UILabel!
+    @IBOutlet weak var SearchTextEditor: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        SearchTextEditor.delegate = self
+       // filteredNotes = notes
         
         NotificationCenter.default.addObserver(
             self,
@@ -45,17 +54,14 @@ class NotesListViewController: UITableViewController {
         super .viewDidAppear(true)
     } //viewDidAppear
     
-    /*func updateTrainingList() -> Void {
-        activities = ActivityRecords.instance.getActivities()
-        activities.sort { $0.startTime > $1.startTime }
-        tableView.reloadData()
-        StatusLabel.text = "\(activities.count) Activities"
-    }*/
     func updateNotesList() -> Void {
         notes = NoteRecords.instance.getNotes()
         notes.sort { $0.editedTime > $1.editedTime }
+        filteredNotes = notes
+        
         tableView.reloadData()
-        StatusLabel.text = "\(notes.count) Notes"
+       // StatusLabel.text = "\(notes.count) Notes"
+        StatusLabel.text = "\(filteredNotes.count) Notes"
     }
     
     
@@ -139,7 +145,8 @@ class NotesListViewController: UITableViewController {
 extension NotesListViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return notes.count
+      //  return notes.count
+        return filteredNotes.count
     }
     
     
@@ -147,16 +154,19 @@ extension NotesListViewController {
                             cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ActivityCell", for: indexPath)
         // ToDo : Fix occasional Fatal error : Index out of range
-        print ("Training View Table View loading \(indexPath.row) of \(notes.count)")
+        print ("Training View Table View loading \(indexPath.row) of \(filteredNotes.count)")
         if (indexPath.row <= notes.count) {
            // let activity = activities[indexPath.row]
-            let note = notes[indexPath.row]
+            let note = filteredNotes[indexPath.row]
            /* if (activity.tss == -1) {
                 cell.textLabel?.text = "...pending download"
             } else { */
             cell.textLabel?.text = "\(note.noteName)"
            // }
             cell.detailTextLabel?.text = "\(note.noteId) - \(note.editedTime)"
+
+                cell.backgroundColor = Globals.CN_LIGHT_COLORS[note.colorIndex]
+ 
          /*   if activity.ignore {
                 cell.textLabel?.textColor = Globals.EFRT_LTGREY
             } else {
@@ -213,6 +223,16 @@ extension NotesListViewController {
         //let configuration = UISwipeActionsConfiguration(actions: [ignoreAction, downloadAction])
         let configuration = UISwipeActionsConfiguration(actions: [downloadAction])
         return configuration
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        //print("input text is : \(string)")
+        //print (" text Field is now : \(textField.text)")
+        let searchText = textField.text!
+        
+        filteredNotes = notes.filter( { $0.noteName.range(of: searchText, options: .caseInsensitive) != nil})
+        tableView.reloadData()
+        return true
     }
     
 }

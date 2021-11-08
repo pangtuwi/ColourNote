@@ -56,6 +56,7 @@
 		00E0BA2C21648BC200D00D23 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0096FE0D2131C5DC009D281D /* Globals.swift */; };
 		00E0BA322167E34A00D00D23 /* FitnessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E0BA312167E34A00D00D23 /* FitnessViewController.swift */; };
 		00E0BA342167F5F400D00D23 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E0BA332167F5F400D00D23 /* SettingsViewController.swift */; };
+		00F98909271A251500A1D053 /* LinedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00F98908271A251500A1D053 /* LinedTextView.swift */; };
 		00FF8CB021DBEE9400BC79CE /* HomeWeeksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FF8CAF21DBEE9400BC79CE /* HomeWeeksViewController.swift */; };
 		00FF8CB221DC1DF200BC79CE /* HomeLastActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FF8CB121DC1DF200BC79CE /* HomeLastActivityViewController.swift */; };
 		3D2906F6F880C6189CB07704 /* Pods_ColourNote.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C40E23ED76D70B8B6B81D54 /* Pods_ColourNote.framework */; };
@@ -150,6 +151,7 @@
 		00D59A36211B7E1200537469 /* Zone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Zone.swift; sourceTree = "<group>"; };
 		00E0BA312167E34A00D00D23 /* FitnessViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessViewController.swift; sourceTree = "<group>"; };
 		00E0BA332167F5F400D00D23 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		00F98908271A251500A1D053 /* LinedTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinedTextView.swift; sourceTree = "<group>"; };
 		00FA7326213AD22D007787BA /* TrackStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackStats.swift; sourceTree = "<group>"; };
 		00FF8CAF21DBEE9400BC79CE /* HomeWeeksViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeWeeksViewController.swift; sourceTree = "<group>"; };
 		00FF8CB121DC1DF200BC79CE /* HomeLastActivityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeLastActivityViewController.swift; sourceTree = "<group>"; };
@@ -370,6 +372,7 @@
 				00A6188421D97EA3005DBC77 /* audiowide-regular.ttf */,
 				00B79AF4215C988600746AC6 /* Info.plist */,
 				00C3DC3621736AE100D769EB /* RoundUIView.swift */,
+				00F98908271A251500A1D053 /* LinedTextView.swift */,
 				006718352302BC5A00898334 /* LoginViewController.swift */,
 			);
 			path = ColourNote;
@@ -641,6 +644,7 @@
 				00A6188321D7EE2A005DBC77 /* DeviceToken.swift in Sources */,
 				00025D9721FC84A900E169C2 /* AnalysisSwimSetsViewController.swift in Sources */,
 				004FFCF321F2970D0068EA93 /* AnalysisViewController.swift in Sources */,
+				00F98909271A251500A1D053 /* LinedTextView.swift in Sources */,
 				000718DB21B99F1A00E72158 /* UserConfig.swift in Sources */,
 				00663847217B8C2B00720676 /* HomeViewController.swift in Sources */,
 				0069B1012253EA9800CE7871 /* URLs.swift in Sources */,
