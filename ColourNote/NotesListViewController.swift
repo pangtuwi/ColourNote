@@ -7,6 +7,7 @@
 //
 // https://www.raywenderlich.com/464-storyboards-tutorial-for-ios-part-1
 // https://stackoverflow.com/questions/24475792/how-to-use-pull-to-refresh-in-swift
+// https://developer.apple.com/library/archive/documentation/ToolsLanguages/Conceptual/Xcode_Overview/ConnectingObjectstoCode.html
 // https://stackoverflow.com/questions/56662886/how-to-filter-array-model-data-based-on-user-input-in-text-field
 
 
@@ -154,7 +155,7 @@ extension NotesListViewController {
                             cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ActivityCell", for: indexPath)
         // ToDo : Fix occasional Fatal error : Index out of range
-        print ("Training View Table View loading \(indexPath.row) of \(filteredNotes.count)")
+        //print ("Training View Table View loading \(indexPath.row) of \(filteredNotes.count)")
         if (indexPath.row <= notes.count) {
            // let activity = activities[indexPath.row]
             let note = filteredNotes[indexPath.row]

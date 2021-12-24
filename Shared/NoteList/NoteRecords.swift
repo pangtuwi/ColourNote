@@ -22,6 +22,8 @@ class NoteRecords {
     
     private var db: Connection?
     
+    //private var saveTime : Int
+    
     private let concurrentDBQueue =
         DispatchQueue(
             label: "com.efrt.serverqueue",
@@ -407,9 +409,44 @@ class NoteRecords {
         }
         return result
     } //update
+     
+     
+     func updateActivity (changedActivityId : Int, efrt : Efrt) -> Int {
+         var result : Int = -1
+         concurrentDBQueue.async(flags: .barrier) { [weak self] in
+             // 1
+             guard let self = self else {
+                 return
+             }
+             
+             if self.activityExists(searchId : changedActivityId) {
+                 do {
+                     let existingActivity = self.activities.filter(self.activityId == changedActivityId)
+                     //let update = existingActivity.update(self.starttime <- activity.startTime, self.filename <- activity.filename, self.sport <- activity.sport, self.duration <- activity.duration, self.tss <- activity.tss)
+                     //update Duration at same time - needed due to Garmin TCX swim having incorrect duration
+                     let dbUpdate = existingActivity.update(self.tss <- Int(efrt.bestTSS()), self.duration <- efrt.duration)
+                     let id = try self.db!.run(dbUpdate)
+                     DispatchQueue.main.async {
+                         NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
+                     }
+                     //print ("Updated Activity in local DB with ID \(changedActivityId)")
+                     result = id
+                     // return //id
+                 } catch {
+                     print("update failed in ActivityRecords.update")
+                     // return
+                 }
+             } else {
+                
+                 print("Cant find Activity to update in ActivityRecords.UpdateActivity")
+             }
+         }
+         return result
+     } //updateActivity(efrt)
     
+    */
     
-    func updateActivity (changedActivityId : Int, efrt : Efrt) -> Int {
+    func updateNoteText (changedNoteId : Int, newText : String) -> Int {
         var result : Int = -1
         concurrentDBQueue.async(flags: .barrier) { [weak self] in
             // 1
@@ -417,31 +454,34 @@ class NoteRecords {
                 return
             }
             
-            if self.activityExists(searchId : changedActivityId) {
+            if self.noteExists(searchId : changedNoteId) {
                 do {
-                    let existingActivity = self.activities.filter(self.activityId == changedActivityId)
-                    //let update = existingActivity.update(self.starttime <- activity.startTime, self.filename <- activity.filename, self.sport <- activity.sport, self.duration <- activity.duration, self.tss <- activity.tss)
-                    //update Duration at same time - needed due to Garmin TCX swim having incorrect duration
-                    let dbUpdate = existingActivity.update(self.tss <- Int(efrt.bestTSS()), self.duration <- efrt.duration)
+                    let existingNote = self.notes.filter(self.noteId == changedNoteId)
+                    let saveTime = Int(Date().timeIntervalSince1970)*1000
+                    
+                    let dbUpdate = existingNote.update(self.noteText <- newText, self.editedTime <- saveTime)
                     let id = try self.db!.run(dbUpdate)
-                    DispatchQueue.main.async {
+                  /*  DispatchQueue.main.async {
                         NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
                     }
-                    //print ("Updated Activity in local DB with ID \(changedActivityId)")
+                   */
+                    print ("Updated Note in local DB with ID \(changedNoteId)")
                     result = id
                     // return //id
                 } catch {
-                    print("update failed in ActivityRecords.update")
+                    print("update failed in updateNoteText")
                     // return
                 }
             } else {
                
-                print("Cant find Activity to update in ActivityRecords.UpdateActivity")
+                print("Cant find Note to update in NoteRecords.updateNoteText")
             }
         }
         return result
     } //updateActivity(efrt)
     
+    
+    /*
     
     func setActivityIgnore (changedActivityId : Int, ignore : Bool) -> Int {
         var result : Int = -1

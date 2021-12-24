@@ -27,6 +27,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     } */
     
     private var displayedNoteID : Int = 0
+    private var textHasChanged : Bool = false
   //  private var tableData : [ActivityDetail] = []
    // private var tableEfrtData : [ActivityDetail] = []
     
@@ -52,14 +53,20 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
         
-        
         if let note = NoteRecords.instance.getNote(searchNoteId:
             Globals.sharedInstance.noteIDToDisplay) ?? NoteRecords.instance.getLatestNote() {
             displayData(note: note)
-            
-
-    } //viewDidAppear
-
+        }
+        textHasChanged = false
+    }//viewDidAppear
+        
+    override func viewWillDisappear(_ animated: Bool) {
+        //let userDefault = UserDefaults.standard
+        //userDefault.set("value", forKey: "homeTeamName")
+        if textHasChanged {
+            NoteRecords.instance.updateNoteText(changedNoteId: Globals.sharedInstance.noteIDToDisplay, newText: textView.text)
+        }
+    }
     
     func displayData (note : Note) {
         textView.text = note.noteText
@@ -70,11 +77,10 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         textView.setNeedsDisplay()
         print("scrolling")
     }
-        
     
-    
-  
-}
+    func textViewDidChange(_ textView: UITextView) {
+        textHasChanged = true
+    }
 
 // MARK: - Notification handlers
 /*extension AnalysisDetailViewController {

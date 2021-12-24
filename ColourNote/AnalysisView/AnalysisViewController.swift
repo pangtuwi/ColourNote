@@ -94,7 +94,9 @@ class AnalysisViewController: UIViewController {
                 //Set Labels
                 dateLabel.text = "\(note.noteName)"
                 sportLabel.text = "\(note.noteId)"
-                TSSLabel.text = "\(note.editedTime) EditTime"
+               // TSSLabel.text = "\(note.editedTime) EditTime"
+                TSSLabel.text = "\(dateString(unixTime: note.editedTime))"
+                //print (dateString(note.editedTime))
             
             //Hide Unnecessary Blocks
      /*       if activity.shouldDrawMap() {

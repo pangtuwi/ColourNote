@@ -111,6 +111,17 @@ extension Date {
 } //extension Date
 
 
+func dateString (unixTime : Int) -> String {
+    let date = Date(timeIntervalSince1970: Double(unixTime/1000))
+    //print (date)
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeZone = TimeZone(abbreviation: "GMT") //Set timezone that you want
+    dateFormatter.locale = NSLocale.current
+    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm" //Specify your format that you want
+    let strDate = dateFormatter.string(from: date)
+    return strDate
+}
+
 func printMQ(_ newStr : String) {
     DispatchQueue.main.async {
         print (newStr)
