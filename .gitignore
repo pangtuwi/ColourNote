@@ -39,7 +39,7 @@ playground.xcworkspace
 # Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
 # Packages/
 # Package.pins
-# Package.resolved
+# We DO commit Package.resolved for reproducible builds
 # *.xcodeproj
 #
 # Xcode automatically generates this directory with a .xcworkspacedata file and xcuserdata
@@ -47,6 +47,10 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+
+# SPM - Don't ignore Package.resolved, it should be committed
+# But ignore the downloaded packages
+.swiftpm/
 
 # CocoaPods
 #
@@ -56,8 +60,9 @@ playground.xcworkspace
 #
 Pods/
 #
-# Add this line if you want to avoid checking in source code from the Xcode workspace
-*.xcworkspace
+# We need the workspace for SPM, so don't ignore it
+# But ignore user-specific data inside
+# *.xcworkspace
 
 # Carthage
 #
