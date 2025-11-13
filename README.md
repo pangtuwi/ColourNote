@@ -2,7 +2,7 @@
 
 A beautiful and simple iOS note-taking app with color-coded organization. Create, edit, and manage your notes with an intuitive interface and persistent local storage.
 
-![iOS](https://img.shields.io/badge/iOS-9.0+-blue.svg)
+![iOS](https://img.shields.io/badge/iOS-12.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
@@ -27,8 +27,8 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 - **Language**: Swift
 - **UI Framework**: UIKit (Storyboard-based)
 - **Database**: SQLite via [SQLite.swift](https://github.com/stephencelis/SQLite.swift)
-- **Dependency Manager**: CocoaPods
-- **Minimum iOS Version**: 9.0+
+- **Dependency Manager**: Swift Package Manager
+- **Minimum iOS Version**: 12.0+
 
 ### Architecture
 
@@ -41,9 +41,8 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ### Prerequisites
 
-- Xcode 11.0 or later
-- CocoaPods installed
-- iOS device or simulator running iOS 9.0+
+- Xcode 12.0 or later
+- iOS device or simulator running iOS 12.0+
 
 ### Setup
 
@@ -53,15 +52,12 @@ git clone https://github.com/pangtuwi/ColourNote.git
 cd ColourNote
 ```
 
-2. Install dependencies:
-```bash
-pod install
-```
-
-3. Open the workspace:
+2. Open the workspace:
 ```bash
 open ColourNoteProj.xcworkspace
 ```
+
+3. Dependencies are managed via Swift Package Manager and will be automatically resolved by Xcode
 
 4. Build and run the project (⌘+R)
 
@@ -168,8 +164,7 @@ See [CLAUDE.md](CLAUDE.md) for detailed technical documentation and known issues
 
 ## Dependencies
 
-- [SQLite.swift](https://github.com/stephencelis/SQLite.swift) - Type-safe SQLite database wrapper
-- [Charts](https://github.com/danielgindi/Charts) - Legacy dependency (not currently used)
+- [SQLite.swift](https://github.com/stephencelis/SQLite.swift) v0.15.4 - Type-safe SQLite database wrapper (via Swift Package Manager)
 
 ## License
 
