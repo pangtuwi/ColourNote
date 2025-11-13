@@ -32,11 +32,11 @@ class NoteRecords {
     let dbName = "colornote.db"
     
     let notes = Table("notes")
-    let noteId = Expression<Int>("_id")
-    let noteName = Expression<String>("title")
-    let editedTime = Expression<Int>("modified_date")
-    let noteText = Expression<String>("note")
-    let colorIndex = Expression<Int>("color_index")
+    let noteId = SQLite.Expression<Int>("_id")
+    let noteName = SQLite.Expression<String>("title")
+    let editedTime = SQLite.Expression<Int>("modified_date")
+    let noteText = SQLite.Expression<String>("note")
+    let colorIndex = SQLite.Expression<Int>("color_index")
     //let filename = Expression<String>("filename")
     //let sport = Expression<Int>("sport")
     //let duration = Expression<Int>("duration")
@@ -46,12 +46,29 @@ class NoteRecords {
     
     
     private init() {
+        
+        if copyDatabaseIfNeeded() {
+            print("Default database copied")
+        }
+        openDatabase()
+        
+        
         /*let path = NSSearchPathForDirectoriesInDomains(
             .documentDirectory, .userDomainMask, true
             ).first! */
         
+     /*   do {
+            try openDatabase()
+        } catch {
+            print ("Unable to open ColorNote database")
+            db = nil
+        } */
+        
+     
+        
+        
         //let fileURL = "\(path)/colornote.db""
-        var fileURL = Bundle.main.path(forResource:"colornote", ofType:"db") ?? "Not Found"
+    /*    var fileURL = Bundle.main.path(forResource:"colornote", ofType:"db") ?? "Not Found"
         print(fileURL)
         do {
             print ("Attempting to open \(fileURL)")
@@ -65,9 +82,73 @@ class NoteRecords {
             print ("Unable to open ColorNote database")
             db = nil
 
-        }
+        } */
         
-        createTable()
+       // createTable()
+        
+        
+        
+        
+        
+    }
+    
+    //var db: OpaquePointer?
+
+    enum DatabaseError: Error {
+        case bundleDatabaseNotFound
+        case sqliteError(Int32, String?)
+    }
+    
+    func copyDatabaseIfNeeded() -> Bool {
+        // from https://github.com/stephencelis/SQLite.swift/blob/master/Documentation/Index.md#getting-started
+        let bundlePath = Bundle.main.url(forResource: "colornote", withExtension: "db")!.path
+        let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        let destinationPath = documents + "/" + dbName
+        let exists = FileManager.default.fileExists(atPath: destinationPath)
+        guard !exists else {
+            print ("Database already exists in user folder")
+            return false
+        }
+        do {
+            try FileManager.default.copyItem(atPath: bundlePath, toPath: destinationPath)
+            print ("Copied initial database from Bundle")
+            return true
+        } catch {
+          print("error during file copy: \(error)")
+            return false
+        }
+    }
+
+    func openDatabase() {
+        do {
+    /*    let fileURL = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("colornote.db") */
+
+        /*    let fileURL = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                .appendingPathComponent("colornote.db")
+                //.path
+            let fileURLString = fileURL.path
+         
+         */
+            
+            let fileURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                    .appendingPathComponent("colornote.db")
+                    .path
+        
+            print("attempting to open database at \(fileURL)")
+
+        
+     /*   if sqlite3_open_v2(fileURL.path, &db, SQLITE_OPEN_READWRITE, nil) == SQLITE_OK {
+            return
+        } */
+     
+            
+        try db = Connection(fileURL)
+ 
+        } catch {
+            db = nil
+            print (error)
+        }
     }
     
     

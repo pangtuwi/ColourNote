@@ -29,15 +29,15 @@ class ActivityRecords {
     
     
     let activities = Table("activities")
-    let activityId = Expression<Int>("activityId")
-    let activityName = Expression<String>("activityName")
-    let starttime = Expression<Int>("starttime")
-    let filename = Expression<String>("filename")
-    let sport = Expression<Int>("sport")
-    let duration = Expression<Int>("duration")
-    let distance = Expression<Int>("distance")
-    let tss = Expression<Int>("tss")
-    let ignore = Expression<Bool>("ignore")
+    let activityId = SQLite.Expression<Int>("activityId")
+    let activityName = SQLite.Expression<String>("activityName")
+    let starttime = SQLite.Expression<Int>("starttime")
+    let filename = SQLite.Expression<String>("filename")
+    let sport = SQLite.Expression<Int>("sport")
+    let duration = SQLite.Expression<Int>("duration")
+    let distance = SQLite.Expression<Int>("distance")
+    let tss = SQLite.Expression<Int>("tss")
+    let ignore = SQLite.Expression<Bool>("ignore")
     
     
     private init() {

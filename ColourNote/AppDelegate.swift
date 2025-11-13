@@ -25,8 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let rootViewController = storyboard.instantiateViewController(withIdentifier: Settings.isRegistered() ? "efrtHomeControllerID" : "loginViewControllerID")
-        
+        let rootViewController = storyboard.instantiateViewController(withIdentifier: //Settings.isRegistered() ? "efrtHomeControllerID" : "loginViewControllerID")
+            Settings.isRegistered() ? "ColorNoteHomeID" : "loginViewControllerID")
         window?.rootViewController = rootViewController
         
         if !Settings.hasDefaultsSet() {

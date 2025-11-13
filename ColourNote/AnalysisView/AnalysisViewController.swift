@@ -25,9 +25,18 @@ class AnalysisViewController: UIViewController {
     
     //var blocks = [UIViewController]()
 
-
+    @objc func addTapped(_ sender: UIBarButtonItem) {
+         print("Test Right button", self.navigationItem.title)
+     }
+   
+     var addButton: UIBarButtonItem!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
         
         self.view.backgroundColor = Globals.EFRT_BKGREY
             //Settings.efrtBkGrey()
@@ -71,8 +80,10 @@ class AnalysisViewController: UIViewController {
         self.addChild(block5)
         block5.didMove(toParent: self)
  */
+
     } //viewDidLoad
     
+
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)

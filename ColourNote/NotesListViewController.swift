@@ -183,8 +183,13 @@ extension NotesListViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 //        Globals.sharedInstance.activityIDToDisplay = activities[indexPath.row].activityId
-        Globals.sharedInstance.noteIDToDisplay = notes[indexPath.row].noteId
-        tabBarController!.selectedIndex = 2
+        Globals.sharedInstance.noteIDToDisplay = filteredNotes[indexPath.row].noteId
+        //tabBarController!.selectedIndex = 2
+        let NoteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteViewController")
+        NoteViewController!.modalPresentationStyle = .fullScreen
+        NoteViewController?.modalTransitionStyle = .crossDissolve
+              
+        present(NoteViewController!, animated: true, completion: nil)
         self.tableView.deselectRow(at: indexPath, animated: true)
     }
     
