@@ -70,17 +70,17 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         DispatchQueue.main.async {
             self.StatusLabel.text = "Checking Server for new files..."
         }
-        
+
         DispatchQueue.global(qos: .utility).async {
-            DataLoader.sharedInstance.requestSync()
+            // DataLoader.sharedInstance.requestSync() // Legacy fitness tracking
         }
-        
-        
+
+
         DispatchQueue.global(qos: .utility).async { [weak self] in
             guard let self = self else {
                 return
             }
-            DataLoader.sharedInstance.loadNewActivityList(whenDone: self.gotList)
+            // DataLoader.sharedInstance.loadNewActivityList(whenDone: self.gotList) // Legacy fitness tracking
             // 2
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {  [weak self] in
                 self!.refreshControl!.endRefreshing()
@@ -99,9 +99,9 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
                 self.StatusLabel.text = "Found \(newActivityList.count) new activities on Server.  Updating..."
             }
             if newActivityList.count <= 10 {
-                DataLoader.sharedInstance.downloadEFRTFromList(list: newActivityList)
+                // DataLoader.sharedInstance.downloadEFRTFromList(list: newActivityList) // Legacy fitness tracking
             } else {
-                DataLoader.sharedInstance.downloadMissingEFRT()
+                // DataLoader.sharedInstance.downloadMissingEFRT() // Legacy fitness tracking
             }
          /*   var delaycounter = 0
             var newActivityList2 = newActivityList
@@ -130,7 +130,7 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
     } //gotList
     
     
-    func gotNewActivity (efrt : Efrt) -> Void {
+    func gotNewActivity (efrt : Any) -> Void {
         DispatchQueue.main.async {
             self.StatusLabel.text =  "Activity downloaded"
         }
@@ -217,8 +217,8 @@ extension NotesListViewController {
         //Action to re-DOWNLOAD an Activity
         let downloadAction = UIContextualAction(style: .normal, title: "download",
                                               handler: { (action, view, completionHandler) in
-            DataLoader.sharedInstance.deleteFromCache(ActivityId: self.notes[indexPath.row].noteId )
-            DataLoader.sharedInstance.getEfrt(whenDone: self.gotNewActivity, ActivityId: self.notes[indexPath.row].noteId )
+            // DataLoader.sharedInstance.deleteFromCache(ActivityId: self.notes[indexPath.row].noteId ) // Legacy fitness tracking
+            // DataLoader.sharedInstance.getEfrt(whenDone: self.gotNewActivity, ActivityId: self.notes[indexPath.row].noteId ) // Legacy fitness tracking
             NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
             self.tableView.reloadData()
             completionHandler(true)

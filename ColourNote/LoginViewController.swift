@@ -22,8 +22,13 @@ class LoginViewController: UIViewController {
     
     @IBAction func signInButtonTapped(_ sender: Any) {
         //Get Values from Text Fields
+        // For notes app, just mark as registered and dismiss
+        Settings.setRegistered(registered: true)
+        self.dismiss(animated: true, completion: nil)
+
+     /*   // Legacy fitness tracking login code
         userExists (exists: true, message: "XXX Bypass above Code ")
-     /*   let username = UITF_username.text
+        let username = UITF_username.text
         let password = UITF_password.text
         if (username?.count ?? 0 > 0) && (password?.count ?? 0 > 0) {
             Settings.setUserName(newUserName: username ?? "")
@@ -62,19 +67,21 @@ class LoginViewController: UIViewController {
         
         
             if exists {
-                // User exists, enable in settinngs and transition to main UI
+                // User exists, enable in settings and dismiss
                 Settings.setRegistered(registered: true)
-                DataLoader.sharedInstance.downloadMissingEFRT()
-                self.performSegue(withIdentifier: "signedInSegue", sender: self.mySender)
-            
+                // DataLoader.sharedInstance.downloadMissingEFRT() // Legacy fitness tracking
+                // self.performSegue(withIdentifier: "signedInSegue", sender: self.mySender) // Segue doesn't exist
+                self.dismiss(animated: true, completion: nil)
+
             } else {
                 //User not found
                 let alert = UIAlertController(title: "User Not Found", message: "\(Settings.userName()) was not found in the EFRT database - do you want to add this user", preferredStyle: .alert)
                 let okAction = UIAlertAction(title: "Ok", style: .default) { _ in
-                    DataLoader.sharedInstance.addUser()
+                    // DataLoader.sharedInstance.addUser() // Legacy fitness tracking
                     Settings.setRegistered(registered: true)
-                    DataLoader.sharedInstance.downloadMissingEFRT()
-                    self.performSegue(withIdentifier: "signedInSegue", sender: self.mySender)
+                    // DataLoader.sharedInstance.downloadMissingEFRT() // Legacy fitness tracking
+                    // self.performSegue(withIdentifier: "signedInSegue", sender: self.mySender) // Segue doesn't exist
+                    self.dismiss(animated: true, completion: nil)
                 }
                 alert.addAction(okAction)
                 let cancelAction = UIAlertAction(title: "No", style: .cancel) { _ in

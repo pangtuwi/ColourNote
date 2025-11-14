@@ -74,7 +74,7 @@ extension UserDefaults {
         let oldDeviceToken = deviceToken()
         if (oldDeviceToken != newDeviceToken) {
             set (newDeviceToken, forKey: "device_token")
-            DataLoader.sharedInstance.sendNewDeviceToken()
+            // DataLoader.sharedInstance.sendNewDeviceToken() // Legacy fitness tracking
         }
     } //setDeviceToken
     

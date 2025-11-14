@@ -149,23 +149,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         //print ("Got notification with \(aps)")
         //NewsItem.makeNewsItem(aps)
-        DataLoader.sharedInstance.loadNewActivityList(whenDone: gotList)
+        // DataLoader.sharedInstance.loadNewActivityList(whenDone: gotList) // Legacy fitness tracking
     }
-    
-    
+
+
     func gotList (newActivityList : [Int]) -> Void {
         //ToDo: Add message for when Server not available
         if newActivityList.count > 0 {
             //print ("Got Activity List with \(newActivityList.count) activities")
             for newActivityId in newActivityList {
-                DataLoader.sharedInstance.getEfrt(whenDone: gotNewActivity, ActivityId: newActivityId)
+                // DataLoader.sharedInstance.getEfrt(whenDone: gotNewActivity, ActivityId: newActivityId) // Legacy fitness tracking
             }
         }
     } //gotList
-    
-    
-    func gotNewActivity (efrt : Efrt) -> Void {
-        //Do nothing for now
+
+
+    func gotNewActivity (efrt : Any) -> Void {
+        //Do nothing for now - legacy fitness tracking
     }
     
 
