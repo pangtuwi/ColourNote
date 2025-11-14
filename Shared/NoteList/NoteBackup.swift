@@ -29,6 +29,12 @@ struct NoteBackupContainer: Codable {
     let Notes: [NoteBackupModel]
 }
 
+struct ImportResult {
+    let success: Bool
+    let importedCount: Int
+    let errorMessage: String?
+}
+
 class NoteBackup {
 
     static func exportNotesToJSON(notes: [Note]) -> String? {
@@ -107,5 +113,53 @@ class NoteBackup {
         let filename = "colornote_backup_\(timestamp).json"
 
         return saveBackupToFile(jsonString: jsonString, filename: filename)
+    }
+
+    static func importNotesFromJSON(jsonData: Data) -> ImportResult {
+        let decoder = JSONDecoder()
+
+        do {
+            let container = try decoder.decode(NoteBackupContainer.self, from: jsonData)
+            let backupNotes = container.Notes
+
+            if backupNotes.isEmpty {
+                return ImportResult(success: false, importedCount: 0, errorMessage: "No notes found in backup file")
+            }
+
+            var importedCount = 0
+            let formatter = ISO8601DateFormatter()
+
+            for backupNote in backupNotes {
+                // Parse timestamp
+                let modifiedDate = formatter.date(from: backupNote.timestamp_modified) ?? Date()
+                let modifiedTimestamp = Int(modifiedDate.timeIntervalSince1970 * 1000)
+
+                // Create Note object
+                let note = Note(
+                    noteId: Int(backupNote.id) ?? 0,
+                    noteName: backupNote.title,
+                    editedTime: modifiedTimestamp,
+                    noteText: backupNote.content,
+                    colorIndex: backupNote.metadata.color_index
+                )
+
+                // Check if note already exists
+                if NoteRecords.instance.noteExists(searchId: note.noteId) {
+                    // Update existing note
+                    _ = NoteRecords.instance.updateNoteText(changedNoteId: note.noteId, newText: note.noteText)
+                } else {
+                    // Add new note (we need to add an insert method)
+                    _ = NoteRecords.instance.insertNote(note: note)
+                }
+
+                importedCount += 1
+            }
+
+            return ImportResult(success: true, importedCount: importedCount, errorMessage: nil)
+
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return ImportResult(success: false, importedCount: 0, errorMessage: "Invalid JSON format: \(error.localizedDescription)")
+        }
     }
 }

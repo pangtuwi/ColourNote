@@ -46,9 +46,10 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         refreshControl!.attributedTitle = NSAttributedString(string: "Pulll to refresh")
         refreshControl!.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
 
-        // Add export button to navigation bar
-        let exportButton = UIBarButtonItem(title: "Export", style: .plain, target: self, action: #selector(exportButtonTapped))
-        navigationItem.rightBarButtonItem = exportButton
+        // Add hamburger menu button to navigation bar
+        let menuButton = UIBarButtonItem(title: "≡", style: .plain, target: self, action: #selector(menuButtonTapped))
+        menuButton.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 28)], for: .normal)
+        navigationItem.rightBarButtonItem = menuButton
 
         //updateTrainingList()
         updateNotesList()
@@ -245,8 +246,41 @@ extension NotesListViewController {
         return true
     }
 
-    @objc func exportButtonTapped() {
-        // Show loading indicator
+    @objc func menuButtonTapped() {
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+
+        // Backup action
+        let backupAction = UIAlertAction(title: "Backup", style: .default) { [weak self] _ in
+            self?.performBackup()
+        }
+
+        // Import action
+        let importAction = UIAlertAction(title: "Import", style: .default) { [weak self] _ in
+            self?.performImport()
+        }
+
+        // About action
+        let aboutAction = UIAlertAction(title: "About", style: .default) { [weak self] _ in
+            self?.showAbout()
+        }
+
+        // Cancel action
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+
+        alertController.addAction(backupAction)
+        alertController.addAction(importAction)
+        alertController.addAction(aboutAction)
+        alertController.addAction(cancelAction)
+
+        // For iPad support
+        if let popoverController = alertController.popoverPresentationController {
+            popoverController.barButtonItem = navigationItem.rightBarButtonItem
+        }
+
+        present(alertController, animated: true)
+    }
+
+    func performBackup() {
         StatusLabel.text = "Exporting notes..."
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -263,6 +297,31 @@ extension NotesListViewController {
                 self?.shareBackupFile(fileURL: fileURL)
             }
         }
+    }
+
+    func performImport() {
+        let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.json"], in: .import)
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        present(documentPicker, animated: true)
+    }
+
+    func showAbout() {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
+
+        let message = """
+        ColourNote
+        A simple and elegant notes app
+
+        Version: \(appVersion) (\(buildNumber))
+
+        © 2024 ColourNote
+        """
+
+        let alert = UIAlertController(title: "About", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     func shareBackupFile(fileURL: URL) {
@@ -291,6 +350,59 @@ extension NotesListViewController {
         let app = UIApplication.shared
         app.applicationIconBadgeNumber = 0
        // print ("Content Change notification recieved in TrainingViewController")
+    }
+}
+
+// MARK: - Document Picker Delegate
+extension NotesListViewController: UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let selectedFileURL = urls.first else {
+            showAlert(title: "Import Failed", message: "No file selected")
+            return
+        }
+
+        StatusLabel.text = "Importing notes..."
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            do {
+                // Start accessing a security-scoped resource
+                guard selectedFileURL.startAccessingSecurityScopedResource() else {
+                    DispatchQueue.main.async {
+                        self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                        self?.showAlert(title: "Import Failed", message: "Could not access file")
+                    }
+                    return
+                }
+
+                defer {
+                    selectedFileURL.stopAccessingSecurityScopedResource()
+                }
+
+                let jsonData = try Data(contentsOf: selectedFileURL)
+                let result = NoteBackup.importNotesFromJSON(jsonData: jsonData)
+
+                DispatchQueue.main.async {
+                    self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                    if result.success {
+                        self?.showAlert(title: "Import Successful", message: "Imported \(result.importedCount) notes")
+                        self?.updateNotesList()
+                    } else {
+                        self?.showAlert(title: "Import Failed", message: result.errorMessage ?? "Unknown error")
+                    }
+                }
+
+            } catch {
+                DispatchQueue.main.async {
+                    self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                    self?.showAlert(title: "Import Failed", message: "Error reading file: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        // User cancelled the import
+        StatusLabel.text = "\(filteredNotes.count) Notes"
     }
 }
 

@@ -534,12 +534,12 @@ class NoteRecords {
             guard let self = self else {
                 return
             }
-            
+
             if self.noteExists(searchId : changedNoteId) {
                 do {
                     let existingNote = self.notes.filter(self.noteId == changedNoteId)
                     let saveTime = Int(Date().timeIntervalSince1970)*1000
-                    
+
                     let dbUpdate = existingNote.update(self.noteText <- newText, self.editedTime <- saveTime)
                     let id = try self.db!.run(dbUpdate)
                   /*  DispatchQueue.main.async {
@@ -554,12 +554,37 @@ class NoteRecords {
                     // return
                 }
             } else {
-               
+
                 print("Cant find Note to update in NoteRecords.updateNoteText")
             }
         }
         return result
     } //updateActivity(efrt)
+
+    func insertNote(note: Note) -> Int64 {
+        var result: Int64 = -1
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                return
+            }
+
+            do {
+                let insert = self.notes.insert(
+                    self.noteId <- note.noteId,
+                    self.noteName <- note.noteName,
+                    self.editedTime <- note.editedTime,
+                    self.noteText <- note.noteText,
+                    self.colorIndex <- note.colorIndex
+                )
+                let id = try self.db!.run(insert)
+                print("Inserted Note with ID \(note.noteId)")
+                result = id
+            } catch {
+                print("Insert failed in NoteRecords.insertNote: \(error)")
+            }
+        }
+        return result
+    } //insertNote
     
     
     /*
