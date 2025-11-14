@@ -27,6 +27,7 @@
 		C8D90AFF02FD4170888FA092 /* NoteDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D54728B17D1936CB19250D68 /* NoteDetailViewController.swift */; };
 		CB345CA474ADF9A737712BB4 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E47F6EA1805EDF0D30FBD0A /* Globals.swift */; };
 		DC34C3CAD70C890372485A23 /* Note2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D9DBE2A1CBDAB454C12865 /* Note2ViewController.swift */; };
+		DEFF7861BC656C723519E714 /* NoteBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D0E5D1214D5DD8E587CB4CF /* NoteBackup.swift */; };
 		E903AFD25AF4908BC5FD8C55 /* DataLoaderNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A56CB0D023855688DF8BB3 /* DataLoaderNotification.swift */; };
 		E96BC90DEF782AFDEE471A40 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC97A8A9BEA0ADA366358263 /* Main.storyboard */; };
 /* End PBXBuildFile section */
@@ -45,6 +46,7 @@
 		893F2B21D62D9A6B98FB0810 /* audiowide-regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = "audiowide-regular.ttf"; path = "ColourNote/audiowide-regular.ttf"; sourceTree = "<group>"; };
 		8A8BB0F652A4FCBF87C2AABF /* NoteViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NoteViewController.swift; path = ColourNote/NoteViewController.swift; sourceTree = "<group>"; };
 		8CD6A90ABFCD21F96C43B6AC /* Pods-ColourNote.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColourNote.release.xcconfig"; path = "Target Support Files/Pods-ColourNote/Pods-ColourNote.release.xcconfig"; sourceTree = "<group>"; };
+		8D0E5D1214D5DD8E587CB4CF /* NoteBackup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NoteBackup.swift; path = Shared/NoteList/NoteBackup.swift; sourceTree = SOURCE_ROOT; };
 		92D3A770914BEE353F9F515D /* Note.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Note.swift; path = Shared/Note/Note.swift; sourceTree = "<group>"; };
 		A1957D5890D672FF626E21CC /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ColourNote/AppDelegate.swift; sourceTree = "<group>"; };
 		A2B6E035AADA4DFDB4EAE61B /* Settings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Settings.swift; path = Shared/Settings.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 				FAA608A98F41F901DC3ECB8A /* NoteRecords.swift */,
 				66D3BF69B6FCD65768E7AC4B /* SpinnerViewController.swift */,
 				75A56CB0D023855688DF8BB3 /* DataLoaderNotification.swift */,
+				5344B7B675141F2154AC8F06 /* NoteList */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -100,6 +103,14 @@
 				3447C1518F622CD945FA0588 /* Foundation.framework */,
 			);
 			name = iOS;
+			sourceTree = "<group>";
+		};
+		5344B7B675141F2154AC8F06 /* NoteList */ = {
+			isa = PBXGroup;
+			children = (
+				8D0E5D1214D5DD8E587CB4CF /* NoteBackup.swift */,
+			);
+			name = NoteList;
 			sourceTree = "<group>";
 		};
 		6C6B59086C3B4AE73F5AE648 /* Storyboards */ = {
@@ -222,7 +233,7 @@
 			);
 			mainGroup = E0685716BBF82DCCC912F19A;
 			packageReferences = (
-				000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite" */,
+				000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 			);
 			productRefGroup = 2F32D4D360878E2F9D8CE48D /* Products */;
 			projectDirPath = "";
@@ -268,6 +279,7 @@
 				0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */,
 				41CF3C2DE1880BBAC66C7B2E /* SpinnerViewController.swift in Sources */,
 				E903AFD25AF4908BC5FD8C55 /* DataLoaderNotification.swift in Sources */,
+				DEFF7861BC656C723519E714 /* NoteBackup.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -454,7 +466,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite" */ = {
+		000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stephencelis/SQLite.swift";
 			requirement = {
@@ -467,7 +479,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		000C08862EC5B7F200ACC394 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite" */;
+			package = 000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
 			productName = SQLite;
 		};
 /* End XCSwiftPackageProductDependency section */

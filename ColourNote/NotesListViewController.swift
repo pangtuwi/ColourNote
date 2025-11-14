@@ -29,23 +29,27 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         SearchTextEditor.delegate = self
        // filteredNotes = notes
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(contentChangedNotification(_:)),
             name: DataLoaderNotification.contentUpdated,
             object: nil)
-        
+
        // _ = ActivityRecords.instance.deleteActivity(cActivityId : 3923275188)
        //    DataLoader.sharedInstance.deleteFromCache(ActivityId: 3923275188)
-        
+
         refreshControl = UIRefreshControl()
         refreshControl!.attributedTitle = NSAttributedString(string: "Pulll to refresh")
         refreshControl!.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
-        
+
+        // Add export button to navigation bar
+        let exportButton = UIBarButtonItem(title: "Export", style: .plain, target: self, action: #selector(exportButtonTapped))
+        navigationItem.rightBarButtonItem = exportButton
+
         //updateTrainingList()
         updateNotesList()
     } //viewDidLoad
@@ -235,12 +239,49 @@ extension NotesListViewController {
         //print("input text is : \(string)")
         //print (" text Field is now : \(textField.text)")
         let searchText = textField.text!
-        
+
         filteredNotes = notes.filter( { $0.noteName.range(of: searchText, options: .caseInsensitive) != nil})
         tableView.reloadData()
         return true
     }
-    
+
+    @objc func exportButtonTapped() {
+        // Show loading indicator
+        StatusLabel.text = "Exporting notes..."
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let fileURL = NoteBackup.exportAllNotes() else {
+                DispatchQueue.main.async {
+                    self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                    self?.showAlert(title: "Export Failed", message: "Could not create backup file")
+                }
+                return
+            }
+
+            DispatchQueue.main.async {
+                self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                self?.shareBackupFile(fileURL: fileURL)
+            }
+        }
+    }
+
+    func shareBackupFile(fileURL: URL) {
+        let activityViewController = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+
+        // For iPad support
+        if let popoverController = activityViewController.popoverPresentationController {
+            popoverController.barButtonItem = navigationItem.rightBarButtonItem
+        }
+
+        present(activityViewController, animated: true, completion: nil)
+    }
+
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
 }
 
 // MARK: - Notification handlers
