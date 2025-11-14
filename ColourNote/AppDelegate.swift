@@ -32,8 +32,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if !Settings.hasDefaultsSet() {
             Settings.setInitialDefaults()
         }
-        
-        registerForPushNotifications()
+
+        // Disabled push notifications - not needed for local notes app
+        // registerForPushNotifications()
         
         // Check if launched from notification
         let notificationOption = launchOptions?[.remoteNotification]
