@@ -1,0 +1,22 @@
+{
+  "Notes": [
+    {
+      "content": "# Lisbon trip\n\n- Book flights\n- Reserve hotel",
+      "content_format": "markdown",
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "metadata": {
+        "archived": false,
+        "color_index": 0,
+        "pinned": true,
+        "tags": [
+          "travel",
+          "personal"
+        ]
+      },
+      "timestamp_created": "2024-06-15T10:30:00Z",
+      "timestamp_modified": "2024-06-20T14:45:00Z",
+      "title": "Trip planning",
+      "user_id": "user_1"
+    }
+  ]
+}

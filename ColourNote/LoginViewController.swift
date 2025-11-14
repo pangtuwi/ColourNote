@@ -64,20 +64,32 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         let destinationPath = documents + "/colornote.db"
 
+        print("=== Initializing database ===")
+        print("useDefault: \(useDefault), createBlank: \(createBlank)")
+        print("Destination: \(destinationPath)")
+
         // Remove existing database if any
         try? FileManager.default.removeItem(atPath: destinationPath)
+        print("Removed existing database")
 
         if useDefault {
             // Copy default database from bundle
             if let bundlePath = Bundle.main.url(forResource: "colornote", withExtension: "db")?.path {
                 try? FileManager.default.copyItem(atPath: bundlePath, toPath: destinationPath)
                 print("Loaded default database with sample notes")
+                // Set database version to prevent auto-copy
+                UserDefaults.standard.set(2, forKey: "DatabaseVersion")
             }
         } else if createBlank {
             // Create blank database
             createBlankDatabase(at: destinationPath)
             print("Created blank database")
+            // Set database version to prevent auto-copy
+            UserDefaults.standard.set(2, forKey: "DatabaseVersion")
         }
+
+        let exists = FileManager.default.fileExists(atPath: destinationPath)
+        print("Database exists after init: \(exists)")
 
         // Mark as registered and navigate to home
         Settings.setRegistered(registered: true)
@@ -92,7 +104,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         }
 
         // Create the notes table
-        let createTableSQL = """
+        let createNotesTableSQL = """
         CREATE TABLE IF NOT EXISTS notes (
           _id INTEGER PRIMARY KEY,
           active_state INTEGER DEFAULT 0,
@@ -121,6 +133,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
           latitude DOUBLE DEFAULT 0,
           longitude DOUBLE DEFAULT 0,
           color_index INTEGER NOT NULL DEFAULT 0,
+          category_id INTEGER DEFAULT 0,
           encrypted INTEGER DEFAULT 0,
           dirty INTEGER DEFAULT 1,
           staged INTEGER DEFAULT 0,
@@ -133,14 +146,47 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         CREATE INDEX idx_note4 ON notes(title);
         CREATE INDEX idx_note_s1 ON notes(dirty);
         CREATE INDEX idx_note_s2 ON notes(staged);
+        CREATE INDEX idx_note_category ON notes(category_id);
+        """
+
+        // Create the categories table
+        let createCategoriesTableSQL = """
+        CREATE TABLE IF NOT EXISTS categories (
+            category_id INTEGER PRIMARY KEY,
+            category_name TEXT NOT NULL DEFAULT '',
+            color_hex TEXT NOT NULL DEFAULT '#FFFFFF',
+            sort_order INTEGER DEFAULT 0
+        );
+        CREATE INDEX idx_category_sort ON categories(sort_order);
         """
 
         do {
-            try db.execute(createTableSQL)
-            print("Blank database created successfully")
+            try db.execute(createNotesTableSQL)
+            try db.execute(createCategoriesTableSQL)
+            print("Blank database created successfully with categories table")
+
+            // Insert default categories
+            insertDefaultCategories(db: db)
         } catch {
             print("Error creating blank database: \(error)")
         }
+    }
+
+    func insertDefaultCategories(db: Connection) {
+        let defaultCategories = Category.getDefaultCategories()
+
+        for category in defaultCategories {
+            let sql = """
+            INSERT INTO categories (category_id, category_name, color_hex, sort_order)
+            VALUES (?, ?, ?, ?)
+            """
+            do {
+                try db.run(sql, category.categoryId, category.categoryName, category.colorHex, category.sortOrder)
+            } catch {
+                print("Error inserting default category: \(error)")
+            }
+        }
+        print("Inserted default categories")
     }
 
     func navigateToHome() {

@@ -38,6 +38,7 @@ class NoteRecords {
     let createdDate = SQLite.Expression<Int>("created_date")
     let noteText = SQLite.Expression<String>("note")
     let colorIndex = SQLite.Expression<Int>("color_index")
+    let categoryId = SQLite.Expression<Int>("category_id")
     let noteType = SQLite.Expression<Int>("type")
     let noteNoteType = SQLite.Expression<Int>("note_type")
     //let filename = Expression<String>("filename")
@@ -49,27 +50,28 @@ class NoteRecords {
     
     
     private init() {
-        
+
         if copyDatabaseIfNeeded() {
             print("Default database copied")
         }
         openDatabase()
-        
-        
+        migrateDatabaseIfNeeded()
+
+
         /*let path = NSSearchPathForDirectoriesInDomains(
             .documentDirectory, .userDomainMask, true
             ).first! */
-        
+
      /*   do {
             try openDatabase()
         } catch {
             print ("Unable to open ColorNote database")
             db = nil
         } */
-        
-     
-        
-        
+
+
+
+
         //let fileURL = "\(path)/colornote.db""
     /*    var fileURL = Bundle.main.path(forResource:"colornote", ofType:"db") ?? "Not Found"
         print(fileURL)
@@ -86,13 +88,13 @@ class NoteRecords {
             db = nil
 
         } */
-        
+
        // createTable()
-        
-        
-        
-        
-        
+
+
+
+
+
     }
     
     //var db: OpaquePointer?
@@ -113,6 +115,18 @@ class NoteRecords {
         let dbVersionKey = "DatabaseVersion"
         let currentDBVersion = 2 // Increment this to force database replacement
         let savedDBVersion = UserDefaults.standard.integer(forKey: dbVersionKey)
+
+        print("=== copyDatabaseIfNeeded check ===")
+        print("Database exists: \(exists)")
+        print("Saved DB version: \(savedDBVersion)")
+        print("Current DB version: \(currentDBVersion)")
+
+        // If DatabaseVersion is already set to current version, don't copy
+        // This prevents overwriting user-created blank databases or imported databases
+        if savedDBVersion >= currentDBVersion {
+            print("Database version is current, skipping auto-copy")
+            return false
+        }
 
         if exists && savedDBVersion < currentDBVersion {
             // Remove old corrupted database
@@ -178,6 +192,82 @@ class NoteRecords {
             print (error)
         }
     }
+
+    func migrateDatabaseIfNeeded() {
+        guard let db = db else {
+            print("NoteRecords: Database not available for migration")
+            return
+        }
+
+        let dbSchemaVersionKey = "DatabaseSchemaVersion"
+        let currentSchemaVersion = 3 // Increment when adding new migrations
+        let savedSchemaVersion = UserDefaults.standard.integer(forKey: dbSchemaVersionKey)
+
+        print("=== Database Migration Check ===")
+        print("Current schema version: \(currentSchemaVersion)")
+        print("Saved schema version: \(savedSchemaVersion)")
+
+        if savedSchemaVersion < currentSchemaVersion {
+            // Run migrations
+            if savedSchemaVersion < 3 {
+                // Migration to version 3: Add category_id column and categories table
+                print("Running migration to version 3: Adding category support")
+
+                do {
+                    // Add category_id column to notes table if it doesn't exist
+                    try db.execute("ALTER TABLE notes ADD COLUMN category_id INTEGER DEFAULT 0")
+                    print("Added category_id column to notes table")
+                } catch {
+                    print("category_id column may already exist or error: \(error)")
+                }
+
+                do {
+                    // Create categories table
+                    let createCategoriesTableSQL = """
+                    CREATE TABLE IF NOT EXISTS categories (
+                        category_id INTEGER PRIMARY KEY,
+                        category_name TEXT NOT NULL DEFAULT '',
+                        color_hex TEXT NOT NULL DEFAULT '#FFFFFF',
+                        sort_order INTEGER DEFAULT 0
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_category_sort ON categories(sort_order);
+                    """
+                    try db.execute(createCategoriesTableSQL)
+                    print("Created categories table")
+
+                    // Insert default categories
+                    insertDefaultCategoriesIfNeeded()
+                } catch {
+                    print("Error creating categories table: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(3, forKey: dbSchemaVersionKey)
+                print("Migration to version 3 completed")
+            }
+        } else {
+            print("Database schema is up to date")
+        }
+    }
+
+    func insertDefaultCategoriesIfNeeded() {
+        guard let db = db else { return }
+
+        let defaultCategories = Category.getDefaultCategories()
+
+        for category in defaultCategories {
+            do {
+                let sql = """
+                INSERT OR IGNORE INTO categories (category_id, category_name, color_hex, sort_order)
+                VALUES (?, ?, ?, ?)
+                """
+                try db.run(sql, category.categoryId, category.categoryName, category.colorHex, category.sortOrder)
+            } catch {
+                print("Error inserting default category: \(error)")
+            }
+        }
+        print("Default categories inserted")
+    }
     
     
     func createTable() {
@@ -221,7 +311,7 @@ class NoteRecords {
     
     func getNotes() -> [Note] {
         var notez = [Note]()
-    
+
             do {
                 for note in try self.db!.prepare(self.notes) {
                         notez.append(Note(
@@ -229,16 +319,17 @@ class NoteRecords {
                         noteName : note[self.noteName],
                         editedTime: note[self.editedTime],
                         noteText: note[self.noteText],
-                        colorIndex: note[self.colorIndex]))
-            
+                        colorIndex: note[self.colorIndex],
+                        categoryId: note[self.categoryId]))
+
                 }
-                
+
             } catch {
                 print("Select failed in NoteRecords.GetNotes() ")
             }
         print ("got a total of \(notez.count) notes")
         return notez
-        
+
     } //getActivities
     
     
@@ -425,12 +516,13 @@ class NoteRecords {
                 noteName : note[self.noteName],
                 editedTime: note[self.editedTime],
                 noteText: note[self.noteText],
-                colorIndex: note[self.colorIndex]))
+                colorIndex: note[self.colorIndex],
+                categoryId: note[self.categoryId]))
              }
          } catch {
              print("Select failed")
          }
-         
+
          if notesFound.count == 0 {
              return nil
          } else {
@@ -604,10 +696,10 @@ class NoteRecords {
             do {
                 // Use raw SQL to bypass COLLATE LOCALIZED issue
                 let sql = """
-                INSERT INTO notes (_id, title, created_date, modified_date, note, color_index, type, note_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO notes (_id, title, created_date, modified_date, note, color_index, category_id, type, note_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
-                try self.db!.run(sql, note.noteId, note.noteName, note.editedTime, note.editedTime, note.noteText, note.colorIndex, 0, 0)
+                try self.db!.run(sql, note.noteId, note.noteName, note.editedTime, note.editedTime, note.noteText, note.colorIndex, note.categoryId, 0, 0)
                 print("Inserted Note with ID \(note.noteId)")
                 result = Int64(note.noteId)
             } catch {
@@ -647,6 +739,34 @@ class NoteRecords {
         }
         return result
     } //updateNoteTitle
+
+    func updateNoteCategory(changedNoteId: Int, newCategoryId: Int) -> Int {
+        var result: Int = -1
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                return
+            }
+
+            if self.noteExists(searchId: changedNoteId) {
+                do {
+                    let saveTime = Int(Date().timeIntervalSince1970) * 1000
+
+                    // Use raw SQL to avoid collation issues
+                    let sql = """
+                    UPDATE notes SET category_id = ?, modified_date = ? WHERE _id = ?
+                    """
+                    try self.db!.run(sql, newCategoryId, saveTime, changedNoteId)
+                    print("Updated Note category in local DB with ID \(changedNoteId)")
+                    result = changedNoteId
+                } catch {
+                    print("Update failed in updateNoteCategory: \(error)")
+                }
+            } else {
+                print("Can't find Note to update in NoteRecords.updateNoteCategory")
+            }
+        }
+        return result
+    } //updateNoteCategory
 
     func deleteNote(noteId: Int) -> Bool {
         var result = false

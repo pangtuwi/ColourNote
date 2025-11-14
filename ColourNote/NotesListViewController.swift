@@ -46,6 +46,10 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         refreshControl!.attributedTitle = NSAttributedString(string: "Pulll to refresh")
         refreshControl!.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
 
+        // Set navigation bar title
+        title = "ColourNote"
+        navigationItem.largeTitleDisplayMode = .never
+
         // Add hamburger menu button to navigation bar (left side)
         let menuButton = UIBarButtonItem(title: "≡", style: .plain, target: self, action: #selector(menuButtonTapped))
         menuButton.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 28)], for: .normal)
@@ -175,10 +179,20 @@ extension NotesListViewController {
             } else { */
             cell.textLabel?.text = "\(note.noteName)"
            // }
-            cell.detailTextLabel?.text = "\(note.noteId) - \(note.editedTime)"
 
+            // Format the edited time as human-readable
+            let date = Date(timeIntervalSince1970: TimeInterval(note.editedTime / 1000))
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "d MMM, h:mm a"
+            cell.detailTextLabel?.text = dateFormatter.string(from: date)
+
+            // Use category color if categoryId is set, otherwise use old colorIndex
+            if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
+                cell.backgroundColor = category.getColor()
+            } else {
                 cell.backgroundColor = Globals.CN_LIGHT_COLORS[note.colorIndex]
- 
+            }
+
          /*   if activity.ignore {
                 cell.textLabel?.textColor = Globals.EFRT_LTGREY
             } else {
@@ -255,6 +269,11 @@ extension NotesListViewController {
     @objc func menuButtonTapped() {
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
+        // Categories action
+        let categoriesAction = UIAlertAction(title: "Manage Categories", style: .default) { [weak self] _ in
+            self?.showCategories()
+        }
+
         // Backup action
         let backupAction = UIAlertAction(title: "Backup", style: .default) { [weak self] _ in
             self?.performBackup()
@@ -273,6 +292,7 @@ extension NotesListViewController {
         // Cancel action
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
 
+        alertController.addAction(categoriesAction)
         alertController.addAction(backupAction)
         alertController.addAction(importAction)
         alertController.addAction(aboutAction)
@@ -341,6 +361,11 @@ extension NotesListViewController {
         documentPicker.delegate = self
         documentPicker.allowsMultipleSelection = false
         present(documentPicker, animated: true)
+    }
+
+    func showCategories() {
+        let categoriesVC = CategoriesViewController(style: .insetGrouped)
+        navigationController?.pushViewController(categoriesVC, animated: true)
     }
 
     func showAbout() {

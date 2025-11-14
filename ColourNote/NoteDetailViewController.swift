@@ -19,6 +19,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     @IBOutlet weak var doneButton: UIButton!
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var listButton: UIButton!
+    @IBOutlet weak var categoryButton: UIButton!
 
     @IBAction func doneButtonClick(_ sender: Any) {
         self.view.endEditing(true)
@@ -35,9 +36,14 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         dismiss(animated: true)
     }
 
+    @IBAction func categoryButtonPressed(_ sender: Any) {
+        showCategoryPicker()
+    }
+
     private var displayedNoteID : Int = 0
     private var textHasChanged : Bool = false
     private var titleHasChanged : Bool = false
+    private var currentCategoryId: Int = 0
 
     var lastNoteID = 0
     
@@ -97,7 +103,17 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     func displayData (note : Note) {
         noteTitle.text = note.noteName
         textView.text = note.noteText
-        textView.backgroundColor = Globals.CN_LIGHT_COLORS[note.colorIndex]
+        currentCategoryId = note.categoryId
+
+        // Use category color if categoryId is set, otherwise use old colorIndex
+        if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
+            textView.backgroundColor = category.getColor()
+            categoryButton?.setTitle(category.categoryName, for: .normal)
+        } else {
+            textView.backgroundColor = Globals.CN_LIGHT_COLORS[note.colorIndex]
+            categoryButton?.setTitle("No Category", for: .normal)
+        }
+
         textHasChanged = false
         titleHasChanged = false
         doneButton.isHidden = true
@@ -154,6 +170,52 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         textView.setNeedsDisplay()
         print("scrolling")
+    }
+
+    func showCategoryPicker() {
+        let alert = UIAlertController(title: "Select Category", message: nil, preferredStyle: .actionSheet)
+
+        // Get all categories
+        let categories = CategoryRecords.instance.getCategories()
+
+        // Add "No Category" option
+        let noCategoryAction = UIAlertAction(title: "No Category", style: .default) { [weak self] _ in
+            self?.updateCategory(categoryId: 0)
+        }
+        alert.addAction(noCategoryAction)
+
+        // Add each category as an option
+        for category in categories {
+            let action = UIAlertAction(title: category.categoryName, style: .default) { [weak self] _ in
+                self?.updateCategory(categoryId: category.categoryId)
+            }
+            alert.addAction(action)
+        }
+
+        // Add cancel button
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        // For iPad support
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.sourceView = categoryButton
+            popoverController.sourceRect = categoryButton.bounds
+        }
+
+        present(alert, animated: true)
+    }
+
+    func updateCategory(categoryId: Int) {
+        currentCategoryId = categoryId
+        _ = NoteRecords.instance.updateNoteCategory(changedNoteId: lastNoteID, newCategoryId: categoryId)
+
+        // Update UI
+        if categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: categoryId) {
+            textView.backgroundColor = category.getColor()
+            categoryButton?.setTitle(category.categoryName, for: .normal)
+        } else {
+            textView.backgroundColor = .white
+            categoryButton?.setTitle("No Category", for: .normal)
+        }
     }
 
     func textViewDidChange(_ textView: UITextView) {

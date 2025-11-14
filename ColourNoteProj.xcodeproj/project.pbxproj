@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		000C08872EC5B7F200ACC394 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 000C08862EC5B7F200ACC394 /* SQLite */; };
+		008799592EC761BA002EC37E /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008799582EC761BA002EC37E /* Category.swift */; };
+		0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995C2EC76248002EC37E /* CategoryRecords.swift */; };
+		0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995E2EC76281002EC37E /* CategoriesViewController.swift */; };
 		06BFA357937C8A1711FC9F4C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3447C1518F622CD945FA0588 /* Foundation.framework */; };
 		0A2519E7EE40271944833A9E /* LinedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 399F4930693CA4710608F190 /* LinedTextView.swift */; };
 		0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA608A98F41F901DC3ECB8A /* NoteRecords.swift */; };
@@ -33,6 +36,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		008799582EC761BA002EC37E /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
+		0087995C2EC76248002EC37E /* CategoryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoryRecords.swift; path = Shared/Category/CategoryRecords.swift; sourceTree = "<group>"; };
+		0087995E2EC76281002EC37E /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoriesViewController.swift; path = ColourNote/CategoriesViewController.swift; sourceTree = "<group>"; };
 		113DFBC7CC6EE89A79068DA1 /* Pods-ColourNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColourNote.debug.xcconfig"; path = "Target Support Files/Pods-ColourNote/Pods-ColourNote.debug.xcconfig"; sourceTree = "<group>"; };
 		151B632C013000F21A31FAA1 /* RoundUIView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoundUIView.swift; path = ColourNote/RoundUIView.swift; sourceTree = "<group>"; };
 		2C7500F1F904471B09BA8446 /* ColourNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColourNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +83,8 @@
 		0956E81AA95BAF6B5DFD68B5 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				008799582EC761BA002EC37E /* Category.swift */,
+				0087995C2EC76248002EC37E /* CategoryRecords.swift */,
 				6E47F6EA1805EDF0D30FBD0A /* Globals.swift */,
 				A2B6E035AADA4DFDB4EAE61B /* Settings.swift */,
 				E9A299201C9A48605678C2D4 /* Utils.swift */,
@@ -174,6 +182,7 @@
 		F3EC00706371DEFD61CA709C /* ColourNote */ = {
 			isa = PBXGroup;
 			children = (
+				0087995E2EC76281002EC37E /* CategoriesViewController.swift */,
 				A1957D5890D672FF626E21CC /* AppDelegate.swift */,
 				A9D3A7CBB00DC66BE5E50D0C /* NotesListViewController.swift */,
 				8A8BB0F652A4FCBF87C2AABF /* NoteViewController.swift */,
@@ -233,7 +242,7 @@
 			);
 			mainGroup = E0685716BBF82DCCC912F19A;
 			packageReferences = (
-				000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
+				000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite" */,
 			);
 			productRefGroup = 2F32D4D360878E2F9D8CE48D /* Products */;
 			projectDirPath = "";
@@ -275,9 +284,12 @@
 				CB345CA474ADF9A737712BB4 /* Globals.swift in Sources */,
 				B36E7AC13FC47292B3B9FB15 /* Settings.swift in Sources */,
 				74DD21A72F660BFC6BF85848 /* Utils.swift in Sources */,
+				008799592EC761BA002EC37E /* Category.swift in Sources */,
 				C35D83CBAF1C2FCF4B29240B /* Note.swift in Sources */,
+				0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */,
 				0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */,
 				41CF3C2DE1880BBAC66C7B2E /* SpinnerViewController.swift in Sources */,
+				0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */,
 				E903AFD25AF4908BC5FD8C55 /* DataLoaderNotification.swift in Sources */,
 				DEFF7861BC656C723519E714 /* NoteBackup.swift in Sources */,
 			);
@@ -347,7 +359,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				DEVELOPMENT_TEAM = KBXB5A7336;
 				INFOPLIST_FILE = ColourNote/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -368,7 +380,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				DEVELOPMENT_TEAM = KBXB5A7336;
 				INFOPLIST_FILE = ColourNote/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -466,7 +478,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
+		000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/stephencelis/SQLite.swift";
 			requirement = {
@@ -479,7 +491,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		000C08862EC5B7F200ACC394 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
+			package = 000C08852EC5B7F200ACC394 /* XCRemoteSwiftPackageReference "SQLite" */;
 			productName = SQLite;
 		};
 /* End XCSwiftPackageProductDependency section */
