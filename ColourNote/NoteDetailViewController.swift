@@ -105,12 +105,22 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         textView.text = note.noteText
         currentCategoryId = note.categoryId
 
-        // Use category color if categoryId is set, otherwise use old colorIndex
+        // Always use light grey for text area
+        textView.backgroundColor = UIColor.systemGray6
+
+        // Set title background and navigation bar color based on category
         if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
-            textView.backgroundColor = category.getColor()
+            let categoryColor = category.getColor()
+            noteTitle.backgroundColor = categoryColor
+            noteTitle.textColor = getContrastingTextColor(for: categoryColor)
+            setNavigationBarColor(categoryColor)
             categoryButton?.setTitle(category.categoryName, for: .normal)
         } else {
-            textView.backgroundColor = Globals.CN_LIGHT_COLORS[note.colorIndex]
+            // Use old colorIndex for title and navigation bar if no category
+            let color = Globals.CN_LIGHT_COLORS[note.colorIndex]
+            noteTitle.backgroundColor = color
+            noteTitle.textColor = getContrastingTextColor(for: color)
+            setNavigationBarColor(color)
             categoryButton?.setTitle("No Category", for: .normal)
         }
 
@@ -118,6 +128,41 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         titleHasChanged = false
         doneButton.isHidden = true
     }//displayData
+
+    func setNavigationBarColor(_ color: UIColor) {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = color
+
+        // Set title text color based on background brightness
+        let textColor = getContrastingTextColor(for: color)
+        appearance.titleTextAttributes = [.foregroundColor: textColor]
+        appearance.largeTitleTextAttributes = [.foregroundColor: textColor]
+
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+        navigationBar.compactAppearance = appearance
+
+        // Set bar button items color
+        navigationBar.tintColor = textColor
+    }
+
+    func getContrastingTextColor(for backgroundColor: UIColor) -> UIColor {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        backgroundColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+        // Calculate luminance
+        let luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+
+        // Return black for light backgrounds, white for dark backgrounds
+        return luminance > 0.5 ? .black : .white
+    }
 
     func saveNote() {
         if textHasChanged || titleHasChanged {
@@ -208,12 +253,20 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         currentCategoryId = categoryId
         _ = NoteRecords.instance.updateNoteCategory(changedNoteId: lastNoteID, newCategoryId: categoryId)
 
-        // Update UI
+        // Update UI - text area always stays light grey
+        textView.backgroundColor = UIColor.systemGray6
+
+        // Update title background, navigation bar color and category button
         if categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: categoryId) {
-            textView.backgroundColor = category.getColor()
+            let categoryColor = category.getColor()
+            noteTitle.backgroundColor = categoryColor
+            noteTitle.textColor = getContrastingTextColor(for: categoryColor)
+            setNavigationBarColor(categoryColor)
             categoryButton?.setTitle(category.categoryName, for: .normal)
         } else {
-            textView.backgroundColor = .white
+            noteTitle.backgroundColor = .white
+            noteTitle.textColor = .black
+            setNavigationBarColor(.white)
             categoryButton?.setTitle("No Category", for: .normal)
         }
     }

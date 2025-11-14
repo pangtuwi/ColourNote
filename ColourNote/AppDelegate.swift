@@ -23,19 +23,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
+
+        // Pre-initialize database on background thread to speed up launch
+        if Settings.isRegistered() {
+            DispatchQueue.global(qos: .userInitiated).async {
+                // This will initialize NoteRecords and CategoryRecords singletons and run migrations in background
+                _ = NoteRecords.instance
+                _ = CategoryRecords.instance
+                print("Database pre-initialized in background")
+            }
+        }
+
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let rootViewController = storyboard.instantiateViewController(withIdentifier: //Settings.isRegistered() ? "efrtHomeControllerID" : "loginViewControllerID")
             Settings.isRegistered() ? "ColorNoteHomeID" : "loginViewControllerID")
         window?.rootViewController = rootViewController
-        
+
         if !Settings.hasDefaultsSet() {
             Settings.setInitialDefaults()
         }
 
         // Disabled push notifications - not needed for local notes app
         // registerForPushNotifications()
-        
+
         // Check if launched from notification
         let notificationOption = launchOptions?[.remoteNotification]
         

@@ -15,7 +15,7 @@ import UIKit
 //import SwiftyDropbox
 
 class NotesListViewController: UITableViewController, UITextFieldDelegate {
-    
+
     var notes : [Note] = []
    // let array : Array<String> = ["1", "2", "3"];
     var filteredNotes = [Note]() {
@@ -23,9 +23,13 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
             self.tableView.reloadData()
         }
     }
-    
+
+    var selectedCategoryFilter: Int? = nil // nil means show all categories
+    var cachedCategories: [Category] = [] // Cache categories to avoid slow database calls
+
     @IBOutlet weak var StatusLabel : UILabel!
     @IBOutlet weak var SearchTextEditor: UITextField!
+    @IBOutlet weak var FilterButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,6 +63,13 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNoteButtonTapped))
         navigationItem.rightBarButtonItem = addButton
 
+        // Setup filter button
+        FilterButton?.setTitle("All", for: .normal)
+        FilterButton?.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
+
+        // Load categories in background
+        loadCategoriesAsync()
+
         //updateTrainingList()
         updateNotesList()
     } //viewDidLoad
@@ -68,16 +79,40 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         super .viewDidAppear(true)
         // Refresh the list when returning from note detail view
         updateNotesList()
+        // Refresh categories cache in case they were modified
+        loadCategoriesAsync()
     } //viewDidAppear
+
+    func loadCategoriesAsync() {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let categories = CategoryRecords.instance.getCategories()
+            DispatchQueue.main.async {
+                self?.cachedCategories = categories
+            }
+        }
+    }
     
     func updateNotesList() -> Void {
         notes = NoteRecords.instance.getNotes()
         notes.sort { $0.editedTime > $1.editedTime }
-        filteredNotes = notes
-        
+        applyFilters()
+    }
+
+    func applyFilters() {
+        var filtered = notes
+
+        // Apply category filter
+        if let categoryId = selectedCategoryFilter {
+            filtered = filtered.filter { $0.categoryId == categoryId }
+        }
+
+        // Apply search text filter if there's text in the search field
+        if let searchText = SearchTextEditor.text, !searchText.isEmpty {
+            filtered = filtered.filter { $0.noteName.range(of: searchText, options: .caseInsensitive) != nil }
+        }
+
+        filteredNotes = filtered
         tableView.reloadData()
-       // StatusLabel.text = "\(notes.count) Notes"
-        StatusLabel.text = "\(filteredNotes.count) Notes"
     }
     
     
@@ -99,7 +134,7 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
             // 2
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {  [weak self] in
                 self!.refreshControl!.endRefreshing()
-                self!.StatusLabel.text = "\(self!.notes.count) Notes"
+                self!.StatusLabel.text = ""
             }
         }
     } //handleRefresh
@@ -139,7 +174,7 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
                 self.StatusLabel.text = "Checking on connect.garmin.com"
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                self.StatusLabel.text = "\(self.notes.count) notes"
+                self.StatusLabel.text = ""
             }
         }
     } //gotList
@@ -257,13 +292,81 @@ extension NotesListViewController {
     }
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        //print("input text is : \(string)")
-        //print (" text Field is now : \(textField.text)")
-        let searchText = textField.text!
-
-        filteredNotes = notes.filter( { $0.noteName.range(of: searchText, options: .caseInsensitive) != nil})
-        tableView.reloadData()
+        // Delay to allow text field to update
+        DispatchQueue.main.async { [weak self] in
+            self?.applyFilters()
+        }
         return true
+    }
+
+    @objc func filterButtonTapped() {
+        let alert = UIAlertController(title: "Filter by Category", message: nil, preferredStyle: .actionSheet)
+
+        // "All" option to clear filter
+        let allAction = UIAlertAction(title: "All", style: .default) { [weak self] _ in
+            self?.selectedCategoryFilter = nil
+            self?.updateFilterButton(title: "All", color: nil)
+            self?.applyFilters()
+        }
+        alert.addAction(allAction)
+
+        // "Uncategorized" option
+        let uncategorizedAction = UIAlertAction(title: "Uncategorized", style: .default) { [weak self] _ in
+            self?.selectedCategoryFilter = 0
+            self?.updateFilterButton(title: "Unca", color: .systemGray)
+            self?.applyFilters()
+        }
+        alert.addAction(uncategorizedAction)
+
+        // Use cached categories instead of querying database on main thread
+        for category in cachedCategories {
+            let action = UIAlertAction(title: category.categoryName, style: .default) { [weak self] _ in
+                self?.selectedCategoryFilter = category.categoryId
+                let shortName = String(category.categoryName.prefix(4))
+                self?.updateFilterButton(title: shortName, color: category.getColor())
+                self?.applyFilters()
+            }
+            alert.addAction(action)
+        }
+
+        // Cancel button
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        // For iPad support
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.sourceView = FilterButton
+            popoverController.sourceRect = FilterButton.bounds
+        }
+
+        present(alert, animated: true)
+    }
+
+    func updateFilterButton(title: String, color: UIColor?) {
+        FilterButton?.setTitle(title, for: .normal)
+        if let color = color {
+            FilterButton?.backgroundColor = color
+            // Set text color to black or white based on background brightness
+            FilterButton?.setTitleColor(getContrastingTextColor(for: color), for: .normal)
+        } else {
+            // Default appearance for "All" - gray background with black text
+            FilterButton?.backgroundColor = .systemGray
+            FilterButton?.setTitleColor(.black, for: .normal)
+        }
+    }
+
+    func getContrastingTextColor(for backgroundColor: UIColor) -> UIColor {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        backgroundColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+        // Calculate luminance
+        let luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+
+        // Return black for light backgrounds, white for dark backgrounds
+        return luminance > 0.5 ? .black : .white
     }
 
     @objc func menuButtonTapped() {
@@ -343,14 +446,14 @@ extension NotesListViewController {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let fileURL = NoteBackup.exportAllNotes() else {
                 DispatchQueue.main.async {
-                    self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                    self?.StatusLabel.text = ""
                     self?.showAlert(title: "Export Failed", message: "Could not create backup file")
                 }
                 return
             }
 
             DispatchQueue.main.async {
-                self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                self?.StatusLabel.text = ""
                 self?.shareBackupFile(fileURL: fileURL)
             }
         }
@@ -375,6 +478,8 @@ extension NotesListViewController {
         let message = """
         ColourNote
         A simple and elegant notes app
+
+        Designed and developed by Paul, for Debi, with love. Xxx.
 
         Version: \(appVersion) (\(buildNumber))
 
@@ -430,7 +535,7 @@ extension NotesListViewController: UIDocumentPickerDelegate {
                 // Start accessing a security-scoped resource
                 guard selectedFileURL.startAccessingSecurityScopedResource() else {
                     DispatchQueue.main.async {
-                        self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                        self?.StatusLabel.text = ""
                         self?.showAlert(title: "Import Failed", message: "Could not access file")
                     }
                     return
@@ -444,7 +549,7 @@ extension NotesListViewController: UIDocumentPickerDelegate {
                 let result = NoteBackup.importNotesFromJSON(jsonData: jsonData)
 
                 DispatchQueue.main.async {
-                    self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                    self?.StatusLabel.text = ""
                     if result.success {
                         self?.showAlert(title: "Import Successful", message: "Imported \(result.importedCount) notes")
                         self?.updateNotesList()
@@ -455,7 +560,7 @@ extension NotesListViewController: UIDocumentPickerDelegate {
 
             } catch {
                 DispatchQueue.main.async {
-                    self?.StatusLabel.text = "\(self?.filteredNotes.count ?? 0) Notes"
+                    self?.StatusLabel.text = ""
                     self?.showAlert(title: "Import Failed", message: "Error reading file: \(error.localizedDescription)")
                 }
             }
@@ -464,7 +569,7 @@ extension NotesListViewController: UIDocumentPickerDelegate {
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         // User cancelled the import
-        StatusLabel.text = "\(filteredNotes.count) Notes"
+        StatusLabel.text = ""
     }
 }
 
