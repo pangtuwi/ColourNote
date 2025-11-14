@@ -19,10 +19,8 @@ extension UserDefaults {
     
     func isRegistered () -> Bool {
         if let _ = string(forKey: "isRegistered"){
-            printMQ("user is registered, username is \(userName())")
             return true
         } else {
-            printMQ("user : \(userName()) is NOT registered")
             return false
         }
     } //isRegistered

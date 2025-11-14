@@ -23,9 +23,18 @@ struct NoteMetadata: Codable {
     let archived: Bool
     let pinned: Bool
     let color_index: Int
+    let category_id: Int?
+}
+
+struct CategoryBackupModel: Codable {
+    let category_id: Int
+    let category_name: String
+    let color_hex: String
+    let sort_order: Int
 }
 
 struct NoteBackupContainer: Codable {
+    let Categories: [CategoryBackupModel]
     let Notes: [NoteBackupModel]
 }
 
@@ -38,6 +47,18 @@ struct ImportResult {
 class NoteBackup {
 
     static func exportNotesToJSON(notes: [Note]) -> String? {
+        // Export categories first
+        let categories = CategoryRecords.instance.getCategories()
+        let backupCategories = categories.map { category -> CategoryBackupModel in
+            return CategoryBackupModel(
+                category_id: category.categoryId,
+                category_name: category.categoryName,
+                color_hex: category.colorHex,
+                sort_order: category.sortOrder
+            )
+        }
+
+        // Export notes with category information
         let backupNotes = notes.map { note -> NoteBackupModel in
             // Convert Unix timestamp (milliseconds) to ISO 8601 format
             let createdDate = Date(timeIntervalSince1970: TimeInterval(note.editedTime / 1000))
@@ -50,7 +71,8 @@ class NoteBackup {
                 tags: [],
                 archived: false,
                 pinned: false,
-                color_index: note.colorIndex
+                color_index: note.colorIndex,
+                category_id: note.categoryId > 0 ? note.categoryId : nil
             )
 
             return NoteBackupModel(
@@ -65,7 +87,7 @@ class NoteBackup {
             )
         }
 
-        let container = NoteBackupContainer(Notes: backupNotes)
+        let container = NoteBackupContainer(Categories: backupCategories, Notes: backupNotes)
 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -120,10 +142,27 @@ class NoteBackup {
 
         do {
             let container = try decoder.decode(NoteBackupContainer.self, from: jsonData)
+            let backupCategories = container.Categories
             let backupNotes = container.Notes
 
             if backupNotes.isEmpty {
                 return ImportResult(success: false, importedCount: 0, errorMessage: "No notes found in backup file")
+            }
+
+            // Import categories first
+            for backupCategory in backupCategories {
+                let category = Category()
+                category.categoryId = backupCategory.category_id
+                category.categoryName = backupCategory.category_name
+                category.colorHex = backupCategory.color_hex
+                category.sortOrder = backupCategory.sort_order
+
+                // Check if category already exists
+                if CategoryRecords.instance.getCategory(searchCategoryId: category.categoryId) == nil {
+                    _ = CategoryRecords.instance.insertCategory(category: category)
+                } else {
+                    _ = CategoryRecords.instance.updateCategory(category: category)
+                }
             }
 
             var importedCount = 0
@@ -140,15 +179,17 @@ class NoteBackup {
                     noteName: backupNote.title,
                     editedTime: modifiedTimestamp,
                     noteText: backupNote.content,
-                    colorIndex: backupNote.metadata.color_index
+                    colorIndex: backupNote.metadata.color_index,
+                    categoryId: backupNote.metadata.category_id ?? 0
                 )
 
                 // Check if note already exists
                 if NoteRecords.instance.noteExists(searchId: note.noteId) {
                     // Update existing note
                     _ = NoteRecords.instance.updateNoteText(changedNoteId: note.noteId, newText: note.noteText)
+                    _ = NoteRecords.instance.updateNoteCategory(changedNoteId: note.noteId, newCategoryId: note.categoryId)
                 } else {
-                    // Add new note (we need to add an insert method)
+                    // Add new note
                     _ = NoteRecords.instance.insertNote(note: note)
                 }
 

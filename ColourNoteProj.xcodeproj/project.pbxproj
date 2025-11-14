@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		000C08872EC5B7F200ACC394 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 000C08862EC5B7F200ACC394 /* SQLite */; };
+		0060C5A32EC79FBE008CDE44 /* BaiJamjuree-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */; };
 		008799592EC761BA002EC37E /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008799582EC761BA002EC37E /* Category.swift */; };
 		0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995C2EC76248002EC37E /* CategoryRecords.swift */; };
 		0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995E2EC76281002EC37E /* CategoriesViewController.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BaiJamjuree-Light.ttf"; sourceTree = "<group>"; };
 		008799582EC761BA002EC37E /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		0087995C2EC76248002EC37E /* CategoryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoryRecords.swift; path = Shared/Category/CategoryRecords.swift; sourceTree = "<group>"; };
 		0087995E2EC76281002EC37E /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoriesViewController.swift; path = ColourNote/CategoriesViewController.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 		F3EC00706371DEFD61CA709C /* ColourNote */ = {
 			isa = PBXGroup;
 			children = (
+				0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */,
 				0087995E2EC76281002EC37E /* CategoriesViewController.swift */,
 				A1957D5890D672FF626E21CC /* AppDelegate.swift */,
 				A9D3A7CBB00DC66BE5E50D0C /* NotesListViewController.swift */,
@@ -263,6 +266,7 @@
 				45C3B6524DA2B2D05313D493 /* Assets.xcassets in Resources */,
 				5A82903C4063D5C6F1E3A1D1 /* audiowide-regular.ttf in Resources */,
 				877D77C378538A074B18E3B7 /* colornote.db in Resources */,
+				0060C5A32EC79FBE008CDE44 /* BaiJamjuree-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -218,7 +218,7 @@ extension NotesListViewController {
             // Format the edited time as human-readable
             let date = Date(timeIntervalSince1970: TimeInterval(note.editedTime / 1000))
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "d MMM, h:mm a"
+            dateFormatter.dateFormat = "d MMM yyyy, h:mm a"
             cell.detailTextLabel?.text = dateFormatter.string(from: date)
 
             // Use category color if categoryId is set, otherwise use old colorIndex
@@ -255,39 +255,104 @@ extension NotesListViewController {
     
     
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        //ACTION to IGNORE an Activity
-    /*    let ignoreAction = UIContextualAction(style: .normal, title: "ignore",
-                                              handler: { (action, view, completionHandler) in
-            if (self.activities[indexPath.row].ignore == false) {
-                _ = ActivityRecords.instance.setActivityIgnore(changedActivityId: self.activities[indexPath.row].activityId, ignore: true)
-                self.activities[indexPath.row].ignore = true
-            } else {
-                _ = ActivityRecords.instance.setActivityIgnore(changedActivityId: self.activities[indexPath.row].activityId, ignore: false)
-                self.activities[indexPath.row].ignore = false
+        let note = filteredNotes[indexPath.row]
+
+        // Delete action
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (action, view, completionHandler) in
+            guard let self = self else {
+                completionHandler(false)
+                return
             }
-            NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
-            self.tableView.reloadData()
+
+            // Confirm deletion
+            let alert = UIAlertController(title: "Delete Note", message: "Are you sure you want to delete '\(note.noteName)'?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                completionHandler(false)
+            })
+            alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
+                _ = NoteRecords.instance.deleteNote(noteId: note.noteId)
+                // Remove the note from the arrays without reloading everything
+                if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {
+                    self.notes.remove(at: noteIndex)
+                }
+                self.applyFilters()
+                completionHandler(true)
+            })
+            self.present(alert, animated: true)
+        }
+        deleteAction.image = UIImage(systemName: "trash")
+        deleteAction.backgroundColor = .systemRed
+
+        // Share action
+        let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] (action, view, completionHandler) in
+            guard let self = self else {
+                completionHandler(false)
+                return
+            }
+
+            let textToShare = "\(note.noteName)\n\n\(note.noteText)"
+            let activityViewController = UIActivityViewController(activityItems: [textToShare], applicationActivities: nil)
+
+            // For iPad - set popover source
+            if let popoverController = activityViewController.popoverPresentationController {
+                popoverController.sourceView = tableView
+                popoverController.sourceRect = tableView.rectForRow(at: indexPath)
+            }
+
+            self.present(activityViewController, animated: true)
             completionHandler(true)
-                        
-        })
-        ignoreAction.image = UIImage(named: "medal")
-        ignoreAction.backgroundColor = Globals.EFRT_ORANGE */
-        
-        //Action to re-DOWNLOAD an Activity
-        let downloadAction = UIContextualAction(style: .normal, title: "download",
-                                              handler: { (action, view, completionHandler) in
-            // DataLoader.sharedInstance.deleteFromCache(ActivityId: self.notes[indexPath.row].noteId ) // Legacy fitness tracking
-            // DataLoader.sharedInstance.getEfrt(whenDone: self.gotNewActivity, ActivityId: self.notes[indexPath.row].noteId ) // Legacy fitness tracking
-            NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
-            self.tableView.reloadData()
+        }
+        shareAction.image = UIImage(systemName: "square.and.arrow.up")
+        shareAction.backgroundColor = .systemBlue
+
+        // Category action
+        let categoryAction = UIContextualAction(style: .normal, title: "Category") { [weak self] (action, view, completionHandler) in
+            guard let self = self else {
+                completionHandler(false)
+                return
+            }
+
+            let alert = UIAlertController(title: "Change Category", message: nil, preferredStyle: .actionSheet)
+
+            // "No Category" option
+            let noCategoryAction = UIAlertAction(title: "No Category", style: .default) { _ in
+                _ = NoteRecords.instance.updateNoteCategory(changedNoteId: note.noteId, newCategoryId: 0)
+                // Update the note in the arrays without reloading everything
+                if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {
+                    self.notes[noteIndex].categoryId = 0
+                }
+                self.applyFilters()
+            }
+            alert.addAction(noCategoryAction)
+
+            // All categories
+            for category in self.cachedCategories {
+                let action = UIAlertAction(title: category.categoryName, style: .default) { _ in
+                    _ = NoteRecords.instance.updateNoteCategory(changedNoteId: note.noteId, newCategoryId: category.categoryId)
+                    // Update the note in the arrays without reloading everything
+                    if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {
+                        self.notes[noteIndex].categoryId = category.categoryId
+                    }
+                    self.applyFilters()
+                }
+                alert.addAction(action)
+            }
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+            // For iPad - set popover source
+            if let popoverController = alert.popoverPresentationController {
+                popoverController.sourceView = tableView
+                popoverController.sourceRect = tableView.rectForRow(at: indexPath)
+            }
+
+            self.present(alert, animated: true)
             completionHandler(true)
-        })
-        downloadAction.image = UIImage(named: "download")
-        downloadAction.backgroundColor = Globals.EFRT_BLUE
-        
-        //let configuration = UISwipeActionsConfiguration(actions: [ignoreAction, downloadAction])
-        let configuration = UISwipeActionsConfiguration(actions: [downloadAction])
+        }
+        categoryAction.image = UIImage(systemName: "folder")
+        categoryAction.backgroundColor = .systemOrange
+
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, shareAction, categoryAction])
         return configuration
     }
     
