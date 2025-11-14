@@ -35,8 +35,11 @@ class NoteRecords {
     let noteId = SQLite.Expression<Int>("_id")
     let noteName = SQLite.Expression<String>("title")
     let editedTime = SQLite.Expression<Int>("modified_date")
+    let createdDate = SQLite.Expression<Int>("created_date")
     let noteText = SQLite.Expression<String>("note")
     let colorIndex = SQLite.Expression<Int>("color_index")
+    let noteType = SQLite.Expression<Int>("type")
+    let noteNoteType = SQLite.Expression<Int>("note_type")
     //let filename = Expression<String>("filename")
     //let sport = Expression<Int>("sport")
     //let duration = Expression<Int>("duration")
@@ -105,16 +108,34 @@ class NoteRecords {
         let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         let destinationPath = documents + "/" + dbName
         let exists = FileManager.default.fileExists(atPath: destinationPath)
-        guard !exists else {
-            print ("Database already exists in user folder")
-            return false
+
+        // Check if we need to replace corrupted database
+        let dbVersionKey = "DatabaseVersion"
+        let currentDBVersion = 2 // Increment this to force database replacement
+        let savedDBVersion = UserDefaults.standard.integer(forKey: dbVersionKey)
+
+        if exists && savedDBVersion < currentDBVersion {
+            // Remove old corrupted database
+            do {
+                try FileManager.default.removeItem(atPath: destinationPath)
+                print("Removed old database version \(savedDBVersion)")
+            } catch {
+                print("Error removing old database: \(error)")
+            }
         }
-        do {
-            try FileManager.default.copyItem(atPath: bundlePath, toPath: destinationPath)
-            print ("Copied initial database from Bundle")
-            return true
-        } catch {
-          print("error during file copy: \(error)")
+
+        if !FileManager.default.fileExists(atPath: destinationPath) {
+            do {
+                try FileManager.default.copyItem(atPath: bundlePath, toPath: destinationPath)
+                UserDefaults.standard.set(currentDBVersion, forKey: dbVersionKey)
+                print("Copied database from Bundle (version \(currentDBVersion))")
+                return true
+            } catch {
+                print("error during file copy: \(error)")
+                return false
+            }
+        } else {
+            print("Database already exists in user folder")
             return false
         }
     }
@@ -128,23 +149,30 @@ class NoteRecords {
                 .appendingPathComponent("colornote.db")
                 //.path
             let fileURLString = fileURL.path
-         
+
          */
-            
+
             let fileURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
                     .appendingPathComponent("colornote.db")
                     .path
-        
+
             print("attempting to open database at \(fileURL)")
 
-        
+
      /*   if sqlite3_open_v2(fileURL.path, &db, SQLITE_OPEN_READWRITE, nil) == SQLITE_OK {
             return
         } */
-     
-            
+
+
         try db = Connection(fileURL)
- 
+
+        // Register LOCALIZED collation as a fallback (even though schema doesn't use it)
+        // This prevents errors if SQLite.swift cached old schema information
+        try? db!.createCollation("LOCALIZED") { (lhs, rhs) -> ComparisonResult in
+            return lhs.localizedCaseInsensitiveCompare(rhs)
+        }
+        print("Database opened successfully")
+
         } catch {
             db = nil
             print (error)
@@ -537,20 +565,22 @@ class NoteRecords {
 
             if self.noteExists(searchId : changedNoteId) {
                 do {
-                    let existingNote = self.notes.filter(self.noteId == changedNoteId)
                     let saveTime = Int(Date().timeIntervalSince1970)*1000
 
-                    let dbUpdate = existingNote.update(self.noteText <- newText, self.editedTime <- saveTime)
-                    let id = try self.db!.run(dbUpdate)
+                    // Use raw SQL to avoid collation issues
+                    let sql = """
+                    UPDATE notes SET note = ?, modified_date = ? WHERE _id = ?
+                    """
+                    try self.db!.run(sql, newText, saveTime, changedNoteId)
                   /*  DispatchQueue.main.async {
                         NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
                     }
                    */
                     print ("Updated Note in local DB with ID \(changedNoteId)")
-                    result = id
+                    result = changedNoteId
                     // return //id
                 } catch {
-                    print("update failed in updateNoteText")
+                    print("update failed in updateNoteText: \(error)")
                     // return
                 }
             } else {
@@ -563,28 +593,86 @@ class NoteRecords {
 
     func insertNote(note: Note) -> Int64 {
         var result: Int64 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                // Use raw SQL to bypass COLLATE LOCALIZED issue
+                let sql = """
+                INSERT INTO notes (_id, title, created_date, modified_date, note, color_index, type, note_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """
+                try self.db!.run(sql, note.noteId, note.noteName, note.editedTime, note.editedTime, note.noteText, note.colorIndex, 0, 0)
+                print("Inserted Note with ID \(note.noteId)")
+                result = Int64(note.noteId)
+            } catch {
+                print("Insert failed in NoteRecords.insertNote: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //insertNote
+
+    func updateNoteTitle(changedNoteId: Int, newTitle: String) -> Int {
+        var result: Int = -1
         concurrentDBQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else {
                 return
             }
 
-            do {
-                let insert = self.notes.insert(
-                    self.noteId <- note.noteId,
-                    self.noteName <- note.noteName,
-                    self.editedTime <- note.editedTime,
-                    self.noteText <- note.noteText,
-                    self.colorIndex <- note.colorIndex
-                )
-                let id = try self.db!.run(insert)
-                print("Inserted Note with ID \(note.noteId)")
-                result = id
-            } catch {
-                print("Insert failed in NoteRecords.insertNote: \(error)")
+            if self.noteExists(searchId: changedNoteId) {
+                do {
+                    let saveTime = Int(Date().timeIntervalSince1970) * 1000
+
+                    // Use raw SQL to avoid collation issues
+                    let sql = """
+                    UPDATE notes SET title = ?, modified_date = ? WHERE _id = ?
+                    """
+                    try self.db!.run(sql, newTitle, saveTime, changedNoteId)
+                    print("Updated Note title in local DB with ID \(changedNoteId)")
+                    result = changedNoteId
+                } catch {
+                    print("Update failed in updateNoteTitle: \(error)")
+                }
+            } else {
+                print("Can't find Note to update in NoteRecords.updateNoteTitle")
             }
         }
         return result
-    } //insertNote
+    } //updateNoteTitle
+
+    func deleteNote(noteId: Int) -> Bool {
+        var result = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                // Use raw SQL to avoid collation issues
+                let sql = "DELETE FROM notes WHERE _id = ?"
+                try self.db!.run(sql, noteId)
+                print("Deleted Note with ID \(noteId)")
+                result = true
+            } catch {
+                print("Delete failed in NoteRecords.deleteNote: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //deleteNote
     
     
     /*

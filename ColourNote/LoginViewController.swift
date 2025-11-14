@@ -22,9 +22,18 @@ class LoginViewController: UIViewController {
     
     @IBAction func signInButtonTapped(_ sender: Any) {
         //Get Values from Text Fields
-        // For notes app, just mark as registered and dismiss
+        // For notes app, just mark as registered and switch to home screen
         Settings.setRegistered(registered: true)
-        self.dismiss(animated: true, completion: nil)
+
+        // Switch to the home view controller (iOS 12 compatible)
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let homeViewController = storyboard.instantiateViewController(withIdentifier: "ColorNoteHomeID") as? UIViewController {
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+               let window = appDelegate.window {
+                window.rootViewController = homeViewController
+                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
+            }
+        }
 
      /*   // Legacy fitness tracking login code
         userExists (exists: true, message: "XXX Bypass above Code ")

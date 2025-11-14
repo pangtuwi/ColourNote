@@ -46,10 +46,14 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         refreshControl!.attributedTitle = NSAttributedString(string: "Pulll to refresh")
         refreshControl!.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
 
-        // Add hamburger menu button to navigation bar
+        // Add hamburger menu button to navigation bar (left side)
         let menuButton = UIBarButtonItem(title: "≡", style: .plain, target: self, action: #selector(menuButtonTapped))
         menuButton.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 28)], for: .normal)
-        navigationItem.rightBarButtonItem = menuButton
+        navigationItem.leftBarButtonItem = menuButton
+
+        // Add new note button to navigation bar (right side)
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNoteButtonTapped))
+        navigationItem.rightBarButtonItem = addButton
 
         //updateTrainingList()
         updateNotesList()
@@ -58,6 +62,8 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super .viewDidAppear(true)
+        // Refresh the list when returning from note detail view
+        updateNotesList()
     } //viewDidAppear
     
     func updateNotesList() -> Void {
@@ -274,10 +280,41 @@ extension NotesListViewController {
 
         // For iPad support
         if let popoverController = alertController.popoverPresentationController {
-            popoverController.barButtonItem = navigationItem.rightBarButtonItem
+            popoverController.barButtonItem = navigationItem.leftBarButtonItem
         }
 
         present(alertController, animated: true)
+    }
+
+    @objc func addNoteButtonTapped() {
+        // Generate a new unique note ID (using current timestamp in milliseconds)
+        let newNoteId = Int(Date().timeIntervalSince1970 * 1000)
+        let newTimestamp = newNoteId
+
+        // Create a new note
+        let newNote = Note(
+            noteId: newNoteId,
+            noteName: "New Note",
+            editedTime: newTimestamp,
+            noteText: "",
+            colorIndex: 0
+        )
+
+        // Insert the note into the database
+        _ = NoteRecords.instance.insertNote(note: newNote)
+
+        // Set the global note ID to display
+        Globals.sharedInstance.noteIDToDisplay = newNoteId
+
+        // Open the note detail view
+        let noteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteViewController")
+        noteViewController?.modalPresentationStyle = .fullScreen
+        noteViewController?.modalTransitionStyle = .crossDissolve
+
+        present(noteViewController!, animated: true, completion: nil)
+
+        // Refresh the list when returning
+        updateNotesList()
     }
 
     func performBackup() {
