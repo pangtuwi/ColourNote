@@ -47,8 +47,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // registerForPushNotifications()
 
         // Check if launched from notification
-        let notificationOption = launchOptions?[.remoteNotification]
-        
+        _ = launchOptions?[.remoteNotification]
+
         //Handle notifications when sent while app not running or in background
        
         /*if let notification = notificationOption as? [String: AnyObject],
@@ -168,7 +168,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //ToDo: Add message for when Server not available
         if newActivityList.count > 0 {
             //print ("Got Activity List with \(newActivityList.count) activities")
-            for newActivityId in newActivityList {
+            for _ in newActivityList {
                 // DataLoader.sharedInstance.getEfrt(whenDone: gotNewActivity, ActivityId: newActivityId) // Legacy fitness tracking
             }
         }

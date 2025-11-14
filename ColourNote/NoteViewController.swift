@@ -20,9 +20,9 @@ class NoteViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
-        
 
-        if let note = NoteRecords.instance.getNote(searchNoteId:  Globals.sharedInstance.noteIDToDisplay) ?? NoteRecords.instance.getLatestNote() {
+
+        if NoteRecords.instance.getNote(searchNoteId:  Globals.sharedInstance.noteIDToDisplay) ?? NoteRecords.instance.getLatestNote() != nil {
         }
     }
     

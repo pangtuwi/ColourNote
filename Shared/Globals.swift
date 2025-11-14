@@ -21,7 +21,7 @@ class Globals{
     static let EFRT_ORANGE = UIColor(red: 240/255, green: 176/255, blue: 66/255, alpha: 1)
     static let EFRT_LTGREY = UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1)
     static let EFRT_DKGREY = UIColor(red: 20/255, green: 20/255, blue: 20/255, alpha: 1)
-    static let EFRT_BKGREY = UIColor.groupTableViewBackground
+    static let EFRT_BKGREY = UIColor.systemGroupedBackground
     
     //Use screen capture from Android Colornote and....
     //https://www.ralfebert.de/ios-examples/uikit/swift-uicolor-picker/

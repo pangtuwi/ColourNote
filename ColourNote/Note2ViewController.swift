@@ -11,7 +11,7 @@ import UIKit
 class Note2ViewController: UIViewController {
     
     @objc func addTapped(_ sender: UIBarButtonItem) {
-         print("Test Right button", self.navigationItem.title)
+         print("Test Right button", self.navigationItem.title ?? "No title")
      }
    
     override func viewDidLoad() {

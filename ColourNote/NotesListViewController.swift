@@ -525,7 +525,7 @@ extension NotesListViewController {
     }
 
     func performImport() {
-        let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.json"], in: .import)
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.json])
         documentPicker.delegate = self
         documentPicker.allowsMultipleSelection = false
         present(documentPicker, animated: true)

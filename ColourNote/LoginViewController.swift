@@ -54,7 +54,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
     @IBAction func importButtonTapped(_ sender: Any) {
         // Show document picker to import JSON backup
-        let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.json"], in: .import)
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.json])
         documentPicker.delegate = self
         documentPicker.allowsMultipleSelection = false
         present(documentPicker, animated: true)
@@ -191,12 +191,11 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
     func navigateToHome() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        if let homeViewController = storyboard.instantiateViewController(withIdentifier: "ColorNoteHomeID") as? UIViewController {
-            if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
-               let window = appDelegate.window {
-                window.rootViewController = homeViewController
-                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
-            }
+        let homeViewController = storyboard.instantiateViewController(withIdentifier: "ColorNoteHomeID")
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
+           let window = appDelegate.window {
+            window.rootViewController = homeViewController
+            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
         }
     }
 
