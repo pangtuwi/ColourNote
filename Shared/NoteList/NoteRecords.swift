@@ -940,8 +940,9 @@ class NoteRecords {
             do {
                 // Use raw SQL to delete all notes where active_state = 1
                 let sql = "DELETE FROM notes WHERE active_state = 1"
-                let statement = try self.db!.run(sql)
-                deletedCount = statement
+                try self.db!.run(sql)
+                // Get the number of changes (rows deleted)
+                deletedCount = self.db!.changes
                 print("Emptied trash: permanently deleted \(deletedCount) notes")
             } catch {
                 print("Empty trash failed in NoteRecords.emptyTrash: \(error)")

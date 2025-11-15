@@ -264,21 +264,21 @@ extension NotesListViewController {
                 return
             }
 
-            // Confirm deletion - note goes to trash, not permanently deleted
-            let alert = UIAlertController(title: "Move to Trash", message: "'\(note.noteName)' will be moved to trash. You can restore it later from the Trash.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                completionHandler(false)
-            })
-            alert.addAction(UIAlertAction(title: "Move to Trash", style: .destructive) { _ in
-                _ = NoteRecords.instance.softDeleteNote(noteId: note.noteId)
-                // Remove the note from the arrays without reloading everything
-                if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {
-                    self.notes.remove(at: noteIndex)
-                }
-                self.applyFilters()
-                completionHandler(true)
-            })
-            self.present(alert, animated: true)
+            // Move to trash immediately without confirmation
+            _ = NoteRecords.instance.softDeleteNote(noteId: note.noteId)
+
+            // Remove the note from the arrays without reloading everything
+            if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {
+                self.notes.remove(at: noteIndex)
+            }
+            self.applyFilters()
+
+            completionHandler(true)
+
+            // Show brief notification on main thread after a short delay to allow swipe UI to dismiss
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.showToast(message: "Note moved to Trash")
+            }
         }
         deleteAction.image = UIImage(systemName: "trash")
         deleteAction.backgroundColor = .systemRed
@@ -432,6 +432,62 @@ extension NotesListViewController {
 
         // Return black for light backgrounds, white for dark backgrounds
         return luminance > 0.5 ? .black : .white
+    }
+
+    func showToast(message: String, duration: TimeInterval = 2.0) {
+        // Ensure we're on the main thread
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async {
+                self.showToast(message: message, duration: duration)
+            }
+            return
+        }
+
+        // Create toast label
+        let toastLabel = UILabel()
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastLabel.textColor = .white
+        toastLabel.textAlignment = .center
+        toastLabel.font = UIFont.systemFont(ofSize: 15)
+        toastLabel.text = message
+        toastLabel.alpha = 0.0
+        toastLabel.layer.cornerRadius = 10
+        toastLabel.clipsToBounds = true
+        toastLabel.numberOfLines = 0
+
+        // Size the label
+        let maxSize = CGSize(width: view.bounds.width - 40, height: 100)
+        let expectedSize = toastLabel.sizeThatFits(maxSize)
+        let toastWidth = expectedSize.width + 20
+        let toastHeight = expectedSize.height + 20
+
+        // Position above tab bar using safe area
+        let bottomPadding = view.safeAreaInsets.bottom + 20
+        toastLabel.frame = CGRect(
+            x: (view.bounds.width - toastWidth) / 2,
+            y: view.bounds.height - toastHeight - bottomPadding,
+            width: toastWidth,
+            height: toastHeight
+        )
+
+        // Add to the window to ensure it appears above everything
+        if let window = view.window {
+            window.addSubview(toastLabel)
+        } else {
+            view.addSubview(toastLabel)
+        }
+
+        // Animate in
+        UIView.animate(withDuration: 0.3, animations: {
+            toastLabel.alpha = 1.0
+        }) { _ in
+            // Animate out after duration
+            UIView.animate(withDuration: 0.3, delay: duration, options: .curveEaseOut, animations: {
+                toastLabel.alpha = 0.0
+            }) { _ in
+                toastLabel.removeFromSuperview()
+            }
+        }
     }
 
     @objc func menuButtonTapped() {

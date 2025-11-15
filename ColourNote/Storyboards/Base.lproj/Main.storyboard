@@ -66,21 +66,21 @@
                         </view>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="ActivityCell" textLabel="WZi-EG-7og" detailTextLabel="2Md-Gq-07M" style="IBUITableViewCellStyleSubtitle" id="SvE-Wx-f0E">
-                                <rect key="frame" x="0.0" y="94" width="414" height="56"/>
+                                <rect key="frame" x="0.0" y="94" width="414" height="60"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="SvE-Wx-f0E" id="HVD-K3-bg3">
-                                    <rect key="frame" x="0.0" y="0.0" width="383.5" height="56"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="383.5" height="60"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="WZi-EG-7og">
-                                            <rect key="frame" x="20" y="7" width="34" height="21.5"/>
+                                            <rect key="frame" x="20" y="8" width="34" height="21.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" name="BaiJamjuree-Light" family="Bai Jamjuree Light" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="2Md-Gq-07M">
-                                            <rect key="frame" x="20" y="30.5" width="46.5" height="16.5"/>
+                                            <rect key="frame" x="20" y="32.5" width="46.5" height="16.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" name="BaiJamjuree-Light" family="Bai Jamjuree Light" pointSize="13"/>
                                             <nil key="textColor"/>
@@ -355,6 +355,7 @@
                             <constraint firstAttribute="trailing" secondItem="qpS-rQ-KMr" secondAttribute="trailing" id="0HK-oy-qZk"/>
                             <constraint firstItem="qpS-rQ-KMr" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="3Qa-x7-uZj"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="bottom" secondItem="BRL-3j-bfH" secondAttribute="bottom" constant="5" id="5YQ-wh-Nzq"/>
+                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="qpS-rQ-KMr" secondAttribute="bottom" constant="8" id="9aF-wN-ckc"/>
                             <constraint firstAttribute="trailing" secondItem="qN5-N0-1NX" secondAttribute="trailing" id="Aqf-Rl-YtZ"/>
                             <constraint firstItem="qpS-rQ-KMr" firstAttribute="leading" secondItem="gjg-ai-Z5a" secondAttribute="trailing" constant="30" id="Asz-W4-Mai"/>
                             <constraint firstItem="qpS-rQ-KMr" firstAttribute="leading" secondItem="gjg-ai-Z5a" secondAttribute="trailing" constant="30" id="CYJ-mw-gPu"/>
@@ -366,13 +367,11 @@
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="trailing" secondItem="6V1-Y5-buY" secondAttribute="trailing" constant="5" id="Vls-gb-qHI"/>
                             <constraint firstItem="gjg-ai-Z5a" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="bki-qc-0df"/>
                             <constraint firstItem="qN5-N0-1NX" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="40" id="cYV-ra-idu"/>
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="qpS-rQ-KMr" secondAttribute="bottom" constant="3" id="fal-sa-x6f"/>
                             <constraint firstItem="BRL-3j-bfH" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" constant="5" id="gQO-QX-76w"/>
                             <constraint firstItem="BRL-3j-bfH" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="82" id="gfo-tB-3mK"/>
                             <constraint firstAttribute="trailing" secondItem="BRL-3j-bfH" secondAttribute="trailing" constant="5" id="k8B-rs-lDk"/>
                             <constraint firstItem="gjg-ai-Z5a" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="oTi-XZ-slS"/>
                             <constraint firstItem="qpS-rQ-KMr" firstAttribute="leading" secondItem="gjg-ai-Z5a" secondAttribute="trailing" constant="30" id="uNB-NI-B47"/>
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="qpS-rQ-KMr" secondAttribute="bottom" constant="8" symbolic="YES" id="wpF-27-kyB"/>
                         </constraints>
                     </view>
                     <connections>
