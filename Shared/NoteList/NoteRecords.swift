@@ -41,6 +41,8 @@ class NoteRecords {
     let categoryId = SQLite.Expression<Int>("category_id")
     let noteType = SQLite.Expression<Int>("type")
     let noteNoteType = SQLite.Expression<Int>("note_type")
+    let activeState = SQLite.Expression<Int>("active_state")
+    let deletedDate = SQLite.Expression<Int?>("deleted_date")
     //let filename = Expression<String>("filename")
     //let sport = Expression<Int>("sport")
     //let duration = Expression<Int>("duration")
@@ -200,7 +202,7 @@ class NoteRecords {
         }
 
         let dbSchemaVersionKey = "DatabaseSchemaVersion"
-        let currentSchemaVersion = 3 // Increment when adding new migrations
+        let currentSchemaVersion = 4 // Increment when adding new migrations
         let savedSchemaVersion = UserDefaults.standard.integer(forKey: dbSchemaVersionKey)
 
         print("=== Database Migration Check ===")
@@ -244,6 +246,23 @@ class NoteRecords {
                 // Update schema version
                 UserDefaults.standard.set(3, forKey: dbSchemaVersionKey)
                 print("Migration to version 3 completed")
+            }
+
+            if savedSchemaVersion < 4 {
+                // Migration to version 4: Add soft delete support
+                print("Running migration to version 4: Adding soft delete support")
+
+                do {
+                    // Add deleted_date column to notes table if it doesn't exist
+                    try db.execute("ALTER TABLE notes ADD COLUMN deleted_date INTEGER DEFAULT NULL")
+                    print("Added deleted_date column to notes table")
+                } catch {
+                    print("deleted_date column may already exist or error: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(4, forKey: dbSchemaVersionKey)
+                print("Migration to version 4 completed")
             }
         } else {
             print("Database schema is up to date")
@@ -313,14 +332,17 @@ class NoteRecords {
         var notez = [Note]()
 
             do {
-                for note in try self.db!.prepare(self.notes) {
+                // Only get active notes (not deleted)
+                for note in try self.db!.prepare(self.notes.filter(self.activeState == 0)) {
                         notez.append(Note(
                         noteId : note[self.noteId],
                         noteName : note[self.noteName],
                         editedTime: note[self.editedTime],
                         noteText: note[self.noteText],
                         colorIndex: note[self.colorIndex],
-                        categoryId: note[self.categoryId]))
+                        categoryId: note[self.categoryId],
+                        isDeleted: false,
+                        deletedDate: nil))
 
                 }
 
@@ -331,8 +353,62 @@ class NoteRecords {
         return notez
 
     } //getActivities
-    
-    
+
+    func getDeletedNotes() -> [Note] {
+        var deletedNotez = [Note]()
+
+            do {
+                // Only get deleted notes (active_state = 1), ordered by deleted_date descending
+                for note in try self.db!.prepare(self.notes.filter(self.activeState == 1).order(self.deletedDate.desc)) {
+                        deletedNotez.append(Note(
+                        noteId : note[self.noteId],
+                        noteName : note[self.noteName],
+                        editedTime: note[self.editedTime],
+                        noteText: note[self.noteText],
+                        colorIndex: note[self.colorIndex],
+                        categoryId: note[self.categoryId],
+                        isDeleted: true,
+                        deletedDate: note[self.deletedDate]))
+
+                }
+
+            } catch {
+                print("Select failed in NoteRecords.getDeletedNotes() ")
+            }
+        print ("got a total of \(deletedNotez.count) deleted notes")
+        return deletedNotez
+
+    } //getDeletedNotes
+
+    func getAllNotes() -> [Note] {
+        // Get ALL notes (both active and deleted) for backup purposes
+        var allNotez = [Note]()
+
+            do {
+                // Get all notes without filtering by active_state
+                for note in try self.db!.prepare(self.notes) {
+                        let isDeleted = (note[self.activeState] == 1)
+                        allNotez.append(Note(
+                        noteId : note[self.noteId],
+                        noteName : note[self.noteName],
+                        editedTime: note[self.editedTime],
+                        noteText: note[self.noteText],
+                        colorIndex: note[self.colorIndex],
+                        categoryId: note[self.categoryId],
+                        isDeleted: isDeleted,
+                        deletedDate: note[self.deletedDate]))
+
+                }
+
+            } catch {
+                print("Select failed in NoteRecords.getAllNotes() ")
+            }
+        print ("got a total of \(allNotez.count) notes (including deleted)")
+        return allNotez
+
+    } //getAllNotes
+
+
   /*  func getActivitiesIgnore() -> [Activity] {
         //Same as GetActivities except leaves out "ignore"
         var activities = [Activity]()
@@ -768,7 +844,63 @@ class NoteRecords {
         return result
     } //updateNoteCategory
 
-    func deleteNote(noteId: Int) -> Bool {
+    // Soft delete: Mark note as deleted without removing from database
+    func softDeleteNote(noteId: Int) -> Bool {
+        var result = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                let deletedTime = Int(Date().timeIntervalSince1970) * 1000
+                // Use raw SQL to avoid collation issues
+                let sql = "UPDATE notes SET active_state = 1, deleted_date = ? WHERE _id = ?"
+                try self.db!.run(sql, deletedTime, noteId)
+                print("Soft deleted Note with ID \(noteId)")
+                result = true
+            } catch {
+                print("Soft delete failed in NoteRecords.softDeleteNote: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //softDeleteNote
+
+    // Restore a deleted note
+    func undeleteNote(noteId: Int) -> Bool {
+        var result = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                // Use raw SQL to avoid collation issues
+                let sql = "UPDATE notes SET active_state = 0, deleted_date = NULL WHERE _id = ?"
+                try self.db!.run(sql, noteId)
+                print("Restored Note with ID \(noteId)")
+                result = true
+            } catch {
+                print("Restore failed in NoteRecords.undeleteNote: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //undeleteNote
+
+    // Permanently delete a note (hard delete)
+    func permanentlyDeleteNote(noteId: Int) -> Bool {
         var result = false
         let semaphore = DispatchSemaphore(value: 0)
 
@@ -782,17 +914,84 @@ class NoteRecords {
                 // Use raw SQL to avoid collation issues
                 let sql = "DELETE FROM notes WHERE _id = ?"
                 try self.db!.run(sql, noteId)
-                print("Deleted Note with ID \(noteId)")
+                print("Permanently deleted Note with ID \(noteId)")
                 result = true
             } catch {
-                print("Delete failed in NoteRecords.deleteNote: \(error)")
+                print("Permanent delete failed in NoteRecords.permanentlyDeleteNote: \(error)")
             }
             semaphore.signal()
         }
 
         semaphore.wait()
         return result
+    } //permanentlyDeleteNote
+
+    // Empty trash - permanently delete all soft-deleted notes
+    func emptyTrash() -> Int {
+        var deletedCount = 0
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                // Use raw SQL to delete all notes where active_state = 1
+                let sql = "DELETE FROM notes WHERE active_state = 1"
+                let statement = try self.db!.run(sql)
+                deletedCount = statement
+                print("Emptied trash: permanently deleted \(deletedCount) notes")
+            } catch {
+                print("Empty trash failed in NoteRecords.emptyTrash: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return deletedCount
+    } //emptyTrash
+
+    // Legacy method for compatibility - redirects to soft delete
+    func deleteNote(noteId: Int) -> Bool {
+        return softDeleteNote(noteId: noteId)
     } //deleteNote
+
+    // Set deletion status on a note (for import/restore)
+    func setNoteDeletionStatus(noteId: Int, isDeleted: Bool, deletedDate: Int?) -> Bool {
+        var result = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                if isDeleted {
+                    // Mark as deleted
+                    let deletedTime = deletedDate ?? Int(Date().timeIntervalSince1970) * 1000
+                    let sql = "UPDATE notes SET active_state = 1, deleted_date = ? WHERE _id = ?"
+                    try self.db!.run(sql, deletedTime, noteId)
+                    print("Set Note \(noteId) as deleted")
+                } else {
+                    // Mark as active
+                    let sql = "UPDATE notes SET active_state = 0, deleted_date = NULL WHERE _id = ?"
+                    try self.db!.run(sql, noteId)
+                    print("Set Note \(noteId) as active")
+                }
+                result = true
+            } catch {
+                print("Failed to set deletion status in NoteRecords.setNoteDeletionStatus: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //setNoteDeletionStatus
     
     
     /*

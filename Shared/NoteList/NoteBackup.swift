@@ -24,6 +24,8 @@ struct NoteMetadata: Codable {
     let pinned: Bool
     let color_index: Int
     let category_id: Int?
+    let deleted: Bool
+    let deleted_date: String?
 }
 
 struct CategoryBackupModel: Codable {
@@ -58,7 +60,7 @@ class NoteBackup {
             )
         }
 
-        // Export notes with category information
+        // Export notes with category and deletion information
         let backupNotes = notes.map { note -> NoteBackupModel in
             // Convert Unix timestamp (milliseconds) to ISO 8601 format
             let createdDate = Date(timeIntervalSince1970: TimeInterval(note.editedTime / 1000))
@@ -67,12 +69,21 @@ class NoteBackup {
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withInternetDateTime]
 
+            // Format deleted date if present
+            var deletedDateString: String? = nil
+            if let deletedTimestamp = note.deletedDate {
+                let deletedDate = Date(timeIntervalSince1970: TimeInterval(deletedTimestamp / 1000))
+                deletedDateString = formatter.string(from: deletedDate)
+            }
+
             let metadata = NoteMetadata(
                 tags: [],
                 archived: false,
                 pinned: false,
                 color_index: note.colorIndex,
-                category_id: note.categoryId > 0 ? note.categoryId : nil
+                category_id: note.categoryId > 0 ? note.categoryId : nil,
+                deleted: note.isDeleted,
+                deleted_date: deletedDateString
             )
 
             return NoteBackupModel(
@@ -122,7 +133,8 @@ class NoteBackup {
     }
 
     static func exportAllNotes() -> URL? {
-        let notes = NoteRecords.instance.getNotes()
+        // Get ALL notes including deleted ones
+        let notes = NoteRecords.instance.getAllNotes()
 
         guard let jsonString = exportNotesToJSON(notes: notes) else {
             print("Failed to convert notes to JSON")
@@ -173,6 +185,14 @@ class NoteBackup {
                 let modifiedDate = formatter.date(from: backupNote.timestamp_modified) ?? Date()
                 let modifiedTimestamp = Int(modifiedDate.timeIntervalSince1970 * 1000)
 
+                // Parse deleted date if present
+                var deletedTimestamp: Int? = nil
+                if let deletedDateString = backupNote.metadata.deleted_date {
+                    if let deletedDate = formatter.date(from: deletedDateString) {
+                        deletedTimestamp = Int(deletedDate.timeIntervalSince1970 * 1000)
+                    }
+                }
+
                 // Create Note object
                 let note = Note(
                     noteId: Int(backupNote.id) ?? 0,
@@ -180,7 +200,9 @@ class NoteBackup {
                     editedTime: modifiedTimestamp,
                     noteText: backupNote.content,
                     colorIndex: backupNote.metadata.color_index,
-                    categoryId: backupNote.metadata.category_id ?? 0
+                    categoryId: backupNote.metadata.category_id ?? 0,
+                    isDeleted: backupNote.metadata.deleted,
+                    deletedDate: deletedTimestamp
                 )
 
                 // Check if note already exists
@@ -188,9 +210,14 @@ class NoteBackup {
                     // Update existing note
                     _ = NoteRecords.instance.updateNoteText(changedNoteId: note.noteId, newText: note.noteText)
                     _ = NoteRecords.instance.updateNoteCategory(changedNoteId: note.noteId, newCategoryId: note.categoryId)
+                    _ = NoteRecords.instance.setNoteDeletionStatus(noteId: note.noteId, isDeleted: note.isDeleted, deletedDate: deletedTimestamp)
                 } else {
                     // Add new note
                     _ = NoteRecords.instance.insertNote(note: note)
+                    // Set deletion status if needed
+                    if note.isDeleted {
+                        _ = NoteRecords.instance.setNoteDeletionStatus(noteId: note.noteId, isDeleted: true, deletedDate: deletedTimestamp)
+                    }
                 }
 
                 importedCount += 1

@@ -257,20 +257,20 @@ extension NotesListViewController {
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let note = filteredNotes[indexPath.row]
 
-        // Delete action
+        // Delete action (moves to trash)
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (action, view, completionHandler) in
             guard let self = self else {
                 completionHandler(false)
                 return
             }
 
-            // Confirm deletion
-            let alert = UIAlertController(title: "Delete Note", message: "Are you sure you want to delete '\(note.noteName)'?", preferredStyle: .alert)
+            // Confirm deletion - note goes to trash, not permanently deleted
+            let alert = UIAlertController(title: "Move to Trash", message: "'\(note.noteName)' will be moved to trash. You can restore it later from the Trash.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
                 completionHandler(false)
             })
-            alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
-                _ = NoteRecords.instance.deleteNote(noteId: note.noteId)
+            alert.addAction(UIAlertAction(title: "Move to Trash", style: .destructive) { _ in
+                _ = NoteRecords.instance.softDeleteNote(noteId: note.noteId)
                 // Remove the note from the arrays without reloading everything
                 if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {
                     self.notes.remove(at: noteIndex)
@@ -442,6 +442,11 @@ extension NotesListViewController {
             self?.showCategories()
         }
 
+        // Trash action
+        let trashAction = UIAlertAction(title: "Trash", style: .default) { [weak self] _ in
+            self?.showTrash()
+        }
+
         // Backup action
         let backupAction = UIAlertAction(title: "Backup", style: .default) { [weak self] _ in
             self?.performBackup()
@@ -461,6 +466,7 @@ extension NotesListViewController {
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
 
         alertController.addAction(categoriesAction)
+        alertController.addAction(trashAction)
         alertController.addAction(backupAction)
         alertController.addAction(importAction)
         alertController.addAction(aboutAction)
@@ -534,6 +540,11 @@ extension NotesListViewController {
     func showCategories() {
         let categoriesVC = CategoriesViewController(style: .insetGrouped)
         navigationController?.pushViewController(categoriesVC, animated: true)
+    }
+
+    func showTrash() {
+        let trashVC = TrashViewController(style: .plain)
+        navigationController?.pushViewController(trashVC, animated: true)
     }
 
     func showAbout() {
