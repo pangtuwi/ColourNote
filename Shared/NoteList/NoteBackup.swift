@@ -132,9 +132,19 @@ class NoteBackup {
         }
     }
 
-    static func exportAllNotes() -> URL? {
+    static func exportAllNotes(skipProtected: Bool = false) -> URL? {
         // Get ALL notes including deleted ones
-        let notes = NoteRecords.instance.getAllNotes()
+        var notes = NoteRecords.instance.getAllNotes()
+
+        if skipProtected {
+            // Filter out notes in protected categories
+            notes = notes.filter { note in
+                if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
+                    return !category.isProtected
+                }
+                return true // Include notes without categories
+            }
+        }
 
         guard let jsonString = exportNotesToJSON(notes: notes) else {
             print("Failed to convert notes to JSON")

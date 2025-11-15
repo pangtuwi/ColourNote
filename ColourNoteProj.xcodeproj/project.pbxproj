@@ -10,6 +10,8 @@
 		000C08872EC5B7F200ACC394 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 000C08862EC5B7F200ACC394 /* SQLite */; };
 		0060C5A32EC79FBE008CDE44 /* BaiJamjuree-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */; };
 		0060C5A52EC8E4B5008CDE44 /* TrashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */; };
+		0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */; };
+		0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */; };
 		008799592EC761BA002EC37E /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008799582EC761BA002EC37E /* Category.swift */; };
 		0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995C2EC76248002EC37E /* CategoryRecords.swift */; };
 		0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995E2EC76281002EC37E /* CategoriesViewController.swift */; };
@@ -40,6 +42,8 @@
 /* Begin PBXFileReference section */
 		0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BaiJamjuree-Light.ttf"; sourceTree = "<group>"; };
 		0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrashViewController.swift; path = ColourNote/TrashViewController.swift; sourceTree = "<group>"; };
+		0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeViewController.swift; path = ColourNote/PasscodeViewController.swift; sourceTree = "<group>"; };
+		0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeManager.swift; path = Shared/Security/PasscodeManager.swift; sourceTree = "<group>"; };
 		008799582EC761BA002EC37E /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		0087995C2EC76248002EC37E /* CategoryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoryRecords.swift; path = Shared/Category/CategoryRecords.swift; sourceTree = "<group>"; };
 		0087995E2EC76281002EC37E /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoriesViewController.swift; path = ColourNote/CategoriesViewController.swift; sourceTree = "<group>"; };
@@ -186,6 +190,8 @@
 		F3EC00706371DEFD61CA709C /* ColourNote */ = {
 			isa = PBXGroup;
 			children = (
+				0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */,
+				0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */,
 				0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */,
 				0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */,
 				0087995E2EC76281002EC37E /* CategoriesViewController.swift */,
@@ -284,7 +290,9 @@
 				B7A62156D1044269201E043A /* AppDelegate.swift in Sources */,
 				0060C5A52EC8E4B5008CDE44 /* TrashViewController.swift in Sources */,
 				9834C92EC49252303E75C06F /* NotesListViewController.swift in Sources */,
+				0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */,
 				2B35C823B134674D76C0AB57 /* NoteViewController.swift in Sources */,
+				0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */,
 				C8D90AFF02FD4170888FA092 /* NoteDetailViewController.swift in Sources */,
 				DC34C3CAD70C890372485A23 /* Note2ViewController.swift in Sources */,
 				0A2519E7EE40271944833A9E /* LinedTextView.swift in Sources */,

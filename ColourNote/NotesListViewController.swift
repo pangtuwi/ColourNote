@@ -212,7 +212,13 @@ extension NotesListViewController {
            /* if (activity.tss == -1) {
                 cell.textLabel?.text = "...pending download"
             } else { */
-            cell.textLabel?.text = "\(note.noteName)"
+
+            // Add lock icon if category is protected
+            var displayText = note.noteName
+            if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId), category.isProtected {
+                displayText = "🔒 \(note.noteName)"
+            }
+            cell.textLabel?.text = displayText
            // }
 
             // Format the edited time as human-readable
@@ -242,15 +248,48 @@ extension NotesListViewController {
     
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        Globals.sharedInstance.activityIDToDisplay = activities[indexPath.row].activityId
-        Globals.sharedInstance.noteIDToDisplay = filteredNotes[indexPath.row].noteId
-        //tabBarController!.selectedIndex = 2
+        let note = filteredNotes[indexPath.row]
+
+        // Check if note's category is protected
+        if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId), category.isProtected {
+            // Category is protected - check if already unlocked
+            if !PasscodeManager.shared.isCategoryUnlocked(note.categoryId) {
+                // Need to enter passcode
+                showPasscodeEntry(for: note.categoryId) { [weak self] success in
+                    if success {
+                        self?.openNote(note)
+                    }
+                }
+                tableView.deselectRow(at: indexPath, animated: true)
+                return
+            }
+        }
+
+        // Not protected or already unlocked - open directly
+        openNote(note)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    func openNote(_ note: Note) {
+        Globals.sharedInstance.noteIDToDisplay = note.noteId
         let NoteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteViewController")
         NoteViewController!.modalPresentationStyle = .fullScreen
         NoteViewController?.modalTransitionStyle = .crossDissolve
-              
         present(NoteViewController!, animated: true, completion: nil)
-        self.tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    func showPasscodeEntry(for categoryId: Int, completion: @escaping (Bool) -> Void) {
+        let passcodeVC = PasscodeViewController()
+        passcodeVC.mode = .entry
+        passcodeVC.titleText = "Enter Passcode"
+        passcodeVC.onSuccess = { _ in
+            PasscodeManager.shared.unlockCategory(categoryId)
+            completion(true)
+        }
+        passcodeVC.onCancel = {
+            completion(false)
+        }
+        present(passcodeVC, animated: true)
     }
     
     
@@ -513,6 +552,11 @@ extension NotesListViewController {
             self?.performImport()
         }
 
+        // Passcode Settings action
+        let passcodeAction = UIAlertAction(title: "Passcode Settings", style: .default) { [weak self] _ in
+            self?.showPasscodeSettings()
+        }
+
         // About action
         let aboutAction = UIAlertAction(title: "About", style: .default) { [weak self] _ in
             self?.showAbout()
@@ -525,6 +569,7 @@ extension NotesListViewController {
         alertController.addAction(trashAction)
         alertController.addAction(backupAction)
         alertController.addAction(importAction)
+        alertController.addAction(passcodeAction)
         alertController.addAction(aboutAction)
         alertController.addAction(cancelAction)
 
@@ -568,10 +613,53 @@ extension NotesListViewController {
     }
 
     func performBackup() {
+        // Check if there are any protected categories with notes
+        let allNotes = NoteRecords.instance.getAllNotes()
+        let protectedCategoryIds = Set(allNotes.filter { note in
+            if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
+                return category.isProtected
+            }
+            return false
+        }.map { $0.categoryId })
+
+        if !protectedCategoryIds.isEmpty && PasscodeManager.shared.isPasscodeSet {
+            // There are protected notes - ask for passcode
+            showPasscodeForExport(protectedCategoryIds: protectedCategoryIds)
+        } else {
+            // No protected notes or no passcode set - export all
+            executeBackup(skipProtected: false)
+        }
+    }
+
+    func showPasscodeForExport(protectedCategoryIds: Set<Int>) {
+        let passcodeVC = PasscodeViewController()
+        passcodeVC.mode = .entry
+        passcodeVC.titleText = "Export Protected Notes"
+        passcodeVC.onSuccess = { [weak self] _ in
+            // Passcode correct - export all notes
+            self?.executeBackup(skipProtected: false)
+        }
+        passcodeVC.onCancel = { [weak self] in
+            // User cancelled - ask if they want to export without protected notes
+            let alert = UIAlertController(
+                title: "Skip Protected Notes?",
+                message: "Export without protected notes?",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "Export Without Protected", style: .default) { _ in
+                self?.executeBackup(skipProtected: true)
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            self?.present(alert, animated: true)
+        }
+        present(passcodeVC, animated: true)
+    }
+
+    func executeBackup(skipProtected: Bool) {
         StatusLabel.text = "Exporting notes..."
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let fileURL = NoteBackup.exportAllNotes() else {
+            guard let fileURL = NoteBackup.exportAllNotes(skipProtected: skipProtected) else {
                 DispatchQueue.main.async {
                     self?.StatusLabel.text = ""
                     self?.showAlert(title: "Export Failed", message: "Could not create backup file")
@@ -581,6 +669,20 @@ extension NotesListViewController {
 
             DispatchQueue.main.async {
                 self?.StatusLabel.text = ""
+
+                if skipProtected {
+                    // Show message about skipped notes
+                    let allNotes = NoteRecords.instance.getAllNotes()
+                    let protectedCount = allNotes.filter { note in
+                        if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
+                            return category.isProtected
+                        }
+                        return false
+                    }.count
+
+                    self?.showToast(message: "Exported (\(protectedCount) protected notes skipped)")
+                }
+
                 self?.shareBackupFile(fileURL: fileURL)
             }
         }
@@ -601,6 +703,100 @@ extension NotesListViewController {
     func showTrash() {
         let trashVC = TrashViewController(style: .plain)
         navigationController?.pushViewController(trashVC, animated: true)
+    }
+
+    func showPasscodeSettings() {
+        let alert = UIAlertController(title: "Passcode Settings", message: nil, preferredStyle: .actionSheet)
+
+        if PasscodeManager.shared.isPasscodeSet {
+            // Passcode is set - show change and remove options
+            alert.addAction(UIAlertAction(title: "Change Passcode", style: .default) { [weak self] _ in
+                self?.changePasscode()
+            })
+
+            alert.addAction(UIAlertAction(title: "Remove Passcode", style: .destructive) { [weak self] _ in
+                self?.removePasscode()
+            })
+
+            // Show which categories are protected
+            let protectedCategories = CategoryRecords.instance.getCategories().filter { $0.isProtected }
+            if !protectedCategories.isEmpty {
+                let categoryNames = protectedCategories.map { $0.categoryName }.joined(separator: ", ")
+                alert.message = "Protected categories: \(categoryNames)"
+            }
+        } else {
+            // No passcode set - show setup option
+            alert.addAction(UIAlertAction(title: "Set Up Passcode", style: .default) { [weak self] _ in
+                self?.setupPasscode()
+            })
+            alert.message = "No passcode is currently set"
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        // For iPad support
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.barButtonItem = navigationItem.leftBarButtonItem
+        }
+
+        present(alert, animated: true)
+    }
+
+    func setupPasscode() {
+        let passcodeVC = PasscodeViewController()
+        passcodeVC.mode = .setup
+        passcodeVC.titleText = "Set Passcode"
+        passcodeVC.onSuccess = { [weak self] _ in
+            self?.showAlert(title: "Success", message: "Passcode has been set. You can now protect categories in Category Settings.")
+        }
+        passcodeVC.onCancel = { }
+        present(passcodeVC, animated: true)
+    }
+
+    func changePasscode() {
+        let passcodeVC = PasscodeViewController()
+        passcodeVC.mode = .change
+        passcodeVC.titleText = "Change Passcode"
+        passcodeVC.onSuccess = { [weak self] _ in
+            self?.showAlert(title: "Success", message: "Passcode has been changed")
+        }
+        passcodeVC.onCancel = { }
+        present(passcodeVC, animated: true)
+    }
+
+    func removePasscode() {
+        // First verify current passcode
+        let passcodeVC = PasscodeViewController()
+        passcodeVC.mode = .entry
+        passcodeVC.titleText = "Verify Passcode"
+        passcodeVC.onSuccess = { [weak self] _ in
+            // Passcode verified - show confirmation
+            let confirmAlert = UIAlertController(
+                title: "Remove Passcode",
+                message: "This will remove protection from all categories. Are you sure?",
+                preferredStyle: .alert
+            )
+
+            confirmAlert.addAction(UIAlertAction(title: "Remove", style: .destructive) { _ in
+                // Remove protection from all categories
+                let categories = CategoryRecords.instance.getCategories()
+                for category in categories where category.isProtected {
+                    category.isProtected = false
+                    _ = CategoryRecords.instance.updateCategory(category: category)
+                }
+
+                // Remove passcode
+                PasscodeManager.shared.removePasscode()
+
+                self?.showAlert(title: "Success", message: "Passcode removed and all categories unprotected")
+            })
+
+            confirmAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+            self?.present(confirmAlert, animated: true)
+        }
+        passcodeVC.onCancel = { }
+        present(passcodeVC, animated: true)
     }
 
     func showAbout() {

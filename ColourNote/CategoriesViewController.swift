@@ -44,6 +44,12 @@ class CategoriesViewController: UITableViewController {
             textField.text = category?.categoryName
         }
 
+        // Add protection toggle action
+        let protectionTitle = (category?.isProtected ?? false) ? "Protected ✓" : "Protect with Passcode"
+        alert.addAction(UIAlertAction(title: protectionTitle, style: .default) { [weak self] _ in
+            self?.toggleProtection(category: category, isNew: isNew)
+        })
+
         alert.addAction(UIAlertAction(title: "Choose Color", style: .default) { [weak self, weak alert] _ in
             guard let nameField = alert?.textFields?.first,
                   let name = nameField.text, !name.isEmpty else {
@@ -57,6 +63,67 @@ class CategoriesViewController: UITableViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
         present(alert, animated: true)
+    }
+
+    func toggleProtection(category: Category?, isNew: Bool) {
+        if isNew {
+            showAlert(title: "Save First", message: "Please save the category first before enabling protection.")
+            return
+        }
+
+        guard let category = category else { return }
+
+        if category.isProtected {
+            // Already protected - ask to remove protection
+            let alert = UIAlertController(
+                title: "Remove Protection",
+                message: "Remove password protection from '\(category.categoryName)'?",
+                preferredStyle: .alert
+            )
+
+            alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
+                category.isProtected = false
+                _ = CategoryRecords.instance.updateCategory(category: category)
+                self?.loadCategories()
+                self?.showAlert(title: "Success", message: "Protection removed from category")
+            })
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+            present(alert, animated: true)
+        } else {
+            // Not protected - enable protection
+            if !PasscodeManager.shared.isPasscodeSet {
+                // Need to set up passcode first
+                showPasscodeSetup { [weak self] success in
+                    if success {
+                        category.isProtected = true
+                        _ = CategoryRecords.instance.updateCategory(category: category)
+                        self?.loadCategories()
+                        self?.showAlert(title: "Success", message: "Category is now protected")
+                    }
+                }
+            } else {
+                // Passcode already exists, just enable protection
+                category.isProtected = true
+                _ = CategoryRecords.instance.updateCategory(category: category)
+                loadCategories()
+                showAlert(title: "Success", message: "Category is now protected")
+            }
+        }
+    }
+
+    func showPasscodeSetup(completion: @escaping (Bool) -> Void) {
+        let passcodeVC = PasscodeViewController()
+        passcodeVC.mode = .setup
+        passcodeVC.titleText = "Set Passcode"
+        passcodeVC.onSuccess = { _ in
+            completion(true)
+        }
+        passcodeVC.onCancel = {
+            completion(false)
+        }
+        present(passcodeVC, animated: true)
     }
 
     func showColorPicker(category: Category?, categoryName: String, isNew: Bool) {
@@ -113,7 +180,8 @@ class CategoriesViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell") ?? UITableViewCell(style: .default, reuseIdentifier: "CategoryCell")
 
         let category = categories[indexPath.row]
-        cell.textLabel?.text = category.categoryName
+        let displayText = category.isProtected ? "🔒 \(category.categoryName)" : category.categoryName
+        cell.textLabel?.text = displayText
         cell.backgroundColor = category.getColor()
         cell.accessoryType = .disclosureIndicator
 

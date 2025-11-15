@@ -13,19 +13,22 @@ class Category {
     var categoryName: String
     var colorHex: String
     var sortOrder: Int
+    var isProtected: Bool
 
     init() {
         categoryId = 0
         categoryName = ""
         colorHex = "#FFFFFF"
         sortOrder = 0
+        isProtected = false
     }
 
-    init(categoryId: Int, categoryName: String, colorHex: String, sortOrder: Int) {
+    init(categoryId: Int, categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false) {
         self.categoryId = categoryId
         self.categoryName = categoryName
         self.colorHex = colorHex
         self.sortOrder = sortOrder
+        self.isProtected = isProtected
     }
 
     // Helper to convert hex string to UIColor

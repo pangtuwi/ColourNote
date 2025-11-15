@@ -23,9 +23,14 @@ class CategoryRecords {
     let categoryName = SQLite.Expression<String>("category_name")
     let colorHex = SQLite.Expression<String>("color_hex")
     let sortOrder = SQLite.Expression<Int>("sort_order")
+    let isProtected = SQLite.Expression<Int>("is_protected")
+
+    private let categorySchemaVersionKey = "CategoryDatabaseSchemaVersion"
+    private let currentCategorySchemaVersion = 1
 
     private init() {
         openDatabase()
+        migrateCategorySchemaIfNeeded()
     }
 
     func openDatabase() {
@@ -53,7 +58,8 @@ class CategoryRecords {
             category_id INTEGER PRIMARY KEY,
             category_name TEXT NOT NULL DEFAULT '',
             color_hex TEXT NOT NULL DEFAULT '#FFFFFF',
-            sort_order INTEGER DEFAULT 0
+            sort_order INTEGER DEFAULT 0,
+            is_protected INTEGER DEFAULT 0
         );
         CREATE INDEX IF NOT EXISTS idx_category_sort ON categories(sort_order);
         """
@@ -63,6 +69,34 @@ class CategoryRecords {
             print("CategoryRecords: Categories table created successfully")
         } catch {
             print("CategoryRecords: Error creating categories table - \(error)")
+        }
+    }
+
+    func migrateCategorySchemaIfNeeded() {
+        guard let db = db else {
+            print("CategoryRecords: Database not available for migration")
+            return
+        }
+
+        let savedSchemaVersion = UserDefaults.standard.integer(forKey: categorySchemaVersionKey)
+
+        if savedSchemaVersion < currentCategorySchemaVersion {
+            print("CategoryRecords: Running migration from version \(savedSchemaVersion) to \(currentCategorySchemaVersion)")
+
+            // Migration v1: Add is_protected column
+            if savedSchemaVersion < 1 {
+                print("CategoryRecords: Running migration to version 1: Adding is_protected column")
+                do {
+                    try db.execute("ALTER TABLE categories ADD COLUMN is_protected INTEGER DEFAULT 0")
+                    print("CategoryRecords: Added is_protected column to categories table")
+                } catch {
+                    print("CategoryRecords: is_protected column may already exist or error: \(error)")
+                }
+                UserDefaults.standard.set(1, forKey: categorySchemaVersionKey)
+                print("CategoryRecords: Migration to version 1 completed")
+            }
+        } else {
+            print("CategoryRecords: Schema is up to date at version \(savedSchemaVersion)")
         }
     }
 
@@ -80,7 +114,8 @@ class CategoryRecords {
                     categoryId: category[categoryId],
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
-                    sortOrder: category[sortOrder]
+                    sortOrder: category[sortOrder],
+                    isProtected: category[isProtected] != 0
                 ))
             }
         } catch {
@@ -105,7 +140,8 @@ class CategoryRecords {
                     categoryId: category[categoryId],
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
-                    sortOrder: category[sortOrder]
+                    sortOrder: category[sortOrder],
+                    isProtected: category[isProtected] != 0
                 ))
             }
         } catch {
@@ -144,10 +180,10 @@ class CategoryRecords {
 
             do {
                 let sql = """
-                INSERT INTO categories (category_id, category_name, color_hex, sort_order)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO categories (category_id, category_name, color_hex, sort_order, is_protected)
+                VALUES (?, ?, ?, ?, ?)
                 """
-                try db.run(sql, category.categoryId, category.categoryName, category.colorHex, category.sortOrder)
+                try db.run(sql, category.categoryId, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0)
                 print("CategoryRecords: Inserted category with ID \(category.categoryId)")
                 result = Int64(category.categoryId)
             } catch {
@@ -171,9 +207,9 @@ class CategoryRecords {
             if self.categoryExists(searchId: category.categoryId) {
                 do {
                     let sql = """
-                    UPDATE categories SET category_name = ?, color_hex = ?, sort_order = ? WHERE category_id = ?
+                    UPDATE categories SET category_name = ?, color_hex = ?, sort_order = ?, is_protected = ? WHERE category_id = ?
                     """
-                    try db.run(sql, category.categoryName, category.colorHex, category.sortOrder, category.categoryId)
+                    try db.run(sql, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0, category.categoryId)
                     print("CategoryRecords: Updated category with ID \(category.categoryId)")
                     result = category.categoryId
                 } catch {
