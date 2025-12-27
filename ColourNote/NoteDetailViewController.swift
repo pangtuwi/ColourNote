@@ -52,6 +52,11 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         textView.delegate = self
         noteTitle.addTarget(self, action: #selector(titleDidChange), for: .editingChanged)
 
+        // Enable copy/paste for text editing
+        textView.isEditable = true
+        textView.isSelectable = true
+        noteTitle.isEnabled = true
+
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
@@ -278,7 +283,21 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     func textViewDidBeginEditing(_ textView: UITextView) {
         doneButton.isHidden = false
     }
-    
+
+    // MARK: - Copy/Paste Support
+
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        // Enable copy, cut, paste, select, and select all actions
+        if action == #selector(UIResponderStandardEditActions.copy(_:)) ||
+           action == #selector(UIResponderStandardEditActions.cut(_:)) ||
+           action == #selector(UIResponderStandardEditActions.paste(_:)) ||
+           action == #selector(UIResponderStandardEditActions.select(_:)) ||
+           action == #selector(UIResponderStandardEditActions.selectAll(_:)) {
+            return true
+        }
+        return super.canPerformAction(action, withSender: sender)
+    }
+
 
 
 // MARK: - Notification handlers

@@ -1,76 +1,183 @@
 # ColourNote iOS App
 
 ## Project Overview
-ColourNote is an iOS note-taking application that allows users to create, view, edit, and organize colored notes. The app is built in Swift using UIKit and uses SQLite for local data persistence.
+ColourNote is a feature-rich iOS note-taking application with color-coded organization, category management, and security features. The app is built in Swift using UIKit and uses SQLite for local data persistence.
 
-**Current Status**: The app has basic note-taking functionality with a database backend. The codebase appears to be a fork/adaptation of a fitness tracking app (EFRT), with many unused fitness-related components still present.
+**Current Version**: 1.02 (Build 3)
+
+**Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, and backup/restore capabilities. The codebase originated from a fitness tracking app (EFRT), with some legacy components still present but isolated from core functionality.
 
 ## Architecture
 
 ### Tech Stack
-- **Language**: Swift
+- **Language**: Swift 5
 - **UI Framework**: UIKit (Storyboard-based)
 - **Database**: SQLite via SQLite.swift library
-- **Dependency Manager**: CocoaPods (Charts, SQLite.swift)
-- **Platform**: iOS
+- **Dependency Manager**: CocoaPods
+- **Minimum iOS Version**: 15.0+
+- **Security**: SHA-256 hashing for passcode protection
+- **Architecture Pattern**: MVC (Model-View-Controller)
+
+### Key Features
+- ✍️ **Quick Note Taking** - Create and edit notes with auto-save functionality
+- 🎨 **Color-Coded Organization** - 10-color palette for visual organization
+- 📁 **Category Management** - Organize notes into custom categories with personalized colors
+- 🔒 **Passcode Protection** - Protect sensitive categories with 4-digit PIN (SHA-256 encrypted)
+- 🗑️ **Soft Delete & Trash** - Deleted notes move to trash with restore capability
+- 📤 **Backup & Export** - Export all notes and categories to JSON format
+- 📥 **Import Notes** - Import notes from JSON backup files
+- 🔍 **Search & Filter** - Search by title and filter by category
+- 💾 **Local Storage** - All data stored securely on-device using SQLite
+- ✂️ **Copy & Paste** - Full text editing with copy, cut, paste support
+- 📱 **Pull-to-Refresh** - Manual refresh of notes list
+- 🔓 **Session-based Unlocking** - Protected categories remain unlocked during app session
 
 ### Core Components
 
 #### Data Layer
-**Location**: `Shared/Note/` and `Shared/NoteList/`
+**Location**: `Shared/Note/`, `Shared/NoteList/`, and `Shared/Category/`
 
 1. **Note.swift** (`Shared/Note/Note.swift`)
    - Model class representing a single note
-   - Properties: `noteId`, `noteName`, `editedTime`, `noteText`, `colorIndex`
+   - Properties: `noteId`, `noteName`, `editedTime`, `createdDate`, `noteText`, `colorIndex`, `categoryId`, `activeState`, `deletedDate`
 
-2. **NoteRecords.swift** (`Shared/NoteList/NoteRecords.swift:19`)
+2. **Category.swift** (`Shared/Category/Category.swift`)
+   - Model class representing a note category
+   - Properties: `categoryId`, `categoryName`, `colorHex`, `sortOrder`, `isProtected`
+   - Helper methods:
+     - `getColor()` - converts hex string to UIColor
+     - `getDefaultCategories()` - returns default category set
+   - UIColor extension for hex string conversion
+
+3. **NoteRecords.swift** (`Shared/NoteList/NoteRecords.swift:19`)
    - Singleton database manager: `NoteRecords.instance`
-   - Handles all SQLite operations
+   - Handles all SQLite operations for notes and categories
    - Database file: `colornote.db` (copied from bundle to Documents on first launch)
-   - Key methods:
-     - `getNotes()` - fetch all notes
+   - Includes automatic database migration system
+   - Key methods for Notes:
+     - `getNotes()` - fetch all active notes
      - `getNote(searchNoteId:)` - fetch specific note
-     - `getLatestNote()` - get most recently edited note
+     - `getNotesForCategory(categoryId:)` - fetch notes by category
      - `updateNoteText(changedNoteId:newText:)` - save note changes
-     - `noteExists(searchId:)` - check if note exists
+     - `updateNoteCategory(noteId:categoryId:)` - change note category
+     - `softDeleteNote(noteId:)` - move note to trash
+     - `undeleteNote(noteId:)` - restore note from trash
+     - `getDeletedNotes()` - fetch trashed notes
+     - `addNote(title:note:categoryId:colorIndex:)` - create new note
+   - Key methods for Categories:
+     - `getCategories()` - fetch all categories
+     - `getCategory(categoryId:)` - fetch specific category
+     - `addCategory(name:colorHex:)` - create new category
+     - `updateCategory(categoryId:name:colorHex:sortOrder:)` - update category
+     - `deleteCategory(categoryId:)` - delete category
+     - `getCategoryPasscode(categoryId:)` - get hashed passcode
+     - `setCategoryPasscode(categoryId:passcode:)` - set SHA-256 hashed passcode
+     - `verifyCategoryPasscode(categoryId:passcode:)` - verify passcode
 
-3. **Database Schema**
-   - Table: `notes`
-   - Columns: `_id`, `title`, `modified_date`, `note`, `color_index`
+4. **Database Schema**
+
+   **Table: `notes`** (Schema Version 4)
+   - `_id` (INTEGER, PRIMARY KEY) - Unique note identifier
+   - `title` (TEXT) - Note title
+   - `created_date` (INTEGER) - Creation timestamp in milliseconds since epoch
+   - `modified_date` (INTEGER) - Last modification timestamp in milliseconds since epoch
+   - `note` (TEXT) - Note content
+   - `color_index` (INTEGER) - Color palette index (0-9)
+   - `category_id` (INTEGER) - Foreign key to categories table
+   - `active_state` (INTEGER) - 0 = active, 1 = deleted (soft delete)
+   - `deleted_date` (INTEGER, nullable) - Deletion timestamp in milliseconds since epoch
+
+   **Table: `categories`** (Schema Version 1)
+   - `category_id` (INTEGER, PRIMARY KEY) - Unique category identifier
+   - `category_name` (TEXT) - Category display name
+   - `color_hex` (TEXT) - Category color in #RRGGBB format
+   - `sort_order` (INTEGER) - Display order for categories
+   - `is_protected` (INTEGER) - 0 = unprotected, 1 = protected with passcode
+   - `passcode_hash` (TEXT, nullable) - SHA-256 hash of 4-digit PIN
 
 #### View Controllers
 **Location**: `ColourNote/`
 
 1. **NotesListViewController.swift** (`ColourNote/NotesListViewController.swift:17`)
-   - Main list view showing all notes
+   - Main list view showing all active (non-deleted) notes
    - Features:
      - Pull-to-refresh functionality
-     - Search/filter by title (`ColourNote/NotesListViewController.swift:239`)
+     - Search/filter by title
+     - Category filtering dropdown
      - Sorts notes by most recently edited
-     - Color-coded cells
+     - Color-coded cells based on category
+     - Swipe-to-delete (soft delete to trash)
+     - Long-press menu for copy, paste, delete
      - Tap to open note in full screen
-   - Outlets: `StatusLabel`, `SearchTextEditor`
+     - Passcode protection check for protected categories
+   - Outlets: `StatusLabel`, `SearchTextEditor`, `CategoryFilter`
+   - Shows locked icon for protected category notes
 
 2. **NoteDetailViewController.swift** (`ColourNote/NoteDetailViewController.swift:15`)
-   - Full-screen note editing view
+   - Full-screen note editing and viewing
    - Features:
-     - Text editing with auto-save on dismiss
+     - Text editing with auto-save
+     - Title editing
+     - Category assignment/changing
+     - Copy/paste functionality
+     - Delete button (soft delete to trash)
      - Keyboard handling with content inset adjustment
      - Done button to dismiss keyboard
-     - Color-coded background
+     - Color-coded background based on category
+     - Note creation (when opened with no noteId)
    - Auto-saves when:
-     - User taps outside text view
-     - View is about to disappear
      - Text changes detected
+     - View is about to disappear
+     - Category is changed
 
-3. **NoteViewController.swift** (`ColourNote/NoteViewController.swift:12`)
-   - Simple container view (appears incomplete/unused)
+3. **CategoriesViewController.swift** (`ColourNote/CategoriesViewController.swift`)
+   - Category management interface
+   - Features:
+     - List all categories with color swatches
+     - Add new categories with custom name and color
+     - Edit existing categories
+     - Delete categories (with note reassignment)
+     - Toggle passcode protection per category
+     - Set/change/remove passcode for categories
+     - Reorder categories (sort order)
+     - Color picker integration
+   - Validates category names and handles conflicts
 
-4. **Note2ViewController.swift** (`ColourNote/Note2ViewController.swift:11`)
-   - Stub for adding new notes (incomplete)
+4. **TrashViewController.swift** (`ColourNote/TrashViewController.swift`)
+   - Trash bin for soft-deleted notes
+   - Features:
+     - List all deleted notes with deletion date
+     - Restore individual notes (undelete)
+     - Permanently delete notes
+     - Empty trash (delete all)
+     - Search deleted notes
+     - Shows time since deletion
+   - Notes can be restored to their original category
 
-5. **HomeViewController.swift** (`ColourNote/HomeViewController.swift:17`)
-   - Home screen (currently shows fitness stats - needs updating for notes)
+5. **PasscodeViewController.swift** (`ColourNote/PasscodeViewController.swift`)
+   - Passcode entry interface
+   - Features:
+     - 4-digit PIN entry
+     - Visual feedback (dots filling)
+     - Shake animation on incorrect passcode
+     - Different modes: set, verify, change, remove
+     - SHA-256 hashing of passcodes
+     - Session-based unlocking (stays unlocked during app session)
+   - Used for both setting and verifying category passcodes
+
+6. **HomeViewController.swift** (`ColourNote/HomeViewController.swift:17`)
+   - Home/statistics screen
+   - Shows note count and other metrics
+   - Contains legacy fitness tracking UI elements (to be cleaned up)
+
+7. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
+   - Initial registration screen (legacy from fitness app)
+   - Shows on first app launch
+
+**Legacy/Unused View Controllers:**
+- **NoteViewController.swift** - Simple container view (legacy)
+- **Note2ViewController.swift** - Legacy stub (unused)
+- Multiple fitness-related view controllers in `AnalysisView/` and `ActivityView/` directories
 
 #### UI Components
 
@@ -85,20 +192,26 @@ ColourNote is an iOS note-taking application that allows users to create, view, 
 #### Configuration & Utilities
 
 1. **Globals.swift** (`Shared/Globals.swift:14`)
-   - Singleton for shared data
+   - Singleton for shared data: `Globals.sharedInstance`
    - Color palettes: `CN_COLORS` and `CN_LIGHT_COLORS` (10 colors each)
-   - Temporary state: `noteIDToDisplay`
+   - Temporary state variables:
+     - `noteIDToDisplay` - ID of note to open in detail view
+     - `unlockedCategories` - Set of category IDs unlocked in current session
+   - Session management for passcode-protected categories
 
 2. **AppDelegate.swift** (`ColourNote/AppDelegate.swift:19`)
    - App lifecycle management
    - Launches to `ColorNoteHomeID` if registered, else `loginViewControllerID`
    - Default tab: Notes list (index 1)
-   - Push notification setup (from fitness app heritage)
+   - Handles app termination and session cleanup
+   - Push notification setup (legacy from fitness app)
 
 3. **Info.plist**
    - Bundle identifier: `$(PRODUCT_BUNDLE_IDENTIFIER)`
    - Display name: "ColourNote"
-   - Custom font: audiowide-regular.ttf
+   - Version: 1.02 (Build 3)
+   - Custom fonts: Bai Jamjuree, Audiowide
+   - Minimum iOS: 15.0
    - Dropbox URL scheme configured
 
 ## Navigation Flow
@@ -107,35 +220,108 @@ ColourNote is an iOS note-taking application that allows users to create, view, 
 AppDelegate (launch)
     └─> LoginViewController (if not registered)
     └─> Tab Bar Controller (if registered)
-        ├─> Tab 0: HomeViewController
-        ├─> Tab 1: NotesListViewController (default)
-        │   └─> Present Modal: NoteDetailViewController
-        ├─> Tab 2: NoteViewController (Activity tab - legacy)
-        └─> Other tabs (fitness-related - legacy)
+        ├─> Tab 0: HomeViewController (Home/Stats)
+        ├─> Tab 1: NotesListViewController (default - Notes List)
+        │   ├─> Present Modal: NoteDetailViewController
+        │   │   └─> Present Modal: PasscodeViewController (if category protected)
+        │   ├─> Present Modal: PasscodeViewController (for viewing protected notes)
+        │   └─> Category Filter (inline)
+        ├─> Tab 2: CategoriesViewController (Categories)
+        │   └─> Present Modal: PasscodeViewController (for setting/changing passcodes)
+        ├─> Tab 3: TrashViewController (Trash)
+        │   └─> Restore notes back to NotesListViewController
+        └─> Tab 4: SettingsViewController (Settings/Backup/Export)
+            ├─> Export to JSON
+            ├─> Import from JSON
+            └─> Other settings
+
+Passcode Flow:
+- Access protected category notes → PasscodeViewController (verify)
+- Change note to protected category → PasscodeViewController (verify)
+- Set category passcode → PasscodeViewController (set/confirm)
+- Change category passcode → PasscodeViewController (verify old, set new)
+- Remove category passcode → PasscodeViewController (verify)
+- Export with protected categories → PasscodeViewController (verify each)
 ```
 
 ## Data Flow
 
 1. **App Launch**:
-   - `NoteRecords.init()` copies database from bundle if needed
+   - `NoteRecords.init()` copies database from bundle if needed (first launch only)
    - Opens database from Documents directory
+   - Runs `migrateDatabaseIfNeeded()` to apply any schema updates
+   - Initializes `Globals.sharedInstance.unlockedCategories` as empty set
 
 2. **Viewing Notes**:
    - `NotesListViewController.updateNotesList()` → `NoteRecords.instance.getNotes()`
-   - Sorts by `editedTime` descending
+   - Optionally filter by category: `getNotesForCategory(categoryId:)`
+   - Sorts by `editedTime` descending (most recent first)
    - Filters by search text if provided
+   - Checks if note's category is protected and locked
+   - Shows lock icon for locked protected notes
 
-3. **Editing Notes**:
-   - Tap note in list → `NoteDetailViewController` presented modally
+3. **Creating Notes**:
+   - User taps "New Note" button
+   - `NoteDetailViewController` opened with `noteIDToDisplay = 0`
+   - User enters title and text
+   - On save: `NoteRecords.addNote()` creates new note with current timestamp
+   - Note assigned to selected category or default category
+   - Returns to notes list with new note visible
+
+4. **Editing Notes**:
+   - Tap note in list → Check if category is protected
+   - If protected and locked → Present `PasscodeViewController` for verification
+   - On passcode success → Add category to `Globals.unlockedCategories`
+   - `NoteDetailViewController` presented modally
    - `Globals.sharedInstance.noteIDToDisplay` set to selected note ID
-   - `viewDidAppear` loads note data
+   - `viewDidAppear` loads note data via `NoteRecords.getNote()`
    - Text changes tracked via `textViewDidChange`
+   - Title changes tracked via title field delegate
+   - Category changes trigger `updateNoteCategory()`
    - Auto-save on dismiss via `viewWillDisappear`
 
-4. **Saving**:
-   - `NoteRecords.updateNoteText()` updates both text and timestamp
+5. **Saving**:
+   - `NoteRecords.updateNoteText()` updates text and `modified_date` timestamp
    - Uses concurrent dispatch queue for thread safety
-   - Timestamp stored as milliseconds since epoch
+   - Timestamps stored as milliseconds since epoch
+   - All saves are automatic, no explicit save button needed
+
+6. **Deleting Notes (Soft Delete)**:
+   - User swipes note or taps delete button
+   - `NoteRecords.softDeleteNote()` sets `active_state = 1` and `deleted_date = now`
+   - Note removed from main list, appears in trash
+   - Original category and all data preserved
+
+7. **Restoring from Trash**:
+   - User taps restore in `TrashViewController`
+   - `NoteRecords.undeleteNote()` sets `active_state = 0` and clears `deleted_date`
+   - Note returns to original category in main list
+
+8. **Category Management**:
+   - `CategoriesViewController` displays all categories
+   - Add: `NoteRecords.addCategory()` creates new category
+   - Edit: `NoteRecords.updateCategory()` modifies properties
+   - Delete: Reassigns notes to default category, then deletes
+   - Toggle protection: Shows passcode UI to set/remove passcode
+
+9. **Passcode Protection**:
+   - Set passcode: User enters 4-digit PIN twice
+   - PIN hashed with SHA-256 before storage
+   - Verification: Hash entered PIN and compare to stored hash
+   - Session unlock: Verified categories added to `Globals.unlockedCategories`
+   - Session expires: On app termination, `unlockedCategories` cleared
+
+10. **Backup/Export**:
+    - Export creates JSON with notes array and categories array
+    - Protected categories require passcode verification before export
+    - Timestamps and all metadata included
+    - File saved to Files app or shared via share sheet
+
+11. **Import**:
+    - User selects JSON file
+    - Parser validates format
+    - Notes and categories imported with conflict resolution
+    - Protected categories maintain their protection status
 
 ## Color System
 
@@ -155,15 +341,37 @@ Each color has a full-saturation and light-saturation variant.
 
 ## Known Issues & Technical Debt
 
-1. **Legacy Code**: Large amount of unused fitness tracking code (ActivityRecords, Sport, TrainingStress, etc.)
-2. **Incomplete Features**:
-   - Note creation UI (`Note2ViewController`) is stubbed but not functional
-   - Delete button in `NoteDetailViewController` has no implementation
-   - Home screen still shows fitness data instead of note statistics
-3. **Error Handling**: Limited error handling in database operations
-4. **Thread Safety**: Concurrent queue usage but inconsistent return values
-5. **Search Filtering**: Real-time filter has off-by-one timing issue (uses old text value)
-6. **README**: Still describes fitness app, not notes app
+1. **Legacy Code**: Large amount of unused fitness tracking code still present
+   - Multiple view controllers in `AnalysisView/` and `ActivityView/` directories
+   - Legacy models: ActivityRecords, Sport, TrainingStress, etc.
+   - Fitness-related code in HomeViewController
+   - LoginViewController registration flow from fitness app
+   - These do not affect core note functionality but increase codebase size
+
+2. **Home Screen**: HomeViewController still shows fitness statistics UI
+   - Should be updated to show note statistics and metrics
+   - Could display: total notes, notes per category, recent activity, etc.
+
+3. **Error Handling**: Some database operations have limited error handling
+   - Most operations use try-catch but don't always provide user feedback
+   - Could improve error messages shown to users
+
+4. **Thread Safety**: Concurrent queue usage but inconsistent return patterns
+   - Some methods return on main thread, others don't
+   - Generally safe but could be more consistent
+
+5. **Category Model Duplication**: Category.swift exists in two locations
+   - Root directory: `Category.swift`
+   - Shared directory: `Shared/Category/Category.swift`
+   - Both must be kept in sync when making changes
+
+6. **Passcode Storage**: Uses UserDefaults for session unlock tracking
+   - Hashed passcodes stored securely in database
+   - Session unlock state could use more secure storage mechanism
+
+7. **Testing**: Minimal test coverage
+   - Test targets exist but contain minimal tests
+   - Core functionality not comprehensively tested
 
 ## File Structure
 
@@ -171,92 +379,275 @@ Each color has a full-saturation and light-saturation variant.
 ColourNote/
 ├── ColourNote/                    # Main app target
 │   ├── ViewControllers
-│   │   ├── NotesListViewController.swift
-│   │   ├── NoteDetailViewController.swift
-│   │   ├── NoteViewController.swift
-│   │   ├── Note2ViewController.swift
-│   │   └── HomeViewController.swift
+│   │   ├── NotesListViewController.swift      # Main notes list
+│   │   ├── NoteDetailViewController.swift     # Note editing/viewing
+│   │   ├── CategoriesViewController.swift     # Category management
+│   │   ├── TrashViewController.swift          # Deleted notes
+│   │   ├── PasscodeViewController.swift       # Passcode UI
+│   │   ├── HomeViewController.swift           # Home/stats screen
+│   │   ├── SettingsViewController.swift       # Settings & backup
+│   │   ├── LoginViewController.swift          # Initial registration
+│   │   ├── NoteViewController.swift           # (Legacy/unused)
+│   │   └── Note2ViewController.swift          # (Legacy/unused)
+│   ├── AnalysisView/              # Legacy fitness tracking views
+│   ├── ActivityView/              # Legacy fitness tracking views
+│   ├── HomeView/                  # Legacy fitness sub-views
 │   ├── UI Components
-│   │   ├── LinedTextView.swift
-│   │   └── RoundUIView.swift
+│   │   ├── LinedTextView.swift               # Custom lined text view
+│   │   └── RoundUIView.swift                 # Rounded corner view
 │   ├── Storyboards/
 │   │   └── Base.lproj/Main.storyboard
 │   ├── AppDelegate.swift
 │   ├── Info.plist
-│   └── colornote.db              # Initial database
-├── Shared/                        # Shared code
+│   └── colornote.db              # Initial database (bundled)
+├── Shared/                        # Shared models and utilities
 │   ├── Note/
-│   │   └── Note.swift
+│   │   └── Note.swift            # Note model
+│   ├── Category/
+│   │   └── Category.swift        # Category model
 │   ├── NoteList/
-│   │   ├── NoteRecords.swift     # Database manager
+│   │   ├── NoteRecords.swift     # Database manager (singleton)
 │   │   └── NoteListing.swift
-│   ├── Globals.swift
-│   └── [Many legacy fitness files]
-├── Bai_Jamjuree Font/            # Font files
+│   ├── Globals.swift             # App-wide constants & state
+│   ├── SpinnerViewController.swift
+│   └── [Legacy fitness files]    # ActivityRecords, Sport, etc.
+├── Category.swift                 # Category model (duplicate - keep in sync)
+├── Bai_Jamjuree Font/            # Custom font files
 ├── Podfile                        # CocoaPods dependencies
-└── README.md                      # Needs updating
+├── README.md                      # User-facing documentation
+├── CLAUDE.md                      # Technical documentation (this file)
+└── .gitignore
 ```
 
 ## Development Guidelines
 
 ### Adding a New Note
-Not yet implemented. Should:
-1. Generate new unique `noteId`
-2. Set default `colorIndex` (0 = white)
-3. Capture current timestamp for `editedTime`
-4. Insert into database
-5. Refresh list view
+Fully implemented in NoteDetailViewController:
+1. Open `NoteDetailViewController` with `Globals.noteIDToDisplay = 0`
+2. User enters title and content
+3. `NoteRecords.addNote()` generates unique ID automatically
+4. Sets `created_date` and `modified_date` to current timestamp
+5. Assigns to selected category (or default)
+6. Saves to database and returns to list view
 
-### Editing Note Properties
-Currently only text editing is implemented. To add title editing:
-1. Make `noteTitle` outlet editable in NoteDetailViewController
-2. Add delegate method to detect changes
-3. Update database on save with new title
+### Adding/Editing Categories
+Fully implemented in CategoriesViewController:
+1. Use `NoteRecords.addCategory(name:colorHex:)` to create
+2. Use `NoteRecords.updateCategory()` to modify properties
+3. Deletion requires reassigning notes to another category first
+4. Passcode protection managed through PasscodeViewController
+5. SHA-256 hashing handled automatically by NoteRecords
 
 ### Database Migrations
-Database is copied from bundle on first launch. Schema changes require:
-1. Update bundled `colornote.db`
-2. Add migration code in `NoteRecords.init()` for existing installations
-3. Update table schema in `createTable()` method
+Implemented with version tracking:
+1. Database schema versions tracked in database metadata
+2. `migrateDatabaseIfNeeded()` runs on app launch
+3. Migration code checks current schema version and applies updates incrementally
+4. Current versions: Notes schema v4, Categories schema v1
+5. To add new migration:
+   - Add version check in `migrateDatabaseIfNeeded()`
+   - Apply schema changes with ALTER TABLE statements
+   - Update version number in metadata
+   - Test on database with old schema
+
+### Implementing Passcode Protection
+Pattern to follow when adding passcode-protected features:
+1. Check if category is protected: `category.isProtected`
+2. Check if category is unlocked: `Globals.unlockedCategories.contains(categoryId)`
+3. If protected and not unlocked, present PasscodeViewController
+4. On success, add to `Globals.unlockedCategories`
+5. Session clears on app termination via AppDelegate
+6. Always hash passcodes with SHA-256 before storage
+7. Never store plain-text passcodes
+
+### Adding New Database Tables
+Follow existing pattern:
+1. Define table and columns as `Table` and `Expression` in NoteRecords
+2. Create table in `createTable()` or migration method
+3. Add CRUD methods (Create, Read, Update, Delete)
+4. Use concurrent queue for all database operations
+5. Return results on main thread when needed for UI updates
 
 ### UI Customization
-- Colors: Modify `Globals.CN_COLORS` and `Globals.CN_LIGHT_COLORS`
-- Fonts: Change in Storyboard or programmatically in view controllers
-- Line height: Adjust `LinedTextView.lineHeight` property
+- **Colors**: Modify `Globals.CN_COLORS` and `Globals.CN_LIGHT_COLORS`
+- **Fonts**:
+  - Bai Jamjuree used for most UI elements
+  - Audiowide for headers/titles
+  - Change in Storyboard or programmatically in view controllers
+- **Line height**: Adjust `LinedTextView.lineHeight` property
+- **Category colors**: Use hex color picker in CategoriesViewController
+
+### Session Management Best Practices
+1. Store unlocked categories in `Globals.unlockedCategories` (Set<Int>)
+2. Clear session state in `AppDelegate.applicationWillTerminate()`
+3. Never persist unlocked state beyond app session
+4. Require re-authentication after app restart
+5. Consider adding background/foreground state handling for additional security
 
 ## Dependencies
 
 **CocoaPods** (via Podfile):
-- `SQLite.swift` - SQLite database wrapper
-- `Charts` - Charting library (legacy, not used for notes)
+- `SQLite.swift` - Type-safe SQLite database wrapper for all database operations
+- `Charts` - Charting library (legacy dependency from fitness app, not currently used)
 
 ## Testing
 
-- Test targets exist but appear minimal:
-  - `eFitTests/eFitTests.swift`
-  - `eFitUITests/eFitUITests.swift`
-  - `FitFormTests/FitFormTests.swift`
-  - `FitFormUITests/FitFormUITests.swift`
+Test targets exist but have minimal coverage:
+- `eFitTests/eFitTests.swift` - Unit tests (legacy names)
+- `eFitUITests/eFitUITests.swift` - UI tests (legacy names)
+- `FitFormTests/FitFormTests.swift` - Unit tests (legacy names)
+- `FitFormUITests/FitFormUITests.swift` - UI tests (legacy names)
+
+**Recommended Test Coverage:**
+- NoteRecords database operations (CRUD)
+- Category management and passcode verification
+- Soft delete and restore functionality
+- JSON import/export with various data scenarios
+- Passcode hashing and session management
 
 ## Build Configuration
 
-- Platform: iOS 9.0+
-- Xcode project files removed from git (`.pkgf` files present)
-- Database location: Documents directory at runtime
-- Initial database: Bundled in app
+- **Platform**: iOS 15.0+
+- **Language**: Swift 5
+- **Xcode**: 13.0 or later required
+- **Database Location**: Documents directory at runtime (`/Documents/colornote.db`)
+- **Initial Database**: Bundled in app, copied on first launch
+- **Bundle Identifier**: Configurable via PRODUCT_BUNDLE_IDENTIFIER
+- **Deployment**: Configured for App Store distribution
+
+## Version History
+
+### 1.02 (Build 3) - Current Release
+- Added passcode protection for categories (SHA-256 hashing)
+- Implemented session-based unlocking
+- Enhanced export/backup with passcode validation
+- Added copy/paste functionality in note editor
+- Improved category management UI
+- Toast notifications for note deletion
+
+### 1.01 (Build 2)
+- Implemented soft delete system with trash functionality
+- Added category management with custom colors
+- Created backup/export to JSON
+- Implemented import from JSON
+- Enhanced UI with category filtering
+- Added note restoration from trash
+
+### 1.0 (Build 1) - Initial Release
+- Basic note creation and editing
+- SQLite database integration
+- Color-coded note organization
+- Search and filter functionality
+- Pull-to-refresh
+- Auto-save on text changes
+
+## Completed Features
+
+- [x] Note creation and editing UI
+- [x] Soft delete with trash functionality
+- [x] Category management with custom colors
+- [x] Passcode protection for categories (SHA-256)
+- [x] Session-based unlocking
+- [x] Backup/Export to JSON
+- [x] Import from JSON
+- [x] Copy/paste support
+- [x] Search and filter by title
+- [x] Filter by category
+- [x] Database migration system
+- [x] Lined text view for writing
+- [x] Auto-save functionality
 
 ## Future Enhancements
 
 Potential features to implement:
-1. Note creation UI
-2. Note deletion
-3. Color selection/changing
-4. Rich text formatting
-5. Note categories/folders
-6. Search improvements
-7. Cloud sync
-8. Note sharing
-9. Checklists
-10. Voice notes
-11. Image attachments
-12. Clean up legacy fitness code
+
+**High Priority:**
+1. Clean up legacy fitness code and view controllers
+2. Update HomeViewController with note statistics
+3. Rich text formatting (bold, italic, lists)
+4. Note pinning/favorites
+5. Dark mode support
+
+**Medium Priority:**
+6. Checklist/todo items within notes
+7. Note sharing (export individual notes)
+8. Export to PDF/Text formats
+9. Improved search (search note content, not just titles)
+10. Tags/labels in addition to categories
+11. Note templates
+12. Widgets for iOS home screen
+
+**Low Priority/Future:**
+13. Cloud sync (iCloud)
+14. Collaborative notes
+15. Voice notes/audio recording
+16. Image attachments
+17. Siri shortcuts integration
+18. Apple Watch companion app
+19. iPad optimization with split view
+20. Markdown support
+21. Note linking/backlinks
+22. Encryption for individual notes
+
+## Security Considerations
+
+### Passcode Protection
+- **Hashing**: All passcodes are hashed using SHA-256 before storage
+- **Storage**: Hashed passcodes stored in SQLite database (categories table)
+- **Session Management**: Unlocked categories tracked in memory only (`Globals.unlockedCategories`)
+- **Session Expiry**: All sessions cleared on app termination
+- **No Plain Text**: Passcodes never stored or logged in plain text
+- **4-Digit PIN**: Balance between security and usability
+
+### Data Storage
+- **Local Only**: All data stored locally on device, no cloud transmission
+- **SQLite Database**: Located in app's Documents directory
+- **Backup Considerations**: Database included in iTunes/iCloud backups
+- **File Protection**: Uses default iOS file protection (protected until first unlock)
+
+### Potential Security Improvements
+1. Add biometric authentication (Face ID/Touch ID) as alternative to PIN
+2. Implement automatic session timeout (e.g., after 5 minutes of inactivity)
+3. Add app-level passcode/biometric lock
+4. Enhance file protection level to `completeUnlessOpen`
+5. Implement data encryption at rest
+6. Add password strength requirements (longer PINs or alphanumeric)
+7. Implement failed attempt tracking and lockout
+8. Add secure enclave storage for passcode hashes
+9. Clear clipboard after timeout for copy/paste operations
+10. Add option to exclude database from device backups
+
+### Export Security
+- Protected categories require passcode verification before export
+- Exported JSON files are unencrypted (user should secure the files)
+- Consider adding encryption option for exported JSON files
+
+## Important Notes
+
+### For Developers
+1. **Category Model Sync**: When editing `Category.swift`, update BOTH copies (root and `Shared/Category/`)
+2. **Database Migrations**: Always test migrations on databases with old schemas before release
+3. **Thread Safety**: All database operations use concurrent queue, but UI updates must be on main thread
+4. **Passcode Security**: Never log, print, or display passcodes in plain text
+5. **Session State**: Always clear `Globals.unlockedCategories` on app termination
+
+### For Users
+1. All data is stored locally on the device
+2. Passcode-protected categories are session-based (re-enter passcode after app restart)
+3. Deleted notes are moved to trash and can be restored
+4. Export creates unencrypted JSON files - keep them secure
+5. Forgotten passcodes cannot be recovered (data will remain locked)
+
+### Legacy Code Notes
+- Large portions of fitness tracking code remain from original app (EFRT)
+- These components are isolated and do not affect note-taking functionality
+- Safe to remove for code cleanup, but ensure no references remain
+- View controllers in `AnalysisView/` and `ActivityView/` are unused
+- Some database operations may reference legacy tables
+
+---
+
+**Last Updated**: December 2025
+**Maintainer**: Paul Williams
+**Original Project**: EFRT (Fitness Tracking App)
+**Current Project**: ColourNote (Note-Taking App)
