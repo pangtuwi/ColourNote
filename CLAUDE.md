@@ -5,7 +5,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 **Current Version**: 1.02 (Build 3)
 
-**Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, and backup/restore capabilities. The codebase originated from a fitness tracking app (EFRT), with some legacy components still present but isolated from core functionality.
+**Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, and backup/restore capabilities. The codebase has been fully cleaned of legacy fitness tracking code and is now 100% focused on note-taking.
 
 ## Architecture
 
@@ -165,19 +165,10 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Session-based unlocking (stays unlocked during app session)
    - Used for both setting and verifying category passcodes
 
-6. **HomeViewController.swift** (`ColourNote/HomeViewController.swift:17`)
-   - Home/statistics screen
-   - Shows note count and other metrics
-   - Contains legacy fitness tracking UI elements (to be cleaned up)
-
-7. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
+6. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
    - Initial registration screen (legacy from fitness app)
    - Shows on first app launch
 
-**Legacy/Unused View Controllers:**
-- **NoteViewController.swift** - Simple container view (legacy)
-- **Note2ViewController.swift** - Legacy stub (unused)
-- Multiple fitness-related view controllers in `AnalysisView/` and `ActivityView/` directories
 
 #### UI Components
 
@@ -199,14 +190,18 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `unlockedCategories` - Set of category IDs unlocked in current session
    - Session management for passcode-protected categories
 
-2. **AppDelegate.swift** (`ColourNote/AppDelegate.swift:19`)
-   - App lifecycle management
-   - Launches to `ColorNoteHomeID` if registered, else `loginViewControllerID`
-   - Default tab: Notes list (index 1)
-   - Handles app termination and session cleanup
-   - Push notification setup (legacy from fitness app)
+2. **NotesNotification.swift** (`Shared/NotesNotification.swift`)
+   - Notification system for content updates
+   - `NotesNotification.contentUpdated` - Posted when notes or categories change
+   - Used by view controllers to refresh content
 
-3. **Info.plist**
+3. **AppDelegate.swift** (`ColourNote/AppDelegate.swift:19`)
+   - App lifecycle management
+   - Launches to `ColorNoteHomeID` (navigation controller) if registered, else `loginViewControllerID`
+   - Pre-initializes database on background thread for faster startup
+   - Handles app termination and passcode session cleanup
+
+4. **Info.plist**
    - Bundle identifier: `$(PRODUCT_BUNDLE_IDENTIFIER)`
    - Display name: "ColourNote"
    - Version: 1.02 (Build 3)
@@ -219,21 +214,14 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 ```
 AppDelegate (launch)
     └─> LoginViewController (if not registered)
-    └─> Tab Bar Controller (if registered)
-        ├─> Tab 0: HomeViewController (Home/Stats)
-        ├─> Tab 1: NotesListViewController (default - Notes List)
-        │   ├─> Present Modal: NoteDetailViewController
-        │   │   └─> Present Modal: PasscodeViewController (if category protected)
-        │   ├─> Present Modal: PasscodeViewController (for viewing protected notes)
-        │   └─> Category Filter (inline)
-        ├─> Tab 2: CategoriesViewController (Categories)
-        │   └─> Present Modal: PasscodeViewController (for setting/changing passcodes)
-        ├─> Tab 3: TrashViewController (Trash)
-        │   └─> Restore notes back to NotesListViewController
-        └─> Tab 4: SettingsViewController (Settings/Backup/Export)
-            ├─> Export to JSON
-            ├─> Import from JSON
-            └─> Other settings
+    └─> Navigation Controller → NotesListViewController (if registered)
+        ├─> Present Modal: NoteDetailViewController
+        │   └─> Present Modal: PasscodeViewController (if category protected)
+        ├─> Present Modal: PasscodeViewController (for viewing protected notes)
+        └─> Category Filter (inline)
+
+Note: CategoriesViewController, TrashViewController, and SettingsViewController are accessible from the
+NotesListViewController via navigation/presentation (exact implementation depends on storyboard setup).
 
 Passcode Flow:
 - Access protected category notes → PasscodeViewController (verify)
@@ -341,35 +329,24 @@ Each color has a full-saturation and light-saturation variant.
 
 ## Known Issues & Technical Debt
 
-1. **Legacy Code**: Large amount of unused fitness tracking code still present
-   - Multiple view controllers in `AnalysisView/` and `ActivityView/` directories
-   - Legacy models: ActivityRecords, Sport, TrainingStress, etc.
-   - Fitness-related code in HomeViewController
-   - LoginViewController registration flow from fitness app
-   - These do not affect core note functionality but increase codebase size
-
-2. **Home Screen**: HomeViewController still shows fitness statistics UI
-   - Should be updated to show note statistics and metrics
-   - Could display: total notes, notes per category, recent activity, etc.
-
-3. **Error Handling**: Some database operations have limited error handling
+1. **Error Handling**: Some database operations have limited error handling
    - Most operations use try-catch but don't always provide user feedback
    - Could improve error messages shown to users
 
-4. **Thread Safety**: Concurrent queue usage but inconsistent return patterns
+2. **Thread Safety**: Concurrent queue usage but inconsistent return patterns
    - Some methods return on main thread, others don't
    - Generally safe but could be more consistent
 
-5. **Category Model Duplication**: Category.swift exists in two locations
+3. **Category Model Duplication**: Category.swift exists in two locations
    - Root directory: `Category.swift`
    - Shared directory: `Shared/Category/Category.swift`
    - Both must be kept in sync when making changes
 
-6. **Passcode Storage**: Uses UserDefaults for session unlock tracking
+4. **Passcode Storage**: Uses in-memory storage for session unlock tracking
    - Hashed passcodes stored securely in database
    - Session unlock state could use more secure storage mechanism
 
-7. **Testing**: Minimal test coverage
+5. **Testing**: Minimal test coverage
    - Test targets exist but contain minimal tests
    - Core functionality not comprehensively tested
 
@@ -384,14 +361,8 @@ ColourNote/
 │   │   ├── CategoriesViewController.swift     # Category management
 │   │   ├── TrashViewController.swift          # Deleted notes
 │   │   ├── PasscodeViewController.swift       # Passcode UI
-│   │   ├── HomeViewController.swift           # Home/stats screen
 │   │   ├── SettingsViewController.swift       # Settings & backup
-│   │   ├── LoginViewController.swift          # Initial registration
-│   │   ├── NoteViewController.swift           # (Legacy/unused)
-│   │   └── Note2ViewController.swift          # (Legacy/unused)
-│   ├── AnalysisView/              # Legacy fitness tracking views
-│   ├── ActivityView/              # Legacy fitness tracking views
-│   ├── HomeView/                  # Legacy fitness sub-views
+│   │   └── LoginViewController.swift          # Initial registration
 │   ├── UI Components
 │   │   ├── LinedTextView.swift               # Custom lined text view
 │   │   └── RoundUIView.swift                 # Rounded corner view
@@ -409,8 +380,8 @@ ColourNote/
 │   │   ├── NoteRecords.swift     # Database manager (singleton)
 │   │   └── NoteListing.swift
 │   ├── Globals.swift             # App-wide constants & state
-│   ├── SpinnerViewController.swift
-│   └── [Legacy fitness files]    # ActivityRecords, Sport, etc.
+│   ├── NotesNotification.swift   # Notification system
+│   └── SpinnerViewController.swift
 ├── Category.swift                 # Category model (duplicate - keep in sync)
 ├── Bai_Jamjuree Font/            # Custom font files
 ├── Podfile                        # CocoaPods dependencies
@@ -488,7 +459,6 @@ Follow existing pattern:
 
 **CocoaPods** (via Podfile):
 - `SQLite.swift` - Type-safe SQLite database wrapper for all database operations
-- `Charts` - Charting library (legacy dependency from fitness app, not currently used)
 
 ## Testing
 
@@ -562,32 +532,31 @@ Test targets exist but have minimal coverage:
 Potential features to implement:
 
 **High Priority:**
-1. Clean up legacy fitness code and view controllers
-2. Update HomeViewController with note statistics
-3. Rich text formatting (bold, italic, lists)
-4. Note pinning/favorites
-5. Dark mode support
+1. Rich text formatting (bold, italic, lists)
+2. Note pinning/favorites
+3. Dark mode support
 
 **Medium Priority:**
-6. Checklist/todo items within notes
-7. Note sharing (export individual notes)
-8. Export to PDF/Text formats
-9. Improved search (search note content, not just titles)
-10. Tags/labels in addition to categories
-11. Note templates
-12. Widgets for iOS home screen
+4. Checklist/todo items within notes
+5. Note sharing (export individual notes)
+6. Export to PDF/Text formats
+7. Improved search (search note content, not just titles)
+8. Tags/labels in addition to categories
+9. Note templates
+10. Widgets for iOS home screen
+11. Home/Dashboard screen with note statistics
 
 **Low Priority/Future:**
-13. Cloud sync (iCloud)
-14. Collaborative notes
-15. Voice notes/audio recording
-16. Image attachments
-17. Siri shortcuts integration
-18. Apple Watch companion app
-19. iPad optimization with split view
-20. Markdown support
-21. Note linking/backlinks
-22. Encryption for individual notes
+12. Cloud sync (iCloud)
+13. Collaborative notes
+14. Voice notes/audio recording
+15. Image attachments
+16. Siri shortcuts integration
+17. Apple Watch companion app
+18. iPad optimization with split view
+19. Markdown support
+20. Note linking/backlinks
+21. Encryption for individual notes
 
 ## Security Considerations
 
@@ -630,6 +599,7 @@ Potential features to implement:
 3. **Thread Safety**: All database operations use concurrent queue, but UI updates must be on main thread
 4. **Passcode Security**: Never log, print, or display passcodes in plain text
 5. **Session State**: Always clear `Globals.unlockedCategories` on app termination
+6. **Notifications**: Use `NotesNotification.contentUpdated` to notify views when data changes
 
 ### For Users
 1. All data is stored locally on the device
@@ -638,16 +608,23 @@ Potential features to implement:
 4. Export creates unencrypted JSON files - keep them secure
 5. Forgotten passcodes cannot be recovered (data will remain locked)
 
-### Legacy Code Notes
-- Large portions of fitness tracking code remain from original app (EFRT)
-- These components are isolated and do not affect note-taking functionality
-- Safe to remove for code cleanup, but ensure no references remain
-- View controllers in `AnalysisView/` and `ActivityView/` are unused
-- Some database operations may reference legacy tables
+## Recent Changes
+
+### December 2025 - Legacy Code Removal
+- Removed all legacy fitness tracking code (~50-60 files, ~2 MB)
+- Deleted unused view controllers (HomeViewController, NoteViewController, Note2ViewController)
+- Deleted entire FitForm project and test directories
+- Removed legacy icon folders and assets
+- Simplified SettingsViewController to note-focused settings only
+- Renamed DataLoaderNotification to NotesNotification for better semantics
+- Cleaned up AppDelegate, removed push notification code
+- Updated Globals.swift to remove EFRT colors
+- App now launches directly to Notes list (no tab bar, no home screen)
+- Codebase is now 100% focused on note-taking functionality
 
 ---
 
 **Last Updated**: December 2025
 **Maintainer**: Paul Williams
-**Original Project**: EFRT (Fitness Tracking App)
+**Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)
