@@ -35,16 +35,12 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         super.viewDidLoad()
 
         SearchTextEditor.delegate = self
-       // filteredNotes = notes
 
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(contentChangedNotification(_:)),
-            name: DataLoaderNotification.contentUpdated,
+            name: NotesNotification.contentUpdated,
             object: nil)
-
-       // _ = ActivityRecords.instance.deleteActivity(cActivityId : 3923275188)
-       //    DataLoader.sharedInstance.deleteFromCache(ActivityId: 3923275188)
 
         refreshControl = UIRefreshControl()
         refreshControl!.attributedTitle = NSAttributedString(string: "Pulll to refresh")
@@ -118,79 +114,24 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
     
     @objc func handleRefresh(refreshControl: UIRefreshControl) {
         DispatchQueue.main.async {
-            self.StatusLabel.text = "Checking Server for new files..."
+            self.StatusLabel.text = "Refreshing notes..."
         }
 
-        DispatchQueue.global(qos: .utility).async {
-            // DataLoader.sharedInstance.requestSync() // Legacy fitness tracking
-        }
-
-
+        // Refresh the notes list
         DispatchQueue.global(qos: .utility).async { [weak self] in
             guard let self = self else {
                 return
             }
-            // DataLoader.sharedInstance.loadNewActivityList(whenDone: self.gotList) // Legacy fitness tracking
-            // 2
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {  [weak self] in
-                self!.refreshControl!.endRefreshing()
-                self!.StatusLabel.text = ""
-            }
-        }
-    } //handleRefresh
-        
 
-    
-   // func gotList (hasNewFiles : Bool) -> Void {
-    func gotList (newActivityList : [Int]) -> Void {
-        //ToDo: Add message for when Server not available
-        if newActivityList.count > 0 {
             DispatchQueue.main.async {
-                self.StatusLabel.text = "Found \(newActivityList.count) new activities on Server.  Updating..."
-            }
-            if newActivityList.count <= 10 {
-                // DataLoader.sharedInstance.downloadEFRTFromList(list: newActivityList) // Legacy fitness tracking
-            } else {
-                // DataLoader.sharedInstance.downloadMissingEFRT() // Legacy fitness tracking
-            }
-         /*   var delaycounter = 0
-            var newActivityList2 = newActivityList
-            newActivityList2.reverse()
-            for newActivityId in newActivityList2 {
-                //ToDo : Change this to work off a scheduler with stack?
-                //https://gist.github.com/Thomvis/b378f926b6e1a48973f694419ed73aca
-                delaycounter += 1
-                let newDespatchTime =  DispatchTime.now() + DispatchTimeInterval.seconds(delaycounter/4)
-                DispatchQueue.main.asyncAfter(deadline: newDespatchTime) {  [weak self] in
-                    DataLoader.sharedInstance.getEfrt(whenDone: self!.gotNewActivity, ActivityId: newActivityId)
-                }
- 
-            } */
-        } else {
-            DispatchQueue.main.async {
-                self.StatusLabel.text = "No new activities on EFRT server"
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.StatusLabel.text = "Checking on connect.garmin.com"
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                self.updateNotesList()
+                self.refreshControl!.endRefreshing()
                 self.StatusLabel.text = ""
             }
         }
-    } //gotList
-    
-    
-    func gotNewActivity (efrt : Any) -> Void {
-        DispatchQueue.main.async {
-            self.StatusLabel.text =  "Activity downloaded"
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.updateNotesList()
-        }
-    } //gotNewActivity
-    
+    } //handleRefresh
 
-}  //TrainingViewController
+}  //NotesListViewController
 
 
 extension NotesListViewController {

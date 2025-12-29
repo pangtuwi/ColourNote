@@ -112,59 +112,6 @@
             </objects>
             <point key="canvasLocation" x="2662.3188405797105" y="383.03571428571428"/>
         </scene>
-        <!--NotePage-->
-        <scene sceneID="dA4-j4-Zgd">
-            <objects>
-                <viewController storyboardIdentifier="NoteViewController" title="NotePage" id="JsG-hA-OaV" customClass="NoteViewController" customModule="ColourNote" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="c8V-6i-Hqx">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="746"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xfF-6H-Xm2" userLabel="TitleBlock">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="40"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="ColorNote" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Px-XA-suN">
-                                        <rect key="frame" x="10" y="7" width="355" height="25.5"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" weight="thin" pointSize="21"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" red="0.93746560810000001" green="0.93688315150000001" blue="0.95686620469999994" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="X5O-VJ-kbp"/>
-                                </constraints>
-                            </view>
-                            <containerView opaque="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CKr-dr-hAm" userLabel="Block1">
-                                <rect key="frame" x="0.0" y="45" width="375" height="640"/>
-                                <connections>
-                                    <segue destination="N2D-4y-0Hk" kind="embed" id="yHk-Wk-Wue"/>
-                                </connections>
-                            </containerView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="ya6-Ix-BPF"/>
-                        <color key="backgroundColor" systemColor="groupTableViewBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="CKr-dr-hAm" firstAttribute="leading" secondItem="ya6-Ix-BPF" secondAttribute="leading" id="6ZP-W6-yRe"/>
-                            <constraint firstItem="xfF-6H-Xm2" firstAttribute="trailing" secondItem="ya6-Ix-BPF" secondAttribute="trailing" id="8bo-FN-Q6K"/>
-                            <constraint firstItem="CKr-dr-hAm" firstAttribute="trailing" secondItem="ya6-Ix-BPF" secondAttribute="trailing" id="DcD-z2-AyK"/>
-                            <constraint firstItem="xfF-6H-Xm2" firstAttribute="top" secondItem="ya6-Ix-BPF" secondAttribute="top" id="bFj-Fx-iu2"/>
-                            <constraint firstItem="xfF-6H-Xm2" firstAttribute="leading" secondItem="ya6-Ix-BPF" secondAttribute="leading" id="bdq-CF-DbI"/>
-                            <constraint firstItem="CKr-dr-hAm" firstAttribute="top" secondItem="xfF-6H-Xm2" secondAttribute="bottom" constant="5" id="mug-qm-Oct"/>
-                            <constraint firstItem="ya6-Ix-BPF" firstAttribute="bottom" secondItem="CKr-dr-hAm" secondAttribute="bottom" id="w3W-ox-5Tw"/>
-                        </constraints>
-                    </view>
-                    <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
-                    <navigationItem key="navigationItem" title="Note" id="3yw-W8-FME"/>
-                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
-                    <connections>
-                        <outlet property="titleLabel" destination="7Px-XA-suN" id="MTp-I2-YCG"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Jem-JI-B0r" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="2516" y="-533"/>
-        </scene>
         <!--Login View Controller-->
         <scene sceneID="Upa-uA-DW2">
             <objects>
@@ -291,11 +238,11 @@
             <objects>
                 <viewController title="NoteDetailView" id="N2D-4y-0Hk" customClass="NoteDetailViewController" customModule="ColourNote" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="vdZ-ZS-NXN">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="640"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qpS-rQ-KMr">
-                                <rect key="frame" x="314" y="96" width="61" height="35"/>
+                                <rect key="frame" x="353" y="96" width="61" height="35"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Save"/>
                                 <connections>
@@ -303,7 +250,7 @@
                                 </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="..." textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="BRL-3j-bfH">
-                                <rect key="frame" x="5" y="178" width="365" height="423"/>
+                                <rect key="frame" x="5" y="178" width="404" height="645"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <color key="textColor" systemColor="labelColor"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
@@ -325,7 +272,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gjg-ai-Z5a">
-                                <rect key="frame" x="210" y="96" width="74" height="35"/>
+                                <rect key="frame" x="249" y="96" width="74" height="35"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Delete"/>
                                 <connections>
@@ -333,7 +280,7 @@
                                 </connections>
                             </button>
                             <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Title" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qN5-N0-1NX">
-                                <rect key="frame" x="0.0" y="136" width="375" height="40"/>
+                                <rect key="frame" x="0.0" y="136" width="414" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="xoA-fN-2mx"/>
                                 </constraints>
@@ -341,7 +288,7 @@
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6V1-Y5-buY">
-                                <rect key="frame" x="275" y="139" width="95" height="35"/>
+                                <rect key="frame" x="314" y="139" width="95" height="35"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="gray" title="Category"/>
                                 <connections>
@@ -441,7 +388,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Splash" width="408" height="408"/>
+        <image name="Splash" width="1024" height="1024"/>
         <image name="line.3.horizontal.decrease.circle.fill" catalog="system" width="128" height="123"/>
         <image name="planner" width="32" height="32"/>
         <systemColor name="groupTableViewBackgroundColor">

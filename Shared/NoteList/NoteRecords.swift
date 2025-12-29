@@ -1,6 +1,6 @@
 //
-//  ActivityRecords.swift
-//  FitForm
+//  NoteRecords.swift
+//  ColourNote
 //
 //  Created by Paul Williams on 21/08/2018.
 //  Copyright © 2018 Paul Williams. All rights reserved.
@@ -43,14 +43,8 @@ class NoteRecords {
     let noteNoteType = SQLite.Expression<Int>("note_type")
     let activeState = SQLite.Expression<Int>("active_state")
     let deletedDate = SQLite.Expression<Int?>("deleted_date")
-    //let filename = Expression<String>("filename")
-    //let sport = Expression<Int>("sport")
-    //let duration = Expression<Int>("duration")
-    //let distance = Expression<Int>("distance")
-    //let tss = Expression<Int>("tss")
-    //let ignore = Expression<Bool>("ignore")
-    
-    
+
+
     private init() {
 
         if copyDatabaseIfNeeded() {
@@ -58,40 +52,6 @@ class NoteRecords {
         }
         openDatabase()
         migrateDatabaseIfNeeded()
-
-
-        /*let path = NSSearchPathForDirectoriesInDomains(
-            .documentDirectory, .userDomainMask, true
-            ).first! */
-
-     /*   do {
-            try openDatabase()
-        } catch {
-            print ("Unable to open ColorNote database")
-            db = nil
-        } */
-
-
-
-
-        //let fileURL = "\(path)/colornote.db""
-    /*    var fileURL = Bundle.main.path(forResource:"colornote", ofType:"db") ?? "Not Found"
-        print(fileURL)
-        do {
-            print ("Attempting to open \(fileURL)")
-            db = try Connection(fileURL)
-            //try db!.run(activities.drop())
-            // remove entries that had been triggered but not finished
-            // _ = deleteActivity(startTime: 0)
-            //dont require this any more since using update not just add and delete
-            print ("opened ColorNote Database")
-        } catch {
-            print ("Unable to open ColorNote database")
-            db = nil
-
-        } */
-
-       // createTable()
 
 
 
@@ -704,7 +664,7 @@ class NoteRecords {
                      let dbUpdate = existingActivity.update(self.tss <- Int(efrt.bestTSS()), self.duration <- efrt.duration)
                      let id = try self.db!.run(dbUpdate)
                      DispatchQueue.main.async {
-                         NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
+                         NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
                      }
                      //print ("Updated Activity in local DB with ID \(changedActivityId)")
                      result = id
@@ -741,7 +701,7 @@ class NoteRecords {
                     """
                     try self.db!.run(sql, newText, saveTime, changedNoteId)
                   /*  DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: DataLoaderNotification.contentUpdated, object: nil)
+                        NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
                     }
                    */
                     print ("Updated Note in local DB with ID \(changedNoteId)")
