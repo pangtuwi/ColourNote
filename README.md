@@ -4,7 +4,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Version](https://img.shields.io/badge/version-1.02-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-1.02.4-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## Features
@@ -18,7 +18,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 - 📥 **Import Notes** - Import notes from JSON backup files
 - 🔍 **Search & Filter** - Quickly find notes by title or filter by category
 - 💾 **Local Storage** - All notes saved securely on-device using SQLite
-- ⚡ **Auto-Save** - Changes saved automatically as you type
+- ⚡ **Auto-Save** - Changes saved automatically when navigating away, backgrounding app, or dismissing keyboard
 - ✂️ **Copy & Paste** - Full text editing with copy, cut, paste support
 - 📱 **Pull-to-Refresh** - Easy sync and update interface
 
@@ -88,8 +88,9 @@ open ColourNoteProj.xcworkspace
 ### Editing Notes
 - Tap any note from the list to open it
 - Edit the text content
-- Tap "Done" to dismiss the keyboard
-- Tap "List" to return to the notes list
+- Tap outside the text area to dismiss the keyboard
+- Tap "< List" to return to the notes list
+- Changes auto-save when you navigate away or background the app
 
 ## Project Structure
 
@@ -215,7 +216,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.02 (Build 3)** - Current Release
+- **1.02 (Build 4)** - Current Release (December 31, 2025)
+  - Fixed auto-save when app backgrounds (Issue #7)
+  - Removed redundant Save button for cleaner UI
+  - Enhanced auto-save reliability across all app states
+  - Fixed storyboard identifier crashes
+
+- **1.02 (Build 3)**
   - Added passcode protection for categories
   - Implemented copy/paste functionality
   - Session-based unlocking

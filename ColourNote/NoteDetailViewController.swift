@@ -16,16 +16,9 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
 
     @IBOutlet weak var noteTitle: UITextField!
     @IBOutlet weak var textView: UITextView!
-    @IBOutlet weak var doneButton: UIButton!
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var listButton: UIButton!
     @IBOutlet weak var categoryButton: UIButton!
-
-    @IBAction func doneButtonClick(_ sender: Any) {
-        self.view.endEditing(true)
-        saveNote()
-        doneButton.isHidden = true
-    }
 
     @IBAction func DeleteButtonPressed(_ sender: Any) {
         showDeleteConfirmation()
@@ -61,12 +54,13 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
 
+        // Add observer for app backgrounding to ensure note is saved
+        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
 
     } //viewDidLoad
 
     @objc func titleDidChange() {
         titleHasChanged = true
-        doneButton.isHidden = false
     }
     
     @objc func adjustForKeyboard(notification: Notification) {
@@ -86,7 +80,13 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         let selectedRange = textView.selectedRange
         textView.scrollRangeToVisible(selectedRange)
     }
-    
+
+    @objc func appWillResignActive(notification: Notification) {
+        // Save note when app is about to background to prevent data loss
+        saveNote()
+        print("Note auto-saved before app backgrounding")
+    }
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
         saveNote()
@@ -131,7 +131,6 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
 
         textHasChanged = false
         titleHasChanged = false
-        doneButton.isHidden = true
     }//displayData
 
     func setNavigationBarColor(_ color: UIColor) {
@@ -281,7 +280,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     }
 
     func textViewDidBeginEditing(_ textView: UITextView) {
-        doneButton.isHidden = false
+        // Keyboard will appear
     }
 
     // MARK: - Copy/Paste Support
@@ -298,6 +297,10 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         return super.canPerformAction(action, withSender: sender)
     }
 
+    deinit {
+        // Remove notification observers
+        NotificationCenter.default.removeObserver(self)
+    }
 
 
 // MARK: - Notification handlers

@@ -116,18 +116,19 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 2. **NoteDetailViewController.swift** (`ColourNote/NoteDetailViewController.swift:15`)
    - Full-screen note editing and viewing
    - Features:
-     - Text editing with auto-save
+     - Text editing with comprehensive auto-save
      - Title editing
      - Category assignment/changing
      - Copy/paste functionality
      - Delete button (soft delete to trash)
      - Keyboard handling with content inset adjustment
-     - Done button to dismiss keyboard
      - Color-coded background based on category
      - Note creation (when opened with no noteId)
    - Auto-saves when:
-     - Text changes detected
      - View is about to disappear
+     - App enters background or becomes inactive
+     - User taps back/list button
+     - User taps outside text area (keyboard dismissal)
      - Category is changed
 
 3. **CategoriesViewController.swift** (`ColourNote/CategoriesViewController.swift`)
@@ -610,6 +611,19 @@ Potential features to implement:
 
 ## Recent Changes
 
+### December 2025 - Auto-Save Enhancement & UI Cleanup
+- **Fixed GitHub Issue #7**: Implemented auto-save when app backgrounds
+  - Added `UIApplication.willResignActiveNotification` observer in NoteDetailViewController
+  - Notes now save automatically when switching apps, receiving calls, or app enters background
+  - Prevents data loss when app is suspended
+- **Removed Save Button**: Eliminated redundant Save button from note editing interface
+  - Cleaner UI with fewer distractions
+  - Relies entirely on comprehensive auto-save functionality
+  - Auto-save triggers: view dismissal, backgrounding, keyboard dismissal, back button
+- **Fixed Storyboard Identifier**: Corrected "NoteViewController" → "NoteDetailViewController"
+  - Resolved crash when creating or opening notes
+  - Fixed IBOutlet connections in storyboard
+
 ### December 2025 - Legacy Code Removal
 - Removed all legacy fitness tracking code (~50-60 files, ~2 MB)
 - Deleted unused view controllers (HomeViewController, NoteViewController, Note2ViewController)
@@ -624,7 +638,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: December 2025
+**Last Updated**: December 31, 2025
 **Maintainer**: Paul Williams
 **Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)

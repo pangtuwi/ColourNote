@@ -236,19 +236,11 @@
         <!--NoteDetailView-->
         <scene sceneID="xOh-OL-KOA">
             <objects>
-                <viewController title="NoteDetailView" id="N2D-4y-0Hk" customClass="NoteDetailViewController" customModule="ColourNote" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="NoteDetailViewController" title="NoteDetailView" id="N2D-4y-0Hk" customClass="NoteDetailViewController" customModule="ColourNote" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="vdZ-ZS-NXN">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qpS-rQ-KMr">
-                                <rect key="frame" x="353" y="96" width="61" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Save"/>
-                                <connections>
-                                    <action selector="doneButtonClick:" destination="N2D-4y-0Hk" eventType="touchUpInside" id="X0k-f6-cVl"/>
-                                </connections>
-                            </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="..." textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="BRL-3j-bfH">
                                 <rect key="frame" x="5" y="178" width="404" height="645"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -299,17 +291,12 @@
                         <viewLayoutGuide key="safeArea" id="LhO-0W-MLj"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="qpS-rQ-KMr" secondAttribute="trailing" id="0HK-oy-qZk"/>
-                            <constraint firstItem="qpS-rQ-KMr" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="3Qa-x7-uZj"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="bottom" secondItem="BRL-3j-bfH" secondAttribute="bottom" constant="5" id="5YQ-wh-Nzq"/>
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="qpS-rQ-KMr" secondAttribute="bottom" constant="8" id="9aF-wN-ckc"/>
+                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="4" id="9aF-wN-ckc"/>
                             <constraint firstAttribute="trailing" secondItem="qN5-N0-1NX" secondAttribute="trailing" id="Aqf-Rl-YtZ"/>
-                            <constraint firstItem="qpS-rQ-KMr" firstAttribute="leading" secondItem="gjg-ai-Z5a" secondAttribute="trailing" constant="30" id="Asz-W4-Mai"/>
-                            <constraint firstItem="qpS-rQ-KMr" firstAttribute="leading" secondItem="gjg-ai-Z5a" secondAttribute="trailing" constant="30" id="CYJ-mw-gPu"/>
                             <constraint firstItem="VxD-Za-Zxv" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" id="ESH-D3-LFH"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="trailing" secondItem="6V1-Y5-buY" secondAttribute="trailing" constant="5" id="Emq-c4-Esx"/>
                             <constraint firstItem="qN5-N0-1NX" firstAttribute="leading" secondItem="vdZ-ZS-NXN" secondAttribute="leading" id="H9q-D7-Jwu"/>
-                            <constraint firstItem="qpS-rQ-KMr" firstAttribute="trailing" secondItem="vdZ-ZS-NXN" secondAttribute="trailing" id="HnX-kB-lXz"/>
                             <constraint firstItem="VxD-Za-Zxv" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="JIK-pR-qYi"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="trailing" secondItem="6V1-Y5-buY" secondAttribute="trailing" constant="5" id="Vls-gb-qHI"/>
                             <constraint firstItem="gjg-ai-Z5a" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="bki-qc-0df"/>
@@ -318,13 +305,11 @@
                             <constraint firstItem="BRL-3j-bfH" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="82" id="gfo-tB-3mK"/>
                             <constraint firstAttribute="trailing" secondItem="BRL-3j-bfH" secondAttribute="trailing" constant="5" id="k8B-rs-lDk"/>
                             <constraint firstItem="gjg-ai-Z5a" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="oTi-XZ-slS"/>
-                            <constraint firstItem="qpS-rQ-KMr" firstAttribute="leading" secondItem="gjg-ai-Z5a" secondAttribute="trailing" constant="30" id="uNB-NI-B47"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="categoryButton" destination="6V1-Y5-buY" id="qHQ-ha-ODs"/>
                         <outlet property="deleteButton" destination="gjg-ai-Z5a" id="ARU-Mo-Enn"/>
-                        <outlet property="doneButton" destination="qpS-rQ-KMr" id="Qdx-bR-JjZ"/>
                         <outlet property="listButton" destination="VxD-Za-Zxv" id="zwv-ng-rq5"/>
                         <outlet property="noteTitle" destination="qN5-N0-1NX" id="5mQ-O7-op8"/>
                         <outlet property="textView" destination="BRL-3j-bfH" id="iNy-cZ-QCI"/>

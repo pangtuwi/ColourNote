@@ -213,7 +213,7 @@ extension NotesListViewController {
 
     func openNote(_ note: Note) {
         Globals.sharedInstance.noteIDToDisplay = note.noteId
-        let NoteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteViewController")
+        let NoteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteDetailViewController")
         NoteViewController!.modalPresentationStyle = .fullScreen
         NoteViewController?.modalTransitionStyle = .crossDissolve
         present(NoteViewController!, animated: true, completion: nil)
@@ -543,7 +543,7 @@ extension NotesListViewController {
         Globals.sharedInstance.noteIDToDisplay = newNoteId
 
         // Open the note detail view
-        let noteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteViewController")
+        let noteViewController = storyboard?.instantiateViewController(withIdentifier: "NoteDetailViewController")
         noteViewController?.modalPresentationStyle = .fullScreen
         noteViewController?.modalTransitionStyle = .crossDissolve
 
