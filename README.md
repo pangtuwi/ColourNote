@@ -41,7 +41,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 - **MVC Pattern** - Clean separation of model, view, and controller logic
 - **Singleton Database Manager** - Thread-safe database operations
-- **Custom UI Components** - LinedTextView with custom drawing
+- **Custom UI Components** - RoundUIView with rounded corners and shadows
 - **Responsive Design** - Adapts to different screen sizes and orientations
 
 ## Installation
@@ -217,10 +217,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Version History
 
 - **1.02 (Build 4)** - Current Release (December 31, 2025)
+  - Optimized app launch performance with asynchronous notes loading
   - Fixed auto-save when app backgrounds (Issue #7)
   - Removed redundant Save button for cleaner UI
   - Enhanced auto-save reliability across all app states
   - Fixed storyboard identifier crashes
+  - Removed unused LinedTextView code
+  - Fixed compiler warnings
+  - TextView background color now customizable
+  - Implemented text placeholder for new notes
+  - Fixed title capitalization
+  - Closed GitHub Issues: #5, #6, #7, #9
 
 - **1.02 (Build 3)**
   - Added passcode protection for categories

@@ -20,32 +20,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
 
-        // Pre-initialize database on background thread to speed up launch
+        // Initialize database synchronously on main thread to avoid race conditions
+        // Since database initialization is fast, this provides better startup reliability
         if Settings.isRegistered() {
-            DispatchQueue.global(qos: .userInitiated).async {
-                // This will initialize NoteRecords and CategoryRecords singletons and run migrations in background
-                _ = NoteRecords.instance
-                _ = CategoryRecords.instance
-                print("Database pre-initialized in background")
-            }
+            print("Initializing database...")
+            let startTime = Date()
+            _ = NoteRecords.instance
+            _ = CategoryRecords.instance
+            let elapsed = Date().timeIntervalSince(startTime)
+            print("Database initialized in \(elapsed) seconds")
         }
+
+        // Ensure window is created
+        window = UIWindow(frame: UIScreen.main.bounds)
 
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let rootViewController = storyboard.instantiateViewController(withIdentifier:
             Settings.isRegistered() ? "ColorNoteHomeID" : "loginViewControllerID")
         window?.rootViewController = rootViewController
+        window?.makeKeyAndVisible()
 
         if !Settings.hasDefaultsSet() {
             Settings.setInitialDefaults()
         }
 
         let navigation = UINavigationBar.appearance()
-        
+
         let navigationFont = UIFont(name: "helveticaneue-thin", size: 20)
         let navigationLargeFont = UIFont(name: "helveticaneue-thin", size: 24) //34 is Large Title size by default
-        
+
         navigation.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black, NSAttributedString.Key.font: navigationFont!]
-        
+
         if #available(iOS 11, *){
             navigation.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black, NSAttributedString.Key.font: navigationLargeFont!]
         }

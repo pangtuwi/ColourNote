@@ -173,12 +173,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 #### UI Components
 
-1. **LinedTextView.swift** (`ColourNote/LinedTextView.swift:13`)
-   - Custom UITextView with lined paper effect
-   - Draws horizontal lines for writing
-   - IBDesignable with shadow, border, corner radius support
-
-2. **RoundUIView.swift**
+1. **RoundUIView.swift**
    - Reusable rounded corner view component
 
 #### Configuration & Utilities
@@ -365,7 +360,6 @@ ColourNote/
 │   │   ├── SettingsViewController.swift       # Settings & backup
 │   │   └── LoginViewController.swift          # Initial registration
 │   ├── UI Components
-│   │   ├── LinedTextView.swift               # Custom lined text view
 │   │   └── RoundUIView.swift                 # Rounded corner view
 │   ├── Storyboards/
 │   │   └── Base.lproj/Main.storyboard
@@ -446,7 +440,6 @@ Follow existing pattern:
   - Bai Jamjuree used for most UI elements
   - Audiowide for headers/titles
   - Change in Storyboard or programmatically in view controllers
-- **Line height**: Adjust `LinedTextView.lineHeight` property
 - **Category colors**: Use hex color picker in CategoriesViewController
 
 ### Session Management Best Practices
@@ -610,6 +603,22 @@ Potential features to implement:
 5. Forgotten passcodes cannot be recovered (data will remain locked)
 
 ## Recent Changes
+
+### December 31, 2025 - Performance & UI Improvements
+- **Optimized App Launch Performance**
+  - Made notes loading asynchronous to prevent main thread blocking
+  - Database initialization now happens synchronously to avoid race conditions
+  - Added explicit window `makeKeyAndVisible()` call for faster UI display
+  - Database loads in 0.003 seconds on average
+- **Code Cleanup**
+  - Removed unused LinedTextView.swift and updated documentation
+  - Fixed compiler warning in PasscodeViewController (unused `digit` variable)
+  - Removed hardcoded grey background color for textView (now uses storyboard color)
+- **UI Enhancements**
+  - Implemented text placeholder for new note titles
+  - Fixed title capitalization behavior
+  - TextView background color now customizable via storyboard
+- **Closed GitHub Issues**: #5 (Capitalization), #6 (Note heading text), #9 (Splash screen)
 
 ### December 2025 - Auto-Save Enhancement & UI Cleanup
 - **Fixed GitHub Issue #7**: Implemented auto-save when app backgrounds

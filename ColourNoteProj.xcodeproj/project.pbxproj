@@ -17,7 +17,6 @@
 		0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995E2EC76281002EC37E /* CategoriesViewController.swift */; };
 		00958D6C2F02B8D9000EAFE0 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00958D6B2F02B8D9000EAFE0 /* SettingsViewController.swift */; };
 		06BFA357937C8A1711FC9F4C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3447C1518F622CD945FA0588 /* Foundation.framework */; };
-		0A2519E7EE40271944833A9E /* LinedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 399F4930693CA4710608F190 /* LinedTextView.swift */; };
 		0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA608A98F41F901DC3ECB8A /* NoteRecords.swift */; };
 		27C568D29772503FBC3FC133 /* RoundUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151B632C013000F21A31FAA1 /* RoundUIView.swift */; };
 		41CF3C2DE1880BBAC66C7B2E /* SpinnerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D3BF69B6FCD65768E7AC4B /* SpinnerViewController.swift */; };
@@ -51,7 +50,6 @@
 		151B632C013000F21A31FAA1 /* RoundUIView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoundUIView.swift; path = ColourNote/RoundUIView.swift; sourceTree = "<group>"; };
 		2C7500F1F904471B09BA8446 /* ColourNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColourNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3447C1518F622CD945FA0588 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		399F4930693CA4710608F190 /* LinedTextView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LinedTextView.swift; path = ColourNote/LinedTextView.swift; sourceTree = "<group>"; };
 		4426B679332CD289878EA189 /* colornote.db */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = colornote.db; path = ColourNote/colornote.db; sourceTree = "<group>"; };
 		66D3BF69B6FCD65768E7AC4B /* SpinnerViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SpinnerViewController.swift; path = Shared/SpinnerViewController.swift; sourceTree = "<group>"; };
 		6E47F6EA1805EDF0D30FBD0A /* Globals.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Globals.swift; path = Shared/Globals.swift; sourceTree = "<group>"; };
@@ -197,7 +195,6 @@
 				A1957D5890D672FF626E21CC /* AppDelegate.swift */,
 				A9D3A7CBB00DC66BE5E50D0C /* NotesListViewController.swift */,
 				D54728B17D1936CB19250D68 /* NoteDetailViewController.swift */,
-				399F4930693CA4710608F190 /* LinedTextView.swift */,
 				151B632C013000F21A31FAA1 /* RoundUIView.swift */,
 				BA3DFA256052E064C9B72D9A /* LoginViewController.swift */,
 				C8507B4994E477A9C6063FEB /* AnalysisView */,
@@ -290,7 +287,6 @@
 				0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */,
 				0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */,
 				C8D90AFF02FD4170888FA092 /* NoteDetailViewController.swift in Sources */,
-				0A2519E7EE40271944833A9E /* LinedTextView.swift in Sources */,
 				27C568D29772503FBC3FC133 /* RoundUIView.swift in Sources */,
 				634AFE6CF047E5DD1F6875F9 /* LoginViewController.swift in Sources */,
 				CB345CA474ADF9A737712BB4 /* Globals.swift in Sources */,

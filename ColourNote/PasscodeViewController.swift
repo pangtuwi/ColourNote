@@ -186,7 +186,7 @@ class PasscodeViewController: UIViewController {
                 passcodeDigits.removeLast()
                 updateDots()
             }
-        } else if let digit = Int(title), passcodeDigits.count < 4 {
+        } else if let _ = Int(title), passcodeDigits.count < 4 {
             passcodeDigits.append(title)
             updateDots()
 

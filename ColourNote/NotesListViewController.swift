@@ -89,9 +89,17 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
     }
     
     func updateNotesList() -> Void {
-        notes = NoteRecords.instance.getNotes()
-        notes.sort { $0.editedTime > $1.editedTime }
-        applyFilters()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+
+            var loadedNotes = NoteRecords.instance.getNotes()
+            loadedNotes.sort { $0.editedTime > $1.editedTime }
+
+            DispatchQueue.main.async {
+                self.notes = loadedNotes
+                self.applyFilters()
+            }
+        }
     }
 
     func applyFilters() {
@@ -530,7 +538,7 @@ extension NotesListViewController {
         // Create a new note
         let newNote = Note(
             noteId: newNoteId,
-            noteName: "New Note",
+            noteName: "",
             editedTime: newTimestamp,
             noteText: "",
             colorIndex: 0

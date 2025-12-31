@@ -110,9 +110,6 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         textView.text = note.noteText
         currentCategoryId = note.categoryId
 
-        // Always use light grey for text area
-        textView.backgroundColor = UIColor.systemGray6
-
         // Set title background and navigation bar color based on category
         if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
             let categoryColor = category.getColor()
@@ -256,9 +253,6 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     func updateCategory(categoryId: Int) {
         currentCategoryId = categoryId
         _ = NoteRecords.instance.updateNoteCategory(changedNoteId: lastNoteID, newCategoryId: categoryId)
-
-        // Update UI - text area always stays light grey
-        textView.backgroundColor = UIColor.systemGray6
 
         // Update title background, navigation bar color and category button
         if categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: categoryId) {
