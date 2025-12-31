@@ -52,7 +52,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 3. **NoteRecords.swift** (`Shared/NoteList/NoteRecords.swift:19`)
    - Singleton database manager: `NoteRecords.instance`
    - Handles all SQLite operations for notes and categories
-   - Database file: `colornote.db` (copied from bundle to Documents on first launch)
+   - Database file: `colornote.db` (created in Documents directory on first launch)
    - Includes automatic database migration system
    - Key methods for Notes:
      - `getNotes()` - fetch all active notes
@@ -231,10 +231,10 @@ Passcode Flow:
 ## Data Flow
 
 1. **App Launch**:
-   - `NoteRecords.init()` copies database from bundle if needed (first launch only)
-   - Opens database from Documents directory
+   - `NoteRecords.init()` opens database from Documents directory
    - Runs `migrateDatabaseIfNeeded()` to apply any schema updates
    - Initializes `Globals.sharedInstance.unlockedCategories` as empty set
+   - If no database exists, LoginViewController prompts user to create blank database or import backup
 
 2. **Viewing Notes**:
    - `NotesListViewController.updateNotesList()` → `NoteRecords.instance.getNotes()`
@@ -364,8 +364,7 @@ ColourNote/
 │   ├── Storyboards/
 │   │   └── Base.lproj/Main.storyboard
 │   ├── AppDelegate.swift
-│   ├── Info.plist
-│   └── colornote.db              # Initial database (bundled)
+│   └── Info.plist
 ├── Shared/                        # Shared models and utilities
 │   ├── Note/
 │   │   └── Note.swift            # Note model
@@ -475,7 +474,7 @@ Test targets exist but have minimal coverage:
 - **Language**: Swift 5
 - **Xcode**: 13.0 or later required
 - **Database Location**: Documents directory at runtime (`/Documents/colornote.db`)
-- **Initial Database**: Bundled in app, copied on first launch
+- **Database Creation**: Created on first launch or imported from backup
 - **Bundle Identifier**: Configurable via PRODUCT_BUNDLE_IDENTIFIER
 - **Deployment**: Configured for App Store distribution
 
@@ -612,13 +611,16 @@ Potential features to implement:
   - Database loads in 0.003 seconds on average
 - **Code Cleanup**
   - Removed unused LinedTextView.swift and updated documentation
+  - Removed bundled sample database (colornote.db) and "Load Sample Notes" option
+  - Removed `copyDatabaseIfNeeded()` function from NoteRecords
   - Fixed compiler warning in PasscodeViewController (unused `digit` variable)
   - Removed hardcoded grey background color for textView (now uses storyboard color)
 - **UI Enhancements**
   - Implemented text placeholder for new note titles
   - Fixed title capitalization behavior
   - TextView background color now customizable via storyboard
-- **Closed GitHub Issues**: #5 (Capitalization), #6 (Note heading text), #9 (Splash screen)
+  - Simplified LoginViewController to only show "Start Fresh" and "Import Backup" options
+- **Closed GitHub Issues**: #2 (Sample database), #5 (Capitalization), #6 (Note heading text), #9 (Splash screen)
 
 ### December 2025 - Auto-Save Enhancement & UI Cleanup
 - **Fixed GitHub Issue #7**: Implemented auto-save when app backgrounds

@@ -14,7 +14,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var welcomeLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var logoImageView: UIImageView!
-    @IBOutlet weak var loadDefaultButton: UIButton!
     @IBOutlet weak var createBlankButton: UIButton!
     @IBOutlet weak var importButton: UIButton!
 
@@ -30,7 +29,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         descriptionLabel?.text = "A simple and elegant notes app.\n\nChoose how to get started:"
 
         // Style buttons
-        styleButton(loadDefaultButton, title: "Load Sample Notes")
         styleButton(createBlankButton, title: "Start Fresh")
         styleButton(importButton, title: "Import Backup")
     }
@@ -42,14 +40,9 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         button?.setTitleColor(.white, for: .normal)
     }
 
-    @IBAction func loadDefaultButtonTapped(_ sender: Any) {
-        // Load the default database with sample notes
-        initializeAppWithDatabase(useDefault: true, createBlank: false)
-    }
-
     @IBAction func createBlankButtonTapped(_ sender: Any) {
         // Create a blank database
-        initializeAppWithDatabase(useDefault: false, createBlank: true)
+        initializeAppWithDatabase()
     }
 
     @IBAction func importButtonTapped(_ sender: Any) {
@@ -60,33 +53,24 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         present(documentPicker, animated: true)
     }
 
-    func initializeAppWithDatabase(useDefault: Bool, createBlank: Bool) {
+    func initializeAppWithDatabase() {
         let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         let destinationPath = documents + "/colornote.db"
 
         print("=== Initializing database ===")
-        print("useDefault: \(useDefault), createBlank: \(createBlank)")
+        print("Creating blank database")
         print("Destination: \(destinationPath)")
 
         // Remove existing database if any
         try? FileManager.default.removeItem(atPath: destinationPath)
         print("Removed existing database")
 
-        if useDefault {
-            // Copy default database from bundle
-            if let bundlePath = Bundle.main.url(forResource: "colornote", withExtension: "db")?.path {
-                try? FileManager.default.copyItem(atPath: bundlePath, toPath: destinationPath)
-                print("Loaded default database with sample notes")
-                // Set database version to prevent auto-copy
-                UserDefaults.standard.set(2, forKey: "DatabaseVersion")
-            }
-        } else if createBlank {
-            // Create blank database
-            createBlankDatabase(at: destinationPath)
-            print("Created blank database")
-            // Set database version to prevent auto-copy
-            UserDefaults.standard.set(2, forKey: "DatabaseVersion")
-        }
+        // Create blank database
+        createBlankDatabase(at: destinationPath)
+        print("Created blank database")
+
+        // Set database version to prevent auto-copy
+        UserDefaults.standard.set(2, forKey: "DatabaseVersion")
 
         let exists = FileManager.default.fileExists(atPath: destinationPath)
         print("Database exists after init: \(exists)")

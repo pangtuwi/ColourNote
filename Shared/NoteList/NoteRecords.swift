@@ -46,74 +46,14 @@ class NoteRecords {
 
 
     private init() {
-
-        if copyDatabaseIfNeeded() {
-            print("Default database copied")
-        }
         openDatabase()
         migrateDatabaseIfNeeded()
-
-
-
-
-
     }
     
     //var db: OpaquePointer?
 
     enum DatabaseError: Error {
-        case bundleDatabaseNotFound
         case sqliteError(Int32, String?)
-    }
-    
-    func copyDatabaseIfNeeded() -> Bool {
-        // from https://github.com/stephencelis/SQLite.swift/blob/master/Documentation/Index.md#getting-started
-        let bundlePath = Bundle.main.url(forResource: "colornote", withExtension: "db")!.path
-        let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-        let destinationPath = documents + "/" + dbName
-        let exists = FileManager.default.fileExists(atPath: destinationPath)
-
-        // Check if we need to replace corrupted database
-        let dbVersionKey = "DatabaseVersion"
-        let currentDBVersion = 2 // Increment this to force database replacement
-        let savedDBVersion = UserDefaults.standard.integer(forKey: dbVersionKey)
-
-        print("=== copyDatabaseIfNeeded check ===")
-        print("Database exists: \(exists)")
-        print("Saved DB version: \(savedDBVersion)")
-        print("Current DB version: \(currentDBVersion)")
-
-        // If DatabaseVersion is already set to current version, don't copy
-        // This prevents overwriting user-created blank databases or imported databases
-        if savedDBVersion >= currentDBVersion {
-            print("Database version is current, skipping auto-copy")
-            return false
-        }
-
-        if exists && savedDBVersion < currentDBVersion {
-            // Remove old corrupted database
-            do {
-                try FileManager.default.removeItem(atPath: destinationPath)
-                print("Removed old database version \(savedDBVersion)")
-            } catch {
-                print("Error removing old database: \(error)")
-            }
-        }
-
-        if !FileManager.default.fileExists(atPath: destinationPath) {
-            do {
-                try FileManager.default.copyItem(atPath: bundlePath, toPath: destinationPath)
-                UserDefaults.standard.set(currentDBVersion, forKey: dbVersionKey)
-                print("Copied database from Bundle (version \(currentDBVersion))")
-                return true
-            } catch {
-                print("error during file copy: \(error)")
-                return false
-            }
-        } else {
-            print("Database already exists in user folder")
-            return false
-        }
     }
 
     func openDatabase() {
