@@ -202,6 +202,7 @@
 				F90A3689760763D4FEE4112F /* Info.plist */,
 				7EE6029443F754792FA20502 /* Assets.xcassets */,
 				893F2B21D62D9A6B98FB0810 /* audiowide-regular.ttf */,
+				4426B679332CD289878EA189 /* colornote.db */,
 			);
 			name = ColourNote;
 			sourceTree = "<group>";
@@ -266,6 +267,7 @@
 				5DD1547EE8CB55832878E0E3 /* LaunchScreen.storyboard in Resources */,
 				45C3B6524DA2B2D05313D493 /* Assets.xcassets in Resources */,
 				5A82903C4063D5C6F1E3A1D1 /* audiowide-regular.ttf in Resources */,
+				877D77C378538A074B18E3B7 /* colornote.db in Resources */,
 				0060C5A32EC79FBE008CDE44 /* BaiJamjuree-Light.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -144,18 +144,7 @@
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ry9-Gm-fdj">
-                                <rect key="frame" x="122" y="423" width="170" height="35"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="35" id="cjN-RT-3gg"/>
-                                </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="tinted" title="Load Sample notes"/>
-                                <connections>
-                                    <action selector="loadDefaultButtonTapped:" destination="Ypo-bZ-xfD" eventType="touchUpInside" id="jLG-WD-eVU"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KyY-LD-0hM">
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KyY-LD-0hM">
                                 <rect key="frame" x="139" y="573" width="136" height="35"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="35" id="MPS-kE-g0K"/>
@@ -166,7 +155,7 @@
                                     <action selector="importButtonTapped:" destination="Ypo-bZ-xfD" eventType="touchUpInside" id="tSQ-c5-kIo"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y8u-6U-wW4">
+                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y8u-6U-wW4">
                                 <rect key="frame" x="153" y="498" width="108" height="35"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="tinted" title="Start Fresh"/>
@@ -181,17 +170,13 @@
                             <constraint firstItem="P7t-oT-gQQ" firstAttribute="centerX" secondItem="nom-xM-PDe" secondAttribute="centerX" id="2Ib-Ja-sgr"/>
                             <constraint firstItem="nom-xM-PDe" firstAttribute="leading" secondItem="Sjm-Ge-iY4" secondAttribute="leadingMargin" constant="-52" id="Dhq-TD-VLT"/>
                             <constraint firstItem="1cp-en-UpA" firstAttribute="centerX" secondItem="Sjm-Ge-iY4" secondAttribute="centerX" id="IgQ-yc-gLC"/>
-                            <constraint firstItem="nom-xM-PDe" firstAttribute="centerX" secondItem="ry9-Gm-fdj" secondAttribute="centerX" id="Jbz-37-3i4"/>
                             <constraint firstItem="y8u-6U-wW4" firstAttribute="centerX" secondItem="KyY-LD-0hM" secondAttribute="centerX" id="LBn-6c-3X4"/>
                             <constraint firstItem="P7t-oT-gQQ" firstAttribute="leading" secondItem="2tE-6Q-qUU" secondAttribute="leading" constant="16" id="Miq-yT-ozb"/>
                             <constraint firstItem="KyY-LD-0hM" firstAttribute="top" secondItem="y8u-6U-wW4" secondAttribute="bottom" constant="40" id="Q8s-7C-8x1"/>
                             <constraint firstItem="P7t-oT-gQQ" firstAttribute="top" secondItem="1cp-en-UpA" secondAttribute="bottom" constant="16" id="b6F-tP-Fg2"/>
                             <constraint firstItem="1cp-en-UpA" firstAttribute="leading" secondItem="2tE-6Q-qUU" secondAttribute="leading" constant="157" id="chs-d5-4fr"/>
                             <constraint firstItem="nom-xM-PDe" firstAttribute="top" secondItem="P7t-oT-gQQ" secondAttribute="bottom" constant="80" id="lcv-Ik-m0O"/>
-                            <constraint firstItem="ry9-Gm-fdj" firstAttribute="centerX" secondItem="y8u-6U-wW4" secondAttribute="centerX" id="nXc-x7-9Xd"/>
                             <constraint firstItem="1cp-en-UpA" firstAttribute="top" secondItem="2tE-6Q-qUU" secondAttribute="top" constant="148" id="ob1-Xj-N7S"/>
-                            <constraint firstItem="y8u-6U-wW4" firstAttribute="top" secondItem="ry9-Gm-fdj" secondAttribute="bottom" constant="40" id="qSu-uQ-kk4"/>
-                            <constraint firstItem="ry9-Gm-fdj" firstAttribute="top" secondItem="nom-xM-PDe" secondAttribute="bottom" constant="30" id="wqz-RP-lxn"/>
                             <constraint firstItem="1cp-en-UpA" firstAttribute="centerX" secondItem="P7t-oT-gQQ" secondAttribute="centerX" id="yCA-cO-3yK"/>
                         </constraints>
                     </view>
