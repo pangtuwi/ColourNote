@@ -50,8 +50,23 @@ class CategoriesViewController: UITableViewController {
             self?.toggleProtection(category: category, isNew: isNew)
         })
 
-        // Add Save button for editing existing categories
+        alert.addAction(UIAlertAction(title: "Choose Color", style: .default) { [weak self, weak alert] _ in
+            guard let nameField = alert?.textFields?.first,
+                  let name = nameField.text, !name.isEmpty else {
+                self?.showAlert(title: "Error", message: "Please enter a category name first")
+                return
+            }
+
+            self?.showColorPicker(category: category, categoryName: name, isNew: isNew)
+        })
+
+        // Add visual separator and Save button for editing existing categories
         if !isNew {
+            // Add a subtle separator using a disabled action
+            let separator = UIAlertAction(title: "", style: .default, handler: nil)
+            separator.isEnabled = false
+            alert.addAction(separator)
+
             alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
                 guard let nameField = alert?.textFields?.first,
                       let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -78,16 +93,6 @@ class CategoriesViewController: UITableViewController {
                 }
             })
         }
-
-        alert.addAction(UIAlertAction(title: "Choose Color", style: .default) { [weak self, weak alert] _ in
-            guard let nameField = alert?.textFields?.first,
-                  let name = nameField.text, !name.isEmpty else {
-                self?.showAlert(title: "Error", message: "Please enter a category name first")
-                return
-            }
-
-            self?.showColorPicker(category: category, categoryName: name, isNew: isNew)
-        })
 
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
