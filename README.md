@@ -225,6 +225,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Full validation with duplicate name checking
   - New categories automatically assigned to current note
   - Success toast notification for user feedback
+  - **Bug Fix**: Added "Save" button to Edit Category dialog
+  - Users can now save category name changes without requiring color selection
   - Closed GitHub Issues: #4
 
 - **1.02 (Build 4)** - (December 31, 2025)

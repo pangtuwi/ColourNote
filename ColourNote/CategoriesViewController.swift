@@ -50,6 +50,35 @@ class CategoriesViewController: UITableViewController {
             self?.toggleProtection(category: category, isNew: isNew)
         })
 
+        // Add Save button for editing existing categories
+        if !isNew {
+            alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
+                guard let nameField = alert?.textFields?.first,
+                      let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                      !name.isEmpty else {
+                    self?.showAlert(title: "Error", message: "Please enter a category name")
+                    return
+                }
+
+                // Check for duplicate names (excluding the current category)
+                if let existingCategories = self?.categories,
+                   existingCategories.contains(where: { $0.categoryName.lowercased() == name.lowercased() && $0.categoryId != category?.categoryId }) {
+                    self?.showAlert(title: "Error", message: "A category with this name already exists")
+                    return
+                }
+
+                // Update just the category name
+                if let category = category {
+                    category.categoryName = name
+                    _ = CategoryRecords.instance.updateCategory(category: category)
+                    self?.loadCategories()
+
+                    // Post notification to refresh other views
+                    NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
+                }
+            })
+        }
+
         alert.addAction(UIAlertAction(title: "Choose Color", style: .default) { [weak self, weak alert] _ in
             guard let nameField = alert?.textFields?.first,
                   let name = nameField.text, !name.isEmpty else {

@@ -612,7 +612,13 @@ Potential features to implement:
 
 ## Recent Changes
 
-### January 1, 2026 - Inline Category Creation
+### January 1, 2026 - Inline Category Creation & Bug Fixes
+- **Bug Fix: Category Name Editing**
+  - Added "Save" button to Edit Category dialog in CategoriesViewController
+  - Users can now save category name changes without going through the color picker
+  - Save button only appears when editing existing categories (not when creating new)
+  - Includes validation for empty names and duplicate names
+  - Posts notification to refresh other views after save
 - **New Feature: Create Categories On-the-Fly** (Issue #4)
   - Added "Create New Category..." option to category picker in NoteDetailViewController
   - Users can now create categories without leaving the note editing screen
