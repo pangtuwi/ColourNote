@@ -230,6 +230,12 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         }
         alert.addAction(noCategoryAction)
 
+        // Add "Create New Category..." option
+        let createNewAction = UIAlertAction(title: "Create New Category...", style: .default) { [weak self] _ in
+            self?.showCreateCategoryFlow()
+        }
+        alert.addAction(createNewAction)
+
         // Add each category as an option
         for category in categories {
             let action = UIAlertAction(title: category.categoryName, style: .default) { [weak self] _ in
@@ -269,6 +275,147 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         }
     }
 
+    func showCreateCategoryFlow() {
+        let alert = UIAlertController(
+            title: "New Category",
+            message: "Enter a name for the new category",
+            preferredStyle: .alert
+        )
+
+        alert.addTextField { textField in
+            textField.placeholder = "Category Name"
+            textField.autocapitalizationType = .words
+            textField.clearButtonMode = .whileEditing
+        }
+
+        let nextAction = UIAlertAction(title: "Next", style: .default) { [weak self, weak alert] _ in
+            guard let textField = alert?.textFields?.first,
+                  let categoryName = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !categoryName.isEmpty else {
+                self?.showAlert(title: "Error", message: "Please enter a category name")
+                return
+            }
+
+            // Validate name doesn't already exist
+            let existingCategories = CategoryRecords.instance.getCategories()
+            if existingCategories.contains(where: { $0.categoryName.lowercased() == categoryName.lowercased() }) {
+                self?.showAlert(title: "Error", message: "A category with this name already exists")
+                return
+            }
+
+            // Proceed to color selection
+            self?.showColorPickerForNewCategory(categoryName: categoryName)
+        }
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+
+        alert.addAction(nextAction)
+        alert.addAction(cancelAction)
+
+        present(alert, animated: true) {
+            // Auto-focus on text field
+            alert.textFields?.first?.becomeFirstResponder()
+        }
+    }
+
+    func showColorPickerForNewCategory(categoryName: String) {
+        let colorPicker = UIColorPickerViewController()
+        colorPicker.delegate = self
+        colorPicker.selectedColor = .white
+
+        // Store category name in title for later retrieval
+        colorPicker.title = categoryName
+
+        // Use tag = -1 to indicate this is a new category
+        colorPicker.view.tag = -1
+
+        present(colorPicker, animated: true)
+    }
+
+    func saveNewCategoryAndSelect(categoryName: String, color: UIColor) {
+        // Generate unique category ID using timestamp
+        let newCategoryId = Int(Date().timeIntervalSince1970 * 1000)
+
+        // Calculate sort order (max + 1)
+        let existingCategories = CategoryRecords.instance.getCategories()
+        let maxSortOrder = existingCategories.map { $0.sortOrder }.max() ?? 0
+
+        // Create category object
+        let newCategory = Category(
+            categoryId: newCategoryId,
+            categoryName: categoryName,
+            colorHex: color.toHexString(),
+            sortOrder: maxSortOrder + 1
+        )
+
+        // Insert into database
+        let result = CategoryRecords.instance.insertCategory(category: newCategory)
+
+        if result > 0 {
+            print("Successfully created category '\(categoryName)' with ID \(newCategoryId)")
+
+            // Post notification to refresh other views
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
+            }
+
+            // Auto-select the newly created category for this note
+            updateCategory(categoryId: newCategoryId)
+
+            // Show success feedback
+            showSuccessToast(message: "Category '\(categoryName)' created")
+        } else {
+            print("Failed to create category '\(categoryName)'")
+            showAlert(title: "Error", message: "Failed to create category. Please try again.")
+        }
+    }
+
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
+    func showSuccessToast(message: String) {
+        let toast = UILabel()
+        toast.text = message
+        toast.textAlignment = .center
+        toast.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        toast.textColor = .white
+        toast.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toast.numberOfLines = 0
+        toast.layer.cornerRadius = 10
+        toast.clipsToBounds = true
+
+        // Calculate size and position
+        let maxSize = CGSize(width: view.bounds.width - 60, height: 100)
+        let size = toast.sizeThatFits(maxSize)
+        let width = min(size.width + 30, view.bounds.width - 60)
+        let height = size.height + 20
+
+        toast.frame = CGRect(
+            x: (view.bounds.width - width) / 2,
+            y: view.bounds.height - 100,
+            width: width,
+            height: height
+        )
+
+        view.addSubview(toast)
+        toast.alpha = 0
+
+        // Animate in
+        UIView.animate(withDuration: 0.3, animations: {
+            toast.alpha = 1.0
+        }) { _ in
+            // Auto-dismiss after 2 seconds
+            UIView.animate(withDuration: 0.3, delay: 2.0, options: [], animations: {
+                toast.alpha = 0
+            }) { _ in
+                toast.removeFromSuperview()
+            }
+        }
+    }
+
     func textViewDidChange(_ textView: UITextView) {
         textHasChanged = true
     }
@@ -304,4 +451,22 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     }
 } */
 
+}
+
+// MARK: - UIColorPickerViewControllerDelegate
+extension NoteDetailViewController: UIColorPickerViewControllerDelegate {
+    func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
+        // Only handle new category creation (tag == -1)
+        guard viewController.view.tag == -1 else { return }
+
+        guard let categoryName = viewController.title else {
+            print("Error: Category name not found in color picker")
+            return
+        }
+
+        let selectedColor = viewController.selectedColor
+
+        // Save category and auto-select it
+        saveNewCategoryAndSelect(categoryName: categoryName, color: selectedColor)
+    }
 }

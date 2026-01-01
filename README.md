@@ -4,7 +4,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Version](https://img.shields.io/badge/version-1.02.4-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-1.03.5-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## Features
@@ -12,6 +12,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 - ✍️ **Quick Note Taking** - Create and edit notes with a clean, distraction-free interface
 - 🎨 **Color-Coded Organization** - Choose from 10 beautiful colors to organize your notes
 - 📁 **Category Management** - Organize notes into custom categories with personalized colors
+- ⚡ **Inline Category Creation** - Create new categories on-the-fly without leaving the note editor
 - 🔒 **Passcode Protection** - Protect sensitive categories with a 4-digit PIN (SHA-256 encrypted)
 - 🗑️ **Soft Delete & Trash** - Deleted notes move to trash with restore capability
 - 📤 **Backup & Export** - Export notes to JSON format with category information
@@ -168,6 +169,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [x] Note creation and editing UI
 - [x] Soft delete with trash functionality
 - [x] Category management
+- [x] Inline category creation from note editor
 - [x] Passcode protection for categories
 - [x] Backup/Export to JSON
 - [x] Import from JSON
@@ -216,7 +218,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.02 (Build 4)** - Current Release (December 31, 2025)
+- **1.03 (Build 5)** - Current Release (January 1, 2026)
+  - **New Feature**: Inline category creation from note editor (Issue #4)
+  - Users can now create categories without leaving the note editing screen
+  - Added "Create New Category..." option to category picker
+  - Full validation with duplicate name checking
+  - New categories automatically assigned to current note
+  - Success toast notification for user feedback
+  - Closed GitHub Issues: #4
+
+- **1.02 (Build 4)** - (December 31, 2025)
   - Optimized app launch performance with asynchronous notes loading
   - Fixed auto-save when app backgrounds (Issue #7)
   - Removed redundant Save button for cleaner UI

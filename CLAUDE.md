@@ -119,6 +119,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Text editing with comprehensive auto-save
      - Title editing
      - Category assignment/changing
+     - **Inline category creation** - Create new categories without leaving note editor
      - Copy/paste functionality
      - Delete button (soft delete to trash)
      - Keyboard handling with content inset adjustment
@@ -130,6 +131,13 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - User taps back/list button
      - User taps outside text area (keyboard dismissal)
      - Category is changed
+   - Category Creation Methods:
+     - `showCreateCategoryFlow()` - Presents name entry alert with validation
+     - `showColorPickerForNewCategory(categoryName:)` - Shows color picker
+     - `saveNewCategoryAndSelect(categoryName:color:)` - Creates and assigns category
+     - `showAlert(title:message:)` - Displays error messages
+     - `showSuccessToast(message:)` - Shows success feedback
+   - Implements UIColorPickerViewControllerDelegate for color selection
 
 3. **CategoriesViewController.swift** (`ColourNote/CategoriesViewController.swift`)
    - Category management interface
@@ -509,6 +517,7 @@ Test targets exist but have minimal coverage:
 - [x] Note creation and editing UI
 - [x] Soft delete with trash functionality
 - [x] Category management with custom colors
+- [x] **Inline category creation** - Create categories from note editor
 - [x] Passcode protection for categories (SHA-256)
 - [x] Session-based unlocking
 - [x] Backup/Export to JSON
@@ -603,6 +612,23 @@ Potential features to implement:
 
 ## Recent Changes
 
+### January 1, 2026 - Inline Category Creation
+- **New Feature: Create Categories On-the-Fly** (Issue #4)
+  - Added "Create New Category..." option to category picker in NoteDetailViewController
+  - Users can now create categories without leaving the note editing screen
+  - Full validation: checks for empty names and duplicate names (case-insensitive)
+  - New category is automatically assigned to the current note
+  - Success toast notification provides feedback
+  - Follows existing category creation patterns from CategoriesViewController
+  - Added 7 new methods to NoteDetailViewController:
+    - `showCreateCategoryFlow()` - Name entry with validation
+    - `showColorPickerForNewCategory(categoryName:)` - Color selection
+    - `saveNewCategoryAndSelect(categoryName:color:)` - Database insert and auto-assign
+    - `showAlert(title:message:)` - Error alerts
+    - `showSuccessToast(message:)` - Success feedback
+  - Implemented UIColorPickerViewControllerDelegate for color picker handling
+- **Closed GitHub Issues**: #4 (Create Category in category select UI)
+
 ### December 31, 2025 - Performance & UI Improvements
 - **Optimized App Launch Performance**
   - Made notes loading asynchronous to prevent main thread blocking
@@ -649,7 +675,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: December 31, 2025
+**Last Updated**: January 1, 2026
 **Maintainer**: Paul Williams
 **Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)
