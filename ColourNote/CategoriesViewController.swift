@@ -62,7 +62,7 @@ class CategoriesViewController: UITableViewController {
 
         // Add Save button for editing existing categories
         if !isNew {
-            alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
+            let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
                 guard let nameField = alert?.textFields?.first,
                       let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                       !name.isEmpty else {
@@ -86,10 +86,14 @@ class CategoriesViewController: UITableViewController {
                     // Post notification to refresh other views
                     NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
                 }
-            })
+            }
+            saveAction.setValue(UIColor.systemGreen, forKey: "titleTextColor")
+            alert.addAction(saveAction)
         }
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        cancelAction.setValue(UIColor.systemRed, forKey: "titleTextColor")
+        alert.addAction(cancelAction)
 
         present(alert, animated: true)
     }
