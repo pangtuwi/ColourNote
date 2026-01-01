@@ -619,6 +619,11 @@ Potential features to implement:
   - Save button only appears when editing existing categories (not when creating new)
   - Includes validation for empty names and duplicate names
   - Posts notification to refresh other views after save
+- **UI Improvements: Edit Category Dialog**
+  - Save button positioned directly above Cancel button for better UX
+  - Save button text colored green for positive action indication
+  - Cancel button text colored red for dismissive action indication
+  - Clear visual hierarchy for action buttons vs. confirmation buttons
 - **New Feature: Create Categories On-the-Fly** (Issue #4)
   - Added "Create New Category..." option to category picker in NoteDetailViewController
   - Users can now create categories without leaving the note editing screen
