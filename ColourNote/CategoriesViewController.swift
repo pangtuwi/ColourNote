@@ -62,9 +62,10 @@ class CategoriesViewController: UITableViewController {
 
         // Add visual separator and Save button for editing existing categories
         if !isNew {
-            // Add a subtle separator using a disabled action
-            let separator = UIAlertAction(title: "", style: .default, handler: nil)
+            // Add invisible separator using a disabled action with clear text
+            let separator = UIAlertAction(title: " ", style: .default, handler: nil)
             separator.isEnabled = false
+            separator.setValue(UIColor.clear, forKey: "titleTextColor")
             alert.addAction(separator)
 
             alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self, weak alert] _ in
