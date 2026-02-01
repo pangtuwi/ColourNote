@@ -4,7 +4,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Version](https://img.shields.io/badge/version-1.03.5-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-1.1-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## Features
@@ -22,6 +22,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 - ⚡ **Auto-Save** - Changes saved automatically when navigating away, backgrounding app, or dismissing keyboard
 - ✂️ **Copy & Paste** - Full text editing with copy, cut, paste support
 - 📱 **Pull-to-Refresh** - Easy sync and update interface
+- 📝 **Markdown Support** - Write in Markdown with Edit/Preview toggle for formatted text
 
 ## Screenshots
 
@@ -125,6 +126,7 @@ The app uses SQLite with the following schema:
 | category_id | INTEGER | Category reference |
 | active_state | INTEGER | 0=active, 1=deleted |
 | deleted_date | INTEGER | Deletion timestamp (ms) |
+| content_format | TEXT | Content format (default: "markdown") |
 
 **Table: `categories`**
 | Column | Type | Description |
@@ -175,10 +177,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [x] Import from JSON
 - [x] Copy/paste support
 - [x] Search and filter
+- [x] Markdown support with Edit/Preview toggle
 
 ### Planned Features
 
-- [ ] Rich text formatting
+- [x] ~~Rich text formatting~~ → Implemented via Markdown
 - [ ] Cloud sync support
 - [ ] Note sharing
 - [ ] Checklist support
@@ -218,7 +221,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.03 (Build 5)** - Current Release (January 1, 2026)
+- **1.1 (Build 4)** - Current Release (February 1, 2026)
+  - **New Feature**: Markdown Support
+  - Edit/Preview toggle in note editor
+  - Native Markdown renderer (headers, bold, italic, code, lists, links, blockquotes)
+  - Category color theming with contrasting text
+  - Database schema v5 with content_format column
+  - Reorganized note editor UI layout (title on line 1, controls on line 2)
+  - Fixed storyboard constraint issues
+
+- **1.03 (Build 5)** - (January 1, 2026)
   - **New Feature**: Inline category creation from note editor (Issue #4)
   - Users can now create categories without leaving the note editing screen
   - Added "Create New Category..." option to category picker

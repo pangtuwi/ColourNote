@@ -43,6 +43,7 @@ class NoteRecords {
     let noteNoteType = SQLite.Expression<Int>("note_type")
     let activeState = SQLite.Expression<Int>("active_state")
     let deletedDate = SQLite.Expression<Int?>("deleted_date")
+    let contentFormat = SQLite.Expression<String?>("content_format")
 
 
     private init() {
@@ -102,7 +103,7 @@ class NoteRecords {
         }
 
         let dbSchemaVersionKey = "DatabaseSchemaVersion"
-        let currentSchemaVersion = 4 // Increment when adding new migrations
+        let currentSchemaVersion = 5 // Increment when adding new migrations
         let savedSchemaVersion = UserDefaults.standard.integer(forKey: dbSchemaVersionKey)
 
         print("=== Database Migration Check ===")
@@ -163,6 +164,23 @@ class NoteRecords {
                 // Update schema version
                 UserDefaults.standard.set(4, forKey: dbSchemaVersionKey)
                 print("Migration to version 4 completed")
+            }
+
+            if savedSchemaVersion < 5 {
+                // Migration to version 5: Add Markdown support
+                print("Running migration to version 5: Adding Markdown support")
+
+                do {
+                    // Add content_format column to notes table if it doesn't exist
+                    try db.execute("ALTER TABLE notes ADD COLUMN content_format TEXT DEFAULT 'markdown'")
+                    print("Added content_format column to notes table")
+                } catch {
+                    print("content_format column may already exist or error: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(5, forKey: dbSchemaVersionKey)
+                print("Migration to version 5 completed")
             }
         } else {
             print("Database schema is up to date")
@@ -242,7 +260,8 @@ class NoteRecords {
                         colorIndex: note[self.colorIndex],
                         categoryId: note[self.categoryId],
                         isDeleted: false,
-                        deletedDate: nil))
+                        deletedDate: nil,
+                        contentFormat: note[self.contentFormat] ?? "markdown"))
 
                 }
 
@@ -268,7 +287,8 @@ class NoteRecords {
                         colorIndex: note[self.colorIndex],
                         categoryId: note[self.categoryId],
                         isDeleted: true,
-                        deletedDate: note[self.deletedDate]))
+                        deletedDate: note[self.deletedDate],
+                        contentFormat: note[self.contentFormat] ?? "markdown"))
 
                 }
 
@@ -296,7 +316,8 @@ class NoteRecords {
                         colorIndex: note[self.colorIndex],
                         categoryId: note[self.categoryId],
                         isDeleted: isDeleted,
-                        deletedDate: note[self.deletedDate]))
+                        deletedDate: note[self.deletedDate],
+                        contentFormat: note[self.contentFormat] ?? "markdown"))
 
                 }
 
@@ -487,13 +508,17 @@ class NoteRecords {
          var notesFound = [Note]()
          do {
              for note in try self.db!.prepare(self.notes.filter(self.noteId == searchNoteId)) {
+                let isDeleted = (note[self.activeState] == 1)
                 notesFound.append(Note(
                 noteId : note[self.noteId],
                 noteName : note[self.noteName],
                 editedTime: note[self.editedTime],
                 noteText: note[self.noteText],
                 colorIndex: note[self.colorIndex],
-                categoryId: note[self.categoryId]))
+                categoryId: note[self.categoryId],
+                isDeleted: isDeleted,
+                deletedDate: note[self.deletedDate],
+                contentFormat: note[self.contentFormat] ?? "markdown"))
              }
          } catch {
              print("Select failed")
@@ -672,10 +697,10 @@ class NoteRecords {
             do {
                 // Use raw SQL to bypass COLLATE LOCALIZED issue
                 let sql = """
-                INSERT INTO notes (_id, title, created_date, modified_date, note, color_index, category_id, type, note_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO notes (_id, title, created_date, modified_date, note, color_index, category_id, type, note_type, content_format)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
-                try self.db!.run(sql, note.noteId, note.noteName, note.editedTime, note.editedTime, note.noteText, note.colorIndex, note.categoryId, 0, 0)
+                try self.db!.run(sql, note.noteId, note.noteName, note.editedTime, note.editedTime, note.noteText, note.colorIndex, note.categoryId, 0, 0, note.contentFormat)
                 print("Inserted Note with ID \(note.noteId)")
                 result = Int64(note.noteId)
             } catch {

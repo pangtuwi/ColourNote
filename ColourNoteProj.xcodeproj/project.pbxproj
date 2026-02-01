@@ -16,6 +16,7 @@
 		0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995C2EC76248002EC37E /* CategoryRecords.swift */; };
 		0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995E2EC76281002EC37E /* CategoriesViewController.swift */; };
 		00958D6C2F02B8D9000EAFE0 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00958D6B2F02B8D9000EAFE0 /* SettingsViewController.swift */; };
+		00A402F52F07087200D93271 /* MarkdownRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A402F42F07087200D93271 /* MarkdownRenderer.swift */; };
 		06BFA357937C8A1711FC9F4C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3447C1518F622CD945FA0588 /* Foundation.framework */; };
 		0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA608A98F41F901DC3ECB8A /* NoteRecords.swift */; };
 		27C568D29772503FBC3FC133 /* RoundUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151B632C013000F21A31FAA1 /* RoundUIView.swift */; };
@@ -45,6 +46,7 @@
 		0087995C2EC76248002EC37E /* CategoryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoryRecords.swift; path = Shared/Category/CategoryRecords.swift; sourceTree = "<group>"; };
 		0087995E2EC76281002EC37E /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoriesViewController.swift; path = ColourNote/CategoriesViewController.swift; sourceTree = "<group>"; };
 		00958D6B2F02B8D9000EAFE0 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		00A402F42F07087200D93271 /* MarkdownRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MarkdownRenderer.swift; path = Shared/Markdown/MarkdownRenderer.swift; sourceTree = "<group>"; };
 		113DFBC7CC6EE89A79068DA1 /* Pods-ColourNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColourNote.debug.xcconfig"; path = "Target Support Files/Pods-ColourNote/Pods-ColourNote.debug.xcconfig"; sourceTree = "<group>"; };
 		151B632C013000F21A31FAA1 /* RoundUIView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoundUIView.swift; path = ColourNote/RoundUIView.swift; sourceTree = "<group>"; };
 		2C7500F1F904471B09BA8446 /* ColourNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColourNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,6 +87,7 @@
 		0956E81AA95BAF6B5DFD68B5 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				00A402F42F07087200D93271 /* MarkdownRenderer.swift */,
 				008799582EC761BA002EC37E /* Category.swift */,
 				0087995C2EC76248002EC37E /* CategoryRecords.swift */,
 				6E47F6EA1805EDF0D30FBD0A /* Globals.swift */,
@@ -285,6 +288,7 @@
 				C8D90AFF02FD4170888FA092 /* NoteDetailViewController.swift in Sources */,
 				27C568D29772503FBC3FC133 /* RoundUIView.swift in Sources */,
 				634AFE6CF047E5DD1F6875F9 /* LoginViewController.swift in Sources */,
+				00A402F52F07087200D93271 /* MarkdownRenderer.swift in Sources */,
 				CB345CA474ADF9A737712BB4 /* Globals.swift in Sources */,
 				B36E7AC13FC47292B3B9FB15 /* Settings.swift in Sources */,
 				74DD21A72F660BFC6BF85848 /* Utils.swift in Sources */,
@@ -365,12 +369,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = ColourNote/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pangtuwi.ColorNote;
 				PRODUCT_NAME = ColourNote;
 				SDKROOT = iphoneos;
@@ -384,12 +391,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = ColourNote/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pangtuwi.ColorNote;
 				PRODUCT_NAME = ColourNote;
 				SDKROOT = iphoneos;

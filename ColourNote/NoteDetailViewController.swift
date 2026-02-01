@@ -12,13 +12,16 @@
 
 import UIKit
 
-class NoteDetailViewController: UIViewController, UITextViewDelegate {
+class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPickerViewControllerDelegate {
 
     @IBOutlet weak var noteTitle: UITextField!
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var listButton: UIButton!
     @IBOutlet weak var categoryButton: UIButton!
+
+    // Markdown mode toggle - created programmatically
+    private var modeSegmentedControl: UISegmentedControl!
 
     @IBAction func DeleteButtonPressed(_ sender: Any) {
         showDeleteConfirmation()
@@ -39,6 +42,15 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     private var currentCategoryId: Int = 0
 
     var lastNoteID = 0
+
+    // Markdown support
+    private enum DisplayMode {
+        case edit
+        case preview
+    }
+
+    private var currentMode: DisplayMode = .preview
+    private var markdownContent: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,6 +68,9 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
 
         // Add observer for app backgrounding to ensure note is saved
         notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+
+        // Set up Markdown editing/preview views
+        setupMarkdownViews()
 
     } //viewDidLoad
 
@@ -107,8 +122,15 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
     
     func displayData (note : Note) {
         noteTitle.text = note.noteName
-        textView.text = note.noteText
+        markdownContent = note.noteText  // Store Markdown content
         currentCategoryId = note.categoryId
+
+        // Display content based on current mode
+        if currentMode == .edit {
+            textView.text = markdownContent
+        } else {
+            renderMarkdownPreview()
+        }
 
         // Set title background and navigation bar color based on category
         if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
@@ -171,7 +193,9 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
                 _ = NoteRecords.instance.updateNoteTitle(changedNoteId: lastNoteID, newTitle: noteTitle.text ?? "")
             }
             if textHasChanged {
-                _ = NoteRecords.instance.updateNoteText(changedNoteId: lastNoteID, newText: textView.text)
+                // Get content - in edit mode use textView, in preview mode use stored markdownContent
+                let currentContent = currentMode == .edit ? textView.text ?? "" : markdownContent
+                _ = NoteRecords.instance.updateNoteText(changedNoteId: lastNoteID, newText: currentContent)
             }
             textHasChanged = false
             titleHasChanged = false
@@ -418,6 +442,11 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
 
     func textViewDidChange(_ textView: UITextView) {
         textHasChanged = true
+
+        // Keep markdownContent in sync when editing
+        if currentMode == .edit {
+            markdownContent = textView.text
+        }
     }
 
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -443,18 +472,105 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate {
         NotificationCenter.default.removeObserver(self)
     }
 
+    // MARK: - Markdown Support
 
-// MARK: - Notification handlers
-/*extension AnalysisDetailViewController {
-    @objc func contentChangedNotification(_ notification: Notification!) {
-       // displayData()
+    /// Set up Markdown edit/preview toggle
+    private func setupMarkdownViews() {
+        // Create segmented control programmatically
+        modeSegmentedControl = UISegmentedControl(items: ["Edit", "Preview"])
+        modeSegmentedControl.selectedSegmentIndex = 0  // Default to edit mode
+        modeSegmentedControl.addTarget(self, action: #selector(modeSegmentChanged), for: .valueChanged)
+        modeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+
+        // Add to view
+        view.addSubview(modeSegmentedControl)
+
+        // Position on the controls row (Row 2), aligned with category button
+        if let categoryBtn = categoryButton {
+            NSLayoutConstraint.activate([
+                modeSegmentedControl.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+                modeSegmentedControl.centerYAnchor.constraint(equalTo: categoryBtn.centerYAnchor),
+                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 130),
+                modeSegmentedControl.heightAnchor.constraint(equalToConstant: 32)
+            ])
+        } else {
+            // Fallback if category button isn't connected
+            NSLayoutConstraint.activate([
+                modeSegmentedControl.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+                modeSegmentedControl.topAnchor.constraint(equalTo: noteTitle.bottomAnchor, constant: 8),
+                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 130)
+            ])
+        }
+
+        // Start in edit mode (default for new/existing notes)
+        currentMode = .edit
     }
-} */
 
-}
+    /// Handle mode segmented control changes
+    @objc private func modeSegmentChanged(_ sender: UISegmentedControl) {
+        // Save any pending changes before switching modes
+        if currentMode == .edit {
+            markdownContent = textView.text
+        }
 
-// MARK: - UIColorPickerViewControllerDelegate
-extension NoteDetailViewController: UIColorPickerViewControllerDelegate {
+        let newMode: DisplayMode = sender.selectedSegmentIndex == 0 ? .edit : .preview
+        switchMode(to: newMode)
+    }
+
+    /// Switch between edit and preview modes
+    private func switchMode(to mode: DisplayMode) {
+        // Save current scroll position
+        let scrollOffset = textView.contentOffset
+
+        currentMode = mode
+
+        switch mode {
+        case .edit:
+            // Enable editing
+            textView.isEditable = true
+
+            // Show raw markdown text
+            textView.text = markdownContent
+            textView.font = UIFont(name: "BaiJamjuree-Regular", size: 16) ?? UIFont.systemFont(ofSize: 16)
+            textView.textColor = .label
+
+        case .preview:
+            // Save current content
+            markdownContent = textView.text
+
+            // Disable editing in preview mode
+            textView.isEditable = false
+
+            // Render markdown
+            renderMarkdownPreview()
+        }
+
+        // Restore scroll position
+        textView.contentOffset = scrollOffset
+    }
+
+    /// Render Markdown to the text view
+    private func renderMarkdownPreview() {
+        // Get category color if available
+        let categoryColor: UIColor? = {
+            if currentCategoryId > 0,
+               let category = CategoryRecords.instance.getCategory(searchCategoryId: currentCategoryId) {
+                return category.getColor()
+            }
+            return nil
+        }()
+
+        // Render Markdown
+        if let rendered = MarkdownRenderer.shared.render(markdown: markdownContent, categoryColor: categoryColor) {
+            textView.attributedText = rendered
+        } else {
+            // Fallback: show plain text
+            textView.text = markdownContent
+        }
+    }
+
+    // MARK: - UIColorPickerViewControllerDelegate
+
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
         // Only handle new category creation (tag == -1)
         guard viewController.view.tag == -1 else { return }

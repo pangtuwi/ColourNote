@@ -144,7 +144,7 @@
                                 <color key="textColor" systemColor="secondaryLabelColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KyY-LD-0hM">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KyY-LD-0hM">
                                 <rect key="frame" x="139" y="573" width="136" height="35"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="35" id="MPS-kE-g0K"/>
@@ -155,7 +155,7 @@
                                     <action selector="importButtonTapped:" destination="Ypo-bZ-xfD" eventType="touchUpInside" id="tSQ-c5-kIo"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y8u-6U-wW4">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y8u-6U-wW4">
                                 <rect key="frame" x="153" y="498" width="108" height="35"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="tinted" title="Start Fresh"/>
@@ -178,6 +178,8 @@
                             <constraint firstItem="nom-xM-PDe" firstAttribute="top" secondItem="P7t-oT-gQQ" secondAttribute="bottom" constant="80" id="lcv-Ik-m0O"/>
                             <constraint firstItem="1cp-en-UpA" firstAttribute="top" secondItem="2tE-6Q-qUU" secondAttribute="top" constant="148" id="ob1-Xj-N7S"/>
                             <constraint firstItem="1cp-en-UpA" firstAttribute="centerX" secondItem="P7t-oT-gQQ" secondAttribute="centerX" id="yCA-cO-3yK"/>
+                            <constraint firstItem="KyY-LD-0hM" firstAttribute="centerX" secondItem="Sjm-Ge-iY4" secondAttribute="centerX" id="btn-centerX-1"/>
+                            <constraint firstItem="y8u-6U-wW4" firstAttribute="top" secondItem="nom-xM-PDe" secondAttribute="bottom" constant="60" id="btn-top-1"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="nYs-id-Gxf"/>
@@ -185,7 +187,6 @@
                         <outlet property="createBlankButton" destination="y8u-6U-wW4" id="lTK-HE-1JI"/>
                         <outlet property="descriptionLabel" destination="nom-xM-PDe" id="mk8-cJ-0eE"/>
                         <outlet property="importButton" destination="KyY-LD-0hM" id="LXu-wh-PkU"/>
-                        <outlet property="loadDefaultButton" destination="y8u-6U-wW4" id="0ol-fa-ksD"/>
                         <outlet property="logoImageView" destination="1cp-en-UpA" id="yXU-yK-THw"/>
                         <outlet property="welcomeLabel" destination="P7t-oT-gQQ" id="RYY-qu-lbI"/>
                     </connections>
@@ -269,19 +270,24 @@
                         <viewLayoutGuide key="safeArea" id="LhO-0W-MLj"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <!-- List button - top left -->
                             <constraint firstItem="VxD-Za-Zxv" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" id="ESH-D3-LFH"/>
-                            <constraint firstItem="qN5-N0-1NX" firstAttribute="leading" secondItem="vdZ-ZS-NXN" secondAttribute="leading" id="H9q-D7-Jwu"/>
                             <constraint firstItem="VxD-Za-Zxv" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" id="JIK-pR-qYi"/>
-                            <constraint firstItem="LhO-0W-MLj" firstAttribute="bottom" secondItem="BRL-3j-bfH" secondAttribute="bottom" id="R0I-S9-tcw"/>
-                            <constraint firstItem="BRL-3j-bfH" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" id="ULh-tc-uUV"/>
-                            <constraint firstItem="gjg-ai-Z5a" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="40" id="bki-qc-0df"/>
+                            <!-- Title field - Row 1, full width -->
+                            <constraint firstItem="qN5-N0-1NX" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" constant="8" id="H9q-D7-Jwu"/>
+                            <constraint firstItem="qN5-N0-1NX" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="-8" id="title-trailing"/>
                             <constraint firstItem="qN5-N0-1NX" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="40" id="cYV-ra-idu"/>
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="leading" secondItem="qN5-N0-1NX" secondAttribute="trailing" constant="5" id="dO5-gd-xwX"/>
+                            <!-- Category button - Row 2, right of center -->
+                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="qN5-N0-1NX" secondAttribute="bottom" constant="8" id="cat-top"/>
+                            <constraint firstItem="6V1-Y5-buY" firstAttribute="trailing" secondItem="gjg-ai-Z5a" secondAttribute="leading" constant="-8" id="cat-trailing"/>
+                            <!-- Delete button - Row 2, far right -->
+                            <constraint firstItem="gjg-ai-Z5a" firstAttribute="centerY" secondItem="6V1-Y5-buY" secondAttribute="centerY" id="del-centery"/>
+                            <constraint firstItem="gjg-ai-Z5a" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="-8" id="del-trailing"/>
+                            <!-- TextView - Row 3 and below -->
+                            <constraint firstItem="BRL-3j-bfH" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" id="ULh-tc-uUV"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="trailing" secondItem="BRL-3j-bfH" secondAttribute="trailing" id="fbD-be-oe7"/>
-                            <constraint firstItem="BRL-3j-bfH" firstAttribute="top" secondItem="qN5-N0-1NX" secondAttribute="bottom" constant="1" id="gfo-tB-3mK"/>
-                            <constraint firstItem="gjg-ai-Z5a" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="5" id="n3K-ON-Pgx"/>
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="40" id="xfR-xs-W8S"/>
-                            <constraint firstItem="gjg-ai-Z5a" firstAttribute="leading" secondItem="6V1-Y5-buY" secondAttribute="trailing" constant="5" id="xy3-C5-YvO"/>
+                            <constraint firstItem="BRL-3j-bfH" firstAttribute="top" secondItem="6V1-Y5-buY" secondAttribute="bottom" constant="8" id="gfo-tB-3mK"/>
+                            <constraint firstItem="LhO-0W-MLj" firstAttribute="bottom" secondItem="BRL-3j-bfH" secondAttribute="bottom" id="R0I-S9-tcw"/>
                         </constraints>
                     </view>
                     <connections>

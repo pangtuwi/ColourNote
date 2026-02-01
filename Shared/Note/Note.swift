@@ -19,6 +19,7 @@ class Note {
     var categoryId : Int
     var isDeleted : Bool
     var deletedDate : Int?
+    var contentFormat : String
 
 
     init() {
@@ -30,10 +31,11 @@ class Note {
         categoryId = 0
         isDeleted = false
         deletedDate = nil
+        contentFormat = "markdown"
 
     }
 
-    init(noteId : Int, noteName : String, editedTime : Int, noteText : String, colorIndex : Int, categoryId: Int = 0, isDeleted: Bool = false, deletedDate: Int? = nil) {
+    init(noteId : Int, noteName : String, editedTime : Int, noteText : String, colorIndex : Int, categoryId: Int = 0, isDeleted: Bool = false, deletedDate: Int? = nil, contentFormat: String = "markdown") {
         self.noteId = noteId
         self.noteName = noteName
         self.editedTime = editedTime
@@ -42,6 +44,7 @@ class Note {
         self.categoryId = categoryId
         self.isDeleted = isDeleted
         self.deletedDate = deletedDate
+        self.contentFormat = contentFormat
     }
 
 }

@@ -528,13 +528,14 @@ Test targets exist but have minimal coverage:
 - [x] Database migration system
 - [x] Lined text view for writing
 - [x] Auto-save functionality
+- [x] **Markdown support** - Edit/Preview toggle with native rendering
 
 ## Future Enhancements
 
 Potential features to implement:
 
 **High Priority:**
-1. Rich text formatting (bold, italic, lists)
+1. ~~Rich text formatting (bold, italic, lists)~~ → Implemented via Markdown
 2. Note pinning/favorites
 3. Dark mode support
 
@@ -612,6 +613,30 @@ Potential features to implement:
 
 ## Recent Changes
 
+### February 1, 2026 - Markdown Support
+- **New Feature: Markdown Rendering**
+  - Added Edit/Preview toggle in note editor (segmented control)
+  - Native Markdown renderer without external dependencies (`Shared/Markdown/MarkdownRenderer.swift`)
+  - Supports: headers (H1-H6), bold, italic, code blocks, inline code, lists, links, blockquotes, horizontal rules
+  - Category color theming with contrasting text colors
+  - Edit mode: raw markdown text editing
+  - Preview mode: rendered formatted text (read-only)
+- **Database Schema Update**
+  - Added `content_format` column to notes table (migration to schema v5)
+  - Default value: "markdown" for all notes
+  - Backward compatible with existing notes
+- **Model Updates**
+  - `Note.swift`: added `contentFormat` property
+  - `NoteBackup.swift`: exports/imports contentFormat field
+- **UI Layout Reorganization**
+  - NoteDetailViewController: Title on full-width line 1
+  - Controls row (line 2): Edit/Preview toggle, Category button, Delete button
+  - Cleaner separation between title and controls
+- **Storyboard Cleanup**
+  - Removed orphaned segmented control
+  - Fixed LoginViewController button constraints
+  - Removed stale `loadDefaultButton` outlet
+
 ### January 1, 2026 - Inline Category Creation & Bug Fixes
 - **Bug Fix: Category Name Editing**
   - Added "Save" button to Edit Category dialog in CategoriesViewController
@@ -686,7 +711,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: January 1, 2026
+**Last Updated**: February 1, 2026
 **Maintainer**: Paul Williams
 **Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)

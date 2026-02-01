@@ -91,7 +91,7 @@ class NoteBackup {
                 user_id: "local_user",
                 title: note.noteName,
                 content: note.noteText,
-                content_format: "plaintext",
+                content_format: note.contentFormat,
                 timestamp_created: formatter.string(from: createdDate),
                 timestamp_modified: formatter.string(from: modifiedDate),
                 metadata: metadata
@@ -212,7 +212,8 @@ class NoteBackup {
                     colorIndex: backupNote.metadata.color_index,
                     categoryId: backupNote.metadata.category_id ?? 0,
                     isDeleted: backupNote.metadata.deleted,
-                    deletedDate: deletedTimestamp
+                    deletedDate: deletedTimestamp,
+                    contentFormat: backupNote.content_format
                 )
 
                 // Check if note already exists
