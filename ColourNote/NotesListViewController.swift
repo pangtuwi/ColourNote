@@ -507,6 +507,11 @@ extension NotesListViewController {
             self?.showPasscodeSettings()
         }
 
+        // Cloud Sync action
+        let cloudSyncAction = UIAlertAction(title: "Cloud Sync", style: .default) { [weak self] _ in
+            self?.showCloudSync()
+        }
+
         // About action
         let aboutAction = UIAlertAction(title: "About", style: .default) { [weak self] _ in
             self?.showAbout()
@@ -520,6 +525,7 @@ extension NotesListViewController {
         alertController.addAction(backupAction)
         alertController.addAction(importAction)
         alertController.addAction(passcodeAction)
+        alertController.addAction(cloudSyncAction)
         alertController.addAction(aboutAction)
         alertController.addAction(cancelAction)
 
@@ -767,6 +773,11 @@ extension NotesListViewController {
         let alert = UIAlertController(title: "About", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+
+    func showCloudSync() {
+        let syncSettingsVC = SyncSettingsViewController(style: .insetGrouped)
+        navigationController?.pushViewController(syncSettingsVC, animated: true)
     }
 
     func shareBackupFile(fileURL: URL) {

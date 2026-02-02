@@ -3,9 +3,9 @@
 ## Project Overview
 ColourNote is a feature-rich iOS note-taking application with color-coded organization, category management, and security features. The app is built in Swift using UIKit and uses SQLite for local data persistence.
 
-**Current Version**: 1.02 (Build 3)
+**Current Version**: 1.1 (Build 4)
 
-**Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, and backup/restore capabilities. The codebase has been fully cleaned of legacy fitness tracking code and is now 100% focused on note-taking.
+**Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, backup/restore capabilities, and cloud sync. The codebase has been fully cleaned of legacy fitness tracking code and is now 100% focused on note-taking.
 
 ## Architecture
 
@@ -31,6 +31,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 - ✂️ **Copy & Paste** - Full text editing with copy, cut, paste support
 - 📱 **Pull-to-Refresh** - Manual refresh of notes list
 - 🔓 **Session-based Unlocking** - Protected categories remain unlocked during app session
+- ☁️ **Cloud Sync** - Sync notes and categories across devices with JWT authentication
 
 ### Core Components
 
@@ -76,7 +77,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 4. **Database Schema**
 
-   **Table: `notes`** (Schema Version 4)
+   **Table: `notes`** (Schema Version 5)
    - `_id` (INTEGER, PRIMARY KEY) - Unique note identifier
    - `title` (TEXT) - Note title
    - `created_date` (INTEGER) - Creation timestamp in milliseconds since epoch
@@ -86,6 +87,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `category_id` (INTEGER) - Foreign key to categories table
    - `active_state` (INTEGER) - 0 = active, 1 = deleted (soft delete)
    - `deleted_date` (INTEGER, nullable) - Deletion timestamp in milliseconds since epoch
+   - `content_format` (TEXT) - Content format (default: "markdown")
 
    **Table: `categories`** (Schema Version 1)
    - `category_id` (INTEGER, PRIMARY KEY) - Unique category identifier
@@ -94,6 +96,72 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `sort_order` (INTEGER) - Display order for categories
    - `is_protected` (INTEGER) - 0 = unprotected, 1 = protected with passcode
    - `passcode_hash` (TEXT, nullable) - SHA-256 hash of 4-digit PIN
+
+   **Table: `sync_mappings`** (Schema Version 6)
+   - `id` (INTEGER, PRIMARY KEY AUTOINCREMENT) - Unique mapping identifier
+   - `local_id` (INTEGER) - Local entity ID
+   - `cloud_id` (TEXT) - Cloud server ID
+   - `entity_type` (TEXT) - "note" or "category"
+   - `last_synced` (INTEGER, nullable) - Last sync timestamp in milliseconds since epoch
+   - `sync_status` (TEXT) - "synced", "pending_upload", "pending_download", "conflict"
+   - `created_at` (INTEGER) - Record creation timestamp
+   - `modified_at` (INTEGER) - Record modification timestamp
+
+#### Cloud Sync Layer
+**Location**: `Shared/CloudSync/`
+
+1. **APIConfig.swift** - API configuration constants
+   - Base URL: `http://irids.co.uk`
+   - Endpoint paths for auth, notes, and categories
+   - Keychain keys for JWT token storage
+   - Request timeout settings
+
+2. **NetworkManager.swift** - HTTP client singleton
+   - Generic request methods (GET, POST, PUT, DELETE)
+   - JWT token management in iOS Keychain
+   - Automatic Authorization header injection
+   - Response parsing with Codable
+   - WAL mode enabled for concurrent database access
+
+3. **CloudModels.swift** - API data models
+   - `CloudNote` - Server note structure with integer IDs and timestamps
+   - `CloudCategory` - Server category structure
+   - `AuthResponse` - Login/register response with JWT
+   - `CreateNoteRequest` / `CreateCategoryRequest` - Request bodies
+   - `SuccessMessageResponse` - For update operations
+   - Timestamp conversion utilities
+
+4. **AuthManager.swift** - Authentication management
+   - `register(email:password:)` - New user registration
+   - `login(email:password:)` - Authenticate and store JWT
+   - `logout()` - Clear stored credentials
+   - `isLoggedIn` - Check authentication status
+
+5. **SyncMapping.swift** - ID mapping between local and cloud
+   - Maps local integer IDs to cloud string IDs
+   - Tracks sync status per entity
+   - Stores mappings in SQLite `sync_mappings` table
+   - Methods: `getCloudId()`, `getLocalId()`, `createMapping()`, `updateStatus()`
+
+6. **CategorySyncService.swift** - Category synchronization
+   - `uploadAllCategories()` - Push local categories to cloud
+   - `downloadAllCategories()` - Pull cloud categories locally
+   - Duplicate prevention by matching category names
+   - Updates existing categories with cloud data
+
+7. **NoteSyncService.swift** - Note synchronization
+   - `uploadAllNotes()` - Push local notes to cloud
+   - `downloadAllNotes()` - Pull cloud notes locally
+   - Skips empty notes during upload
+   - Conflict resolution: most recent wins
+   - Maps category IDs between local and cloud
+
+8. **SyncEngine.swift** - Orchestrates full sync
+   - `syncAll()` - Full bidirectional sync
+   - `uploadLocalChanges()` - Upload only
+   - `downloadCloudChanges()` - Download only
+   - Progress callbacks for UI updates
+   - Auto-sync on app launch/foreground (if enabled)
 
 #### View Controllers
 **Location**: `ColourNote/`
@@ -366,7 +434,10 @@ ColourNote/
 │   │   ├── TrashViewController.swift          # Deleted notes
 │   │   ├── PasscodeViewController.swift       # Passcode UI
 │   │   ├── SettingsViewController.swift       # Settings & backup
-│   │   └── LoginViewController.swift          # Initial registration
+│   │   ├── LoginViewController.swift          # Initial registration
+│   │   ├── CloudLoginViewController.swift     # Cloud sync login/register
+│   │   ├── SyncSettingsViewController.swift   # Cloud sync settings
+│   │   └── SyncProgressView.swift             # Sync progress overlay
 │   ├── UI Components
 │   │   └── RoundUIView.swift                 # Rounded corner view
 │   ├── Storyboards/
@@ -381,6 +452,15 @@ ColourNote/
 │   ├── NoteList/
 │   │   ├── NoteRecords.swift     # Database manager (singleton)
 │   │   └── NoteListing.swift
+│   ├── CloudSync/               # Cloud synchronization
+│   │   ├── APIConfig.swift      # Server configuration
+│   │   ├── NetworkManager.swift # HTTP client
+│   │   ├── CloudModels.swift    # API data models
+│   │   ├── AuthManager.swift    # Authentication
+│   │   ├── SyncMapping.swift    # ID mapping
+│   │   ├── CategorySyncService.swift
+│   │   ├── NoteSyncService.swift
+│   │   └── SyncEngine.swift     # Sync orchestration
 │   ├── Globals.swift             # App-wide constants & state
 │   ├── NotesNotification.swift   # Notification system
 │   └── SpinnerViewController.swift
@@ -416,7 +496,7 @@ Implemented with version tracking:
 1. Database schema versions tracked in database metadata
 2. `migrateDatabaseIfNeeded()` runs on app launch
 3. Migration code checks current schema version and applies updates incrementally
-4. Current versions: Notes schema v4, Categories schema v1
+4. Current versions: Notes schema v5, Categories schema v1, Sync schema v6
 5. To add new migration:
    - Add version check in `migrateDatabaseIfNeeded()`
    - Apply schema changes with ALTER TABLE statements
@@ -529,6 +609,7 @@ Test targets exist but have minimal coverage:
 - [x] Lined text view for writing
 - [x] Auto-save functionality
 - [x] **Markdown support** - Edit/Preview toggle with native rendering
+- [x] **Cloud sync** - JWT authentication with bidirectional sync
 
 ## Future Enhancements
 
@@ -550,7 +631,7 @@ Potential features to implement:
 11. Home/Dashboard screen with note statistics
 
 **Low Priority/Future:**
-12. Cloud sync (iCloud)
+12. ~~Cloud sync (iCloud)~~ → Implemented with custom server
 13. Collaborative notes
 14. Voice notes/audio recording
 15. Image attachments
@@ -572,10 +653,18 @@ Potential features to implement:
 - **4-Digit PIN**: Balance between security and usability
 
 ### Data Storage
-- **Local Only**: All data stored locally on device, no cloud transmission
+- **Local Primary**: All data stored locally on device with optional cloud sync
 - **SQLite Database**: Located in app's Documents directory
+- **WAL Mode**: Write-Ahead Logging enabled for better concurrent access
 - **Backup Considerations**: Database included in iTunes/iCloud backups
 - **File Protection**: Uses default iOS file protection (protected until first unlock)
+
+### Cloud Sync Security
+- **JWT Authentication**: Tokens stored securely in iOS Keychain
+- **HTTPS**: Server communication should use HTTPS in production
+- **Token Expiry**: Expired tokens require re-authentication
+- **No Password Storage**: Only JWT tokens stored, not user passwords
+- **Protected Categories**: `is_protected` flag synced but NOT passcode hashes
 
 ### Potential Security Improvements
 1. Add biometric authentication (Face ID/Touch ID) as alternative to PIN
@@ -605,13 +694,45 @@ Potential features to implement:
 6. **Notifications**: Use `NotesNotification.contentUpdated` to notify views when data changes
 
 ### For Users
-1. All data is stored locally on the device
-2. Passcode-protected categories are session-based (re-enter passcode after app restart)
-3. Deleted notes are moved to trash and can be restored
-4. Export creates unencrypted JSON files - keep them secure
-5. Forgotten passcodes cannot be recovered (data will remain locked)
+1. All data is stored locally on the device by default
+2. Cloud sync is optional and requires account registration
+3. Passcode-protected categories are session-based (re-enter passcode after app restart)
+4. Deleted notes are moved to trash and can be restored
+5. Export creates unencrypted JSON files - keep them secure
+6. Forgotten passcodes cannot be recovered (data will remain locked)
+7. Cloud sync preserves note content but NOT category passcodes
 
 ## Recent Changes
+
+### February 2, 2026 - Cloud Sync Feature
+- **New Feature: Cloud Synchronization**
+  - Bidirectional sync of notes and categories with cloud server
+  - JWT-based authentication with secure Keychain storage
+  - Login/Register UI (`CloudLoginViewController`)
+  - Sync settings screen (`SyncSettingsViewController`)
+  - Progress overlay during sync operations (`SyncProgressView`)
+- **Cloud Sync Architecture** (`Shared/CloudSync/`)
+  - `APIConfig.swift` - Server configuration and endpoints
+  - `NetworkManager.swift` - HTTP client with JWT management
+  - `CloudModels.swift` - API data models and conversion utilities
+  - `AuthManager.swift` - User authentication
+  - `SyncMapping.swift` - Local-to-cloud ID mapping
+  - `CategorySyncService.swift` - Category sync logic
+  - `NoteSyncService.swift` - Note sync logic
+  - `SyncEngine.swift` - Sync orchestration
+- **Database Schema Update**
+  - Added `sync_mappings` table (migration to schema v6)
+  - WAL mode enabled on all database connections for better concurrency
+- **App Integration**
+  - Cloud Sync option added to Settings menu
+  - Auto-sync on app launch and foreground (when enabled)
+  - Background sync when app enters background
+  - NotesListViewController: Added "Cloud Sync" menu option
+- **Sync Features**
+  - Duplicate prevention: matches categories/notes by name before creating new
+  - Conflict resolution: most recent modification wins
+  - Empty notes skipped during upload
+  - Category colors preserved during sync
 
 ### February 1, 2026 - Markdown Support
 - **New Feature: Markdown Rendering**

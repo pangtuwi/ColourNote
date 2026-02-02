@@ -83,12 +83,15 @@ class NoteRecords {
 
         try db = Connection(fileURL)
 
+        // Enable WAL mode for better concurrent access
+        try db?.execute("PRAGMA journal_mode = WAL")
+
         // Register LOCALIZED collation as a fallback (even though schema doesn't use it)
         // This prevents errors if SQLite.swift cached old schema information
         try? db!.createCollation("LOCALIZED") { (lhs, rhs) -> ComparisonResult in
             return lhs.localizedCaseInsensitiveCompare(rhs)
         }
-        print("Database opened successfully")
+        print("Database opened successfully with WAL mode")
 
         } catch {
             db = nil
@@ -103,7 +106,7 @@ class NoteRecords {
         }
 
         let dbSchemaVersionKey = "DatabaseSchemaVersion"
-        let currentSchemaVersion = 5 // Increment when adding new migrations
+        let currentSchemaVersion = 6 // Increment when adding new migrations
         let savedSchemaVersion = UserDefaults.standard.integer(forKey: dbSchemaVersionKey)
 
         print("=== Database Migration Check ===")
@@ -181,6 +184,38 @@ class NoteRecords {
                 // Update schema version
                 UserDefaults.standard.set(5, forKey: dbSchemaVersionKey)
                 print("Migration to version 5 completed")
+            }
+
+            if savedSchemaVersion < 6 {
+                // Migration to version 6: Add cloud sync support
+                print("Running migration to version 6: Adding cloud sync support")
+
+                do {
+                    // Create sync_mappings table for tracking local-to-cloud ID mappings
+                    let createSyncMappingsSQL = """
+                    CREATE TABLE IF NOT EXISTS sync_mappings (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        local_id INTEGER NOT NULL,
+                        cloud_id TEXT NOT NULL,
+                        entity_type TEXT NOT NULL,
+                        last_synced INTEGER,
+                        sync_status TEXT DEFAULT 'pending_upload',
+                        created_at INTEGER NOT NULL,
+                        modified_at INTEGER NOT NULL
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_sync_local ON sync_mappings(local_id, entity_type);
+                    CREATE INDEX IF NOT EXISTS idx_sync_cloud ON sync_mappings(cloud_id);
+                    CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_unique ON sync_mappings(local_id, entity_type);
+                    """
+                    try db.execute(createSyncMappingsSQL)
+                    print("Created sync_mappings table")
+                } catch {
+                    print("Error creating sync_mappings table: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(6, forKey: dbSchemaVersionKey)
+                print("Migration to version 6 completed")
             }
         } else {
             print("Database schema is up to date")

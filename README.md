@@ -23,6 +23,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 - ✂️ **Copy & Paste** - Full text editing with copy, cut, paste support
 - 📱 **Pull-to-Refresh** - Easy sync and update interface
 - 📝 **Markdown Support** - Write in Markdown with Edit/Preview toggle for formatted text
+- ☁️ **Cloud Sync** - Sync notes and categories across devices with secure JWT authentication
 
 ## Screenshots
 
@@ -112,20 +113,20 @@ ColourNote/
 
 ## Database Schema
 
-The app uses SQLite with the following schema:
+The app uses SQLite with the following schema (current version: 6):
 
 **Table: `notes`**
 | Column | Type | Description |
 |--------|------|-------------|
 | _id | INTEGER | Primary key |
 | title | TEXT | Note title |
-| created_date | INTEGER | Creation timestamp (ms) |
-| modified_date | INTEGER | Last edit timestamp (ms) |
+| created_date | INTEGER | Creation timestamp (ms since epoch) |
+| modified_date | INTEGER | Last edit timestamp (ms since epoch) |
 | note | TEXT | Note content |
 | color_index | INTEGER | Color category (0-9) |
 | category_id | INTEGER | Category reference |
 | active_state | INTEGER | 0=active, 1=deleted |
-| deleted_date | INTEGER | Deletion timestamp (ms) |
+| deleted_date | INTEGER | Deletion timestamp (ms since epoch) |
 | content_format | TEXT | Content format (default: "markdown") |
 
 **Table: `categories`**
@@ -136,6 +137,18 @@ The app uses SQLite with the following schema:
 | color_hex | TEXT | Category color (#RRGGBB) |
 | sort_order | INTEGER | Display order |
 | is_protected | INTEGER | 0=unprotected, 1=protected |
+
+**Table: `sync_mappings`** (Cloud Sync)
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key (auto-increment) |
+| local_id | INTEGER | Local entity ID |
+| cloud_id | TEXT | Cloud server ID |
+| entity_type | TEXT | "note" or "category" |
+| last_synced | INTEGER | Last sync timestamp (ms since epoch) |
+| sync_status | TEXT | "synced", "pending_upload", "pending_download", "conflict" |
+| created_at | INTEGER | Record creation timestamp |
+| modified_at | INTEGER | Record modification timestamp |
 
 ## Color Palette
 
@@ -178,11 +191,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [x] Copy/paste support
 - [x] Search and filter
 - [x] Markdown support with Edit/Preview toggle
+- [x] Cloud sync with JWT authentication
 
 ### Planned Features
 
 - [x] ~~Rich text formatting~~ → Implemented via Markdown
-- [ ] Cloud sync support
+- [x] Cloud sync support (in progress - basic sync working)
 - [ ] Note sharing
 - [ ] Checklist support
 - [ ] Voice notes
@@ -275,4 +289,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Note**: This app stores all data locally on your device. No data is transmitted to external servers.
+**Note**: This app stores all data locally on your device by default. Cloud sync is optional and requires user login. When enabled, notes and categories are synchronized with the cloud server using secure JWT authentication.

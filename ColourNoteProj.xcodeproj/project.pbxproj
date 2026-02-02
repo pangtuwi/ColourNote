@@ -12,6 +12,17 @@
 		0060C5A52EC8E4B5008CDE44 /* TrashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */; };
 		0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */; };
 		0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */; };
+		0066ADD12F30DCF000F75C91 /* SyncMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADD02F30DCF000F75C91 /* SyncMapping.swift */; };
+		0066ADD22F30DCF000F75C91 /* APIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADC92F30DCF000F75C91 /* APIConfig.swift */; };
+		0066ADD32F30DCF000F75C91 /* CategorySyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADCB2F30DCF000F75C91 /* CategorySyncService.swift */; };
+		0066ADD42F30DCF000F75C91 /* CloudModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADCC2F30DCF000F75C91 /* CloudModels.swift */; };
+		0066ADD52F30DCF000F75C91 /* NoteSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADCE2F30DCF000F75C91 /* NoteSyncService.swift */; };
+		0066ADD62F30DCF000F75C91 /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADCF2F30DCF000F75C91 /* SyncEngine.swift */; };
+		0066ADD72F30DCF000F75C91 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADCA2F30DCF000F75C91 /* AuthManager.swift */; };
+		0066ADD82F30DCF000F75C91 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADCD2F30DCF000F75C91 /* NetworkManager.swift */; };
+		0066ADDC2F30DD6600F75C91 /* SyncProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADDA2F30DD6600F75C91 /* SyncProgressView.swift */; };
+		0066ADDD2F30DD6600F75C91 /* SyncSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADDB2F30DD6600F75C91 /* SyncSettingsViewController.swift */; };
+		0066ADDE2F30DD6600F75C91 /* CloudLoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADD92F30DD6600F75C91 /* CloudLoginViewController.swift */; };
 		008799592EC761BA002EC37E /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 008799582EC761BA002EC37E /* Category.swift */; };
 		0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995C2EC76248002EC37E /* CategoryRecords.swift */; };
 		0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0087995E2EC76281002EC37E /* CategoriesViewController.swift */; };
@@ -42,6 +53,29 @@
 		0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrashViewController.swift; path = ColourNote/TrashViewController.swift; sourceTree = "<group>"; };
 		0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeViewController.swift; path = ColourNote/PasscodeViewController.swift; sourceTree = "<group>"; };
 		0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeManager.swift; path = Shared/Security/PasscodeManager.swift; sourceTree = "<group>"; };
+		0066ADBD2F30DB5900F75C91 /* APIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfig.swift; sourceTree = "<group>"; };
+		0066ADBE2F30DB5900F75C91 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		0066ADBF2F30DB5900F75C91 /* CategorySyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySyncService.swift; sourceTree = "<group>"; };
+		0066ADC02F30DB5900F75C91 /* CloudModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudModels.swift; sourceTree = "<group>"; };
+		0066ADC12F30DB5900F75C91 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		0066ADC22F30DB5900F75C91 /* NoteSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteSyncService.swift; sourceTree = "<group>"; };
+		0066ADC32F30DB5900F75C91 /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
+		0066ADC42F30DB5900F75C91 /* SyncMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMapping.swift; sourceTree = "<group>"; };
+		0066ADC52F30DB8800F75C91 /* CloudLoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudLoginViewController.swift; sourceTree = "<group>"; };
+		0066ADC62F30DB8800F75C91 /* SettingsViewController 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsViewController 2.swift"; sourceTree = "<group>"; };
+		0066ADC72F30DB8800F75C91 /* SyncProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncProgressView.swift; sourceTree = "<group>"; };
+		0066ADC82F30DB8800F75C91 /* SyncSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSettingsViewController.swift; sourceTree = "<group>"; };
+		0066ADC92F30DCF000F75C91 /* APIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = APIConfig.swift; path = Shared/CloudSync/APIConfig.swift; sourceTree = "<group>"; };
+		0066ADCA2F30DCF000F75C91 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AuthManager.swift; path = Shared/CloudSync/AuthManager.swift; sourceTree = "<group>"; };
+		0066ADCB2F30DCF000F75C91 /* CategorySyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategorySyncService.swift; path = Shared/CloudSync/CategorySyncService.swift; sourceTree = "<group>"; };
+		0066ADCC2F30DCF000F75C91 /* CloudModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CloudModels.swift; path = Shared/CloudSync/CloudModels.swift; sourceTree = "<group>"; };
+		0066ADCD2F30DCF000F75C91 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkManager.swift; path = Shared/CloudSync/NetworkManager.swift; sourceTree = "<group>"; };
+		0066ADCE2F30DCF000F75C91 /* NoteSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NoteSyncService.swift; path = Shared/CloudSync/NoteSyncService.swift; sourceTree = "<group>"; };
+		0066ADCF2F30DCF000F75C91 /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncEngine.swift; path = Shared/CloudSync/SyncEngine.swift; sourceTree = "<group>"; };
+		0066ADD02F30DCF000F75C91 /* SyncMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncMapping.swift; path = Shared/CloudSync/SyncMapping.swift; sourceTree = "<group>"; };
+		0066ADD92F30DD6600F75C91 /* CloudLoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudLoginViewController.swift; sourceTree = "<group>"; };
+		0066ADDA2F30DD6600F75C91 /* SyncProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncProgressView.swift; sourceTree = "<group>"; };
+		0066ADDB2F30DD6600F75C91 /* SyncSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSettingsViewController.swift; sourceTree = "<group>"; };
 		008799582EC761BA002EC37E /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		0087995C2EC76248002EC37E /* CategoryRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoryRecords.swift; path = Shared/Category/CategoryRecords.swift; sourceTree = "<group>"; };
 		0087995E2EC76281002EC37E /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoriesViewController.swift; path = ColourNote/CategoriesViewController.swift; sourceTree = "<group>"; };
@@ -87,6 +121,14 @@
 		0956E81AA95BAF6B5DFD68B5 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				0066ADC92F30DCF000F75C91 /* APIConfig.swift */,
+				0066ADCA2F30DCF000F75C91 /* AuthManager.swift */,
+				0066ADCB2F30DCF000F75C91 /* CategorySyncService.swift */,
+				0066ADCC2F30DCF000F75C91 /* CloudModels.swift */,
+				0066ADCD2F30DCF000F75C91 /* NetworkManager.swift */,
+				0066ADCE2F30DCF000F75C91 /* NoteSyncService.swift */,
+				0066ADCF2F30DCF000F75C91 /* SyncEngine.swift */,
+				0066ADD02F30DCF000F75C91 /* SyncMapping.swift */,
 				00A402F42F07087200D93271 /* MarkdownRenderer.swift */,
 				008799582EC761BA002EC37E /* Category.swift */,
 				0087995C2EC76248002EC37E /* CategoryRecords.swift */,
@@ -181,12 +223,27 @@
 				F3EC00706371DEFD61CA709C /* ColourNote */,
 				0956E81AA95BAF6B5DFD68B5 /* Shared */,
 				9B08064928FCE0147AE0DE0B /* Pods */,
+				0066ADBD2F30DB5900F75C91 /* APIConfig.swift */,
+				0066ADBE2F30DB5900F75C91 /* AuthManager.swift */,
+				0066ADBF2F30DB5900F75C91 /* CategorySyncService.swift */,
+				0066ADC02F30DB5900F75C91 /* CloudModels.swift */,
+				0066ADC12F30DB5900F75C91 /* NetworkManager.swift */,
+				0066ADC22F30DB5900F75C91 /* NoteSyncService.swift */,
+				0066ADC32F30DB5900F75C91 /* SyncEngine.swift */,
+				0066ADC42F30DB5900F75C91 /* SyncMapping.swift */,
+				0066ADC52F30DB8800F75C91 /* CloudLoginViewController.swift */,
+				0066ADC62F30DB8800F75C91 /* SettingsViewController 2.swift */,
+				0066ADC72F30DB8800F75C91 /* SyncProgressView.swift */,
+				0066ADC82F30DB8800F75C91 /* SyncSettingsViewController.swift */,
 			);
 			sourceTree = "<group>";
 		};
 		F3EC00706371DEFD61CA709C /* ColourNote */ = {
 			isa = PBXGroup;
 			children = (
+				0066ADD92F30DD6600F75C91 /* CloudLoginViewController.swift */,
+				0066ADDA2F30DD6600F75C91 /* SyncProgressView.swift */,
+				0066ADDB2F30DD6600F75C91 /* SyncSettingsViewController.swift */,
 				00958D6B2F02B8D9000EAFE0 /* SettingsViewController.swift */,
 				0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */,
 				0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */,
@@ -284,6 +341,9 @@
 				0060C5A52EC8E4B5008CDE44 /* TrashViewController.swift in Sources */,
 				9834C92EC49252303E75C06F /* NotesListViewController.swift in Sources */,
 				0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */,
+				0066ADDC2F30DD6600F75C91 /* SyncProgressView.swift in Sources */,
+				0066ADDD2F30DD6600F75C91 /* SyncSettingsViewController.swift in Sources */,
+				0066ADDE2F30DD6600F75C91 /* CloudLoginViewController.swift in Sources */,
 				0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */,
 				C8D90AFF02FD4170888FA092 /* NoteDetailViewController.swift in Sources */,
 				27C568D29772503FBC3FC133 /* RoundUIView.swift in Sources */,
@@ -297,6 +357,14 @@
 				C35D83CBAF1C2FCF4B29240B /* Note.swift in Sources */,
 				0087995F2EC76281002EC37E /* CategoriesViewController.swift in Sources */,
 				0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */,
+				0066ADD12F30DCF000F75C91 /* SyncMapping.swift in Sources */,
+				0066ADD22F30DCF000F75C91 /* APIConfig.swift in Sources */,
+				0066ADD32F30DCF000F75C91 /* CategorySyncService.swift in Sources */,
+				0066ADD42F30DCF000F75C91 /* CloudModels.swift in Sources */,
+				0066ADD52F30DCF000F75C91 /* NoteSyncService.swift in Sources */,
+				0066ADD62F30DCF000F75C91 /* SyncEngine.swift in Sources */,
+				0066ADD72F30DCF000F75C91 /* AuthManager.swift in Sources */,
+				0066ADD82F30DCF000F75C91 /* NetworkManager.swift in Sources */,
 				41CF3C2DE1880BBAC66C7B2E /* SpinnerViewController.swift in Sources */,
 				0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */,
 				E903AFD25AF4908BC5FD8C55 /* NotesNotification.swift in Sources */,

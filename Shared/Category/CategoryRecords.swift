@@ -40,7 +40,9 @@ class CategoryRecords {
                 .path
 
             db = try Connection(fileURL)
-            print("CategoryRecords: Database opened successfully")
+            // Enable WAL mode for better concurrent access
+            try db?.execute("PRAGMA journal_mode = WAL")
+            print("CategoryRecords: Database opened successfully with WAL mode")
         } catch {
             db = nil
             print("CategoryRecords: Error opening database - \(error)")
@@ -198,9 +200,11 @@ class CategoryRecords {
 
     func updateCategory(category: Category) -> Int {
         var result: Int = -1
+        let semaphore = DispatchSemaphore(value: 0)
 
         concurrentDBQueue.async(flags: .barrier) { [weak self] in
             guard let self = self, let db = self.db else {
+                semaphore.signal()
                 return
             }
 
@@ -216,8 +220,10 @@ class CategoryRecords {
                     print("CategoryRecords: Update failed in updateCategory - \(error)")
                 }
             }
+            semaphore.signal()
         }
 
+        semaphore.wait()
         return result
     }
 

@@ -29,6 +29,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             _ = CategoryRecords.instance
             let elapsed = Date().timeIntervalSince(startTime)
             print("Database initialized in \(elapsed) seconds")
+
+            // Initialize sync mapping table
+            _ = SyncMapping.shared
         }
 
         // Ensure window is created
@@ -55,12 +58,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             navigation.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black, NSAttributedString.Key.font: navigationLargeFont!]
         }
 
+        // Trigger auto-sync on app launch if enabled
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            SyncEngine.shared.syncIfNeeded()
+        }
+
         return true
+    }
+
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        // Trigger auto-sync when app comes back to foreground
+        SyncEngine.shared.syncIfNeeded()
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Clear passcode session - require re-entry when app returns
         PasscodeManager.shared.clearSession()
+
+        // Trigger sync when going to background (if enabled and quick enough)
+        if SyncEngine.shared.isAutoSyncEnabled && AuthManager.shared.isLoggedIn {
+            // Request background time for sync
+            var backgroundTask: UIBackgroundTaskIdentifier = .invalid
+            backgroundTask = application.beginBackgroundTask {
+                application.endBackgroundTask(backgroundTask)
+                backgroundTask = .invalid
+            }
+
+            SyncEngine.shared.uploadLocalChanges { _ in
+                application.endBackgroundTask(backgroundTask)
+                backgroundTask = .invalid
+            }
+        }
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

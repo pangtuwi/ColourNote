@@ -219,6 +219,21 @@
             </objects>
             <point key="canvasLocation" x="-465" y="125"/>
         </scene>
+        <!--Cloud Login View Controller-->
+        <scene sceneID="cloudLogin-scene-001">
+            <objects>
+                <viewController storyboardIdentifier="CloudLoginViewController" id="cloudLogin-vc-001" customClass="CloudLoginViewController" customModule="ColourNote" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cloudLogin-view-001">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="cloudLogin-safe-001"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cloudLogin-fr-001" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1552" y="1027"/>
+        </scene>
         <!--NoteDetailView-->
         <scene sceneID="xOh-OL-KOA">
             <objects>
@@ -316,6 +331,9 @@
         </systemColor>
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>
