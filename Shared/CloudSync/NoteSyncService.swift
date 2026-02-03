@@ -222,31 +222,57 @@ class NoteSyncService {
 
     /// Process a single cloud note (create or update locally)
     private func processCloudNote(_ cloudNote: CloudNote) -> Bool {
-        // Check if we already have this cloud note mapped locally
+        print("NoteSyncService: Processing cloud note - id: \(cloudNote.id), uuid: '\(cloudNote.uuid ?? "nil")', title: '\(cloudNote.title)'")
+
+        // PRIMARY: Check by UUID first (cross-device identification)
+        if let cloudUUID = cloudNote.uuid,
+           let existingNote = syncMapping.findLocalNoteByUUID(cloudUUID) {
+            print("NoteSyncService: Found local note by UUID: \(existingNote.noteId)")
+            // Ensure mapping exists
+            if syncMapping.getCloudId(localId: existingNote.noteId, entityType: .note) == nil {
+                syncMapping.createMapping(
+                    localId: existingNote.noteId,
+                    cloudId: cloudNote.id,
+                    entityType: .note,
+                    status: .synced
+                )
+            }
+            return updateLocalNote(cloudNote: cloudNote, localId: existingNote.noteId)
+        }
+
+        // SECONDARY: Check if we already have this cloud note mapped by cloud ID
         if let localId = syncMapping.getLocalId(cloudId: cloudNote.id, entityType: .note) {
             // Update existing local note
             return updateLocalNote(cloudNote: cloudNote, localId: localId)
-        } else {
-            // Create new local note
-            return createLocalNote(cloudNote: cloudNote)
         }
+
+        // TERTIARY: Create new local note (no UUID or cloud ID match)
+        return createLocalNote(cloudNote: cloudNote)
     }
 
     private func createLocalNote(cloudNote: CloudNote) -> Bool {
-        // First, check if a note with the same title already exists locally
+        // UUID matching is now done in processCloudNote, so if we get here,
+        // we have a truly new note from the cloud
+
+        // FALLBACK: Check if a note with the same title already exists locally
+        // (for backwards compatibility with data that doesn't have UUIDs yet)
         let existingNotes = NoteRecords.instance.getAllNotes()
         if let existingNote = existingNotes.first(where: {
             $0.noteName.lowercased() == cloudNote.title.lowercased() &&
             !$0.noteName.isEmpty
         }) {
-            // Note with same title exists - just create mapping, don't duplicate
+            // Note with same title exists - create mapping and update UUID if needed
             syncMapping.createMapping(
                 localId: existingNote.noteId,
                 cloudId: cloudNote.id,
                 entityType: .note,
                 status: .synced
             )
-            print("NoteSyncService: Mapped existing local note \(existingNote.noteId) to cloud \(cloudNote.id)")
+            // Update the local note's UUID if it doesn't have one from cloud
+            if let cloudUUID = cloudNote.uuid, existingNote.uuid != cloudUUID {
+                _ = NoteRecords.instance.updateNoteUUID(noteId: existingNote.noteId, uuid: cloudUUID)
+            }
+            print("NoteSyncService: Mapped existing local note \(existingNote.noteId) to cloud \(cloudNote.id) (matched by title)")
             return true
         }
 
@@ -264,13 +290,13 @@ class NoteSyncService {
             }
         }
 
-        // Create the local note - CloudNote now uses integer timestamps
+        // Create the local note with UUID from cloud
         let localNote = Note(
             noteId: newLocalId,
+            uuid: cloudNote.uuid,
             noteName: cloudNote.title,
             editedTime: cloudNote.modifiedDate ?? cloudNote.createdDate,
             noteText: cloudNote.note,
-            colorIndex: cloudNote.colorIndex ?? 0,
             categoryId: localCategoryId,
             isDeleted: cloudNote.isDeleted,
             deletedDate: cloudNote.deletedDate,
@@ -297,7 +323,7 @@ class NoteSyncService {
                 entityType: .note,
                 status: .synced
             )
-            print("NoteSyncService: Created local note \(newLocalId) from cloud \(cloudNote.id)")
+            print("NoteSyncService: Created local note \(newLocalId) from cloud \(cloudNote.id) with UUID \(cloudNote.uuid ?? "nil")")
             return true
         }
 
@@ -318,6 +344,10 @@ class NoteSyncService {
         // Only update if cloud is newer (conflict resolution: most recent wins)
         if cloudModified <= localModified {
             print("NoteSyncService: Local note \(localId) is newer or same age, skipping update")
+            // Still update UUID if cloud has one and local doesn't match
+            if let cloudUUID = cloudNote.uuid, existingNote.uuid != cloudUUID {
+                _ = NoteRecords.instance.updateNoteUUID(noteId: localId, uuid: cloudUUID)
+            }
             syncMapping.updateStatus(localId: localId, entityType: .note, status: .synced)
             return true
         }
@@ -337,6 +367,11 @@ class NoteSyncService {
         _ = NoteRecords.instance.updateNoteTitle(changedNoteId: localId, newTitle: cloudNote.title)
         _ = NoteRecords.instance.updateNoteCategory(changedNoteId: localId, newCategoryId: localCategoryId)
 
+        // Update UUID if cloud has one
+        if let cloudUUID = cloudNote.uuid, existingNote.uuid != cloudUUID {
+            _ = NoteRecords.instance.updateNoteUUID(noteId: localId, uuid: cloudUUID)
+        }
+
         // Handle deletion status
         if cloudNote.isDeleted != existingNote.isDeleted {
             NoteRecords.instance.setNoteDeletionStatus(
@@ -347,7 +382,7 @@ class NoteSyncService {
         }
 
         syncMapping.updateStatus(localId: localId, entityType: .note, status: .synced)
-        print("NoteSyncService: Updated local note \(localId) from cloud")
+        print("NoteSyncService: Updated local note \(localId) from cloud with UUID \(cloudNote.uuid ?? "nil")")
         return true
     }
 

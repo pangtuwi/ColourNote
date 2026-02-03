@@ -20,7 +20,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 ### Key Features
 - ✍️ **Quick Note Taking** - Create and edit notes with auto-save functionality
-- 🎨 **Color-Coded Organization** - 10-color palette for visual organization
+- 🎨 **Color-Coded Organization** - Notes inherit color from their assigned category
 - 📁 **Category Management** - Organize notes into custom categories with personalized colors
 - 🔒 **Passcode Protection** - Protect sensitive categories with 4-digit PIN (SHA-256 encrypted)
 - 🗑️ **Soft Delete & Trash** - Deleted notes move to trash with restore capability
@@ -40,11 +40,14 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 1. **Note.swift** (`Shared/Note/Note.swift`)
    - Model class representing a single note
-   - Properties: `noteId`, `noteName`, `editedTime`, `createdDate`, `noteText`, `colorIndex`, `categoryId`, `activeState`, `deletedDate`
+   - Properties: `noteId`, `uuid`, `noteName`, `editedTime`, `noteText`, `categoryId`, `isDeleted`, `deletedDate`, `contentFormat`
+   - UUID generated automatically on creation for cloud sync identification
+   - Note color is determined by the associated category
 
 2. **Category.swift** (`Shared/Category/Category.swift`)
    - Model class representing a note category
-   - Properties: `categoryId`, `categoryName`, `colorHex`, `sortOrder`, `isProtected`
+   - Properties: `categoryId`, `uuid`, `categoryName`, `colorHex`, `sortOrder`, `isProtected`
+   - UUID generated automatically on creation for cloud sync identification
    - Helper methods:
      - `getColor()` - converts hex string to UIColor
      - `getDefaultCategories()` - returns default category set
@@ -64,7 +67,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `softDeleteNote(noteId:)` - move note to trash
      - `undeleteNote(noteId:)` - restore note from trash
      - `getDeletedNotes()` - fetch trashed notes
-     - `addNote(title:note:categoryId:colorIndex:)` - create new note
+     - `insertNote(note:)` - create new note
    - Key methods for Categories:
      - `getCategories()` - fetch all categories
      - `getCategory(categoryId:)` - fetch specific category
@@ -77,20 +80,22 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 4. **Database Schema**
 
-   **Table: `notes`** (Schema Version 5)
+   **Table: `notes`** (Schema Version 9)
    - `_id` (INTEGER, PRIMARY KEY) - Unique note identifier
+   - `uuid` (TEXT) - UUID for cloud sync and cross-device identification
    - `title` (TEXT) - Note title
    - `created_date` (INTEGER) - Creation timestamp in milliseconds since epoch
    - `modified_date` (INTEGER) - Last modification timestamp in milliseconds since epoch
    - `note` (TEXT) - Note content
-   - `color_index` (INTEGER) - Color palette index (0-9)
-   - `category_id` (INTEGER) - Foreign key to categories table
+   - `category_id` (INTEGER) - Foreign key to categories table (note color comes from category)
    - `active_state` (INTEGER) - 0 = active, 1 = deleted (soft delete)
    - `deleted_date` (INTEGER, nullable) - Deletion timestamp in milliseconds since epoch
    - `content_format` (TEXT) - Content format (default: "markdown")
+   - Note: `color_index` column deprecated and no longer used - notes use category color
 
-   **Table: `categories`** (Schema Version 1)
+   **Table: `categories`** (Schema Version 8)
    - `category_id` (INTEGER, PRIMARY KEY) - Unique category identifier
+   - `uuid` (TEXT) - UUID for cloud sync and cross-device identification
    - `category_name` (TEXT) - Category display name
    - `color_hex` (TEXT) - Category color in #RRGGBB format
    - `sort_order` (INTEGER) - Display order for categories
@@ -141,19 +146,31 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - Maps local integer IDs to cloud string IDs
    - Tracks sync status per entity
    - Stores mappings in SQLite `sync_mappings` table
-   - Methods: `getCloudId()`, `getLocalId()`, `createMapping()`, `updateStatus()`
+   - **UUID-based lookup methods**:
+     - `findLocalNoteByUUID(_:)` - Find note by UUID
+     - `findLocalCategoryByUUID(_:)` - Find category by UUID
+     - `noteExistsLocally(uuid:)` - Check if note exists by UUID
+     - `categoryExistsLocally(uuid:)` - Check if category exists by UUID
+   - ID mapping methods: `getCloudId()`, `getLocalId()`, `createMapping()`, `updateStatus()`
 
 6. **CategorySyncService.swift** - Category synchronization
    - `uploadAllCategories()` - Push local categories to cloud
    - `downloadAllCategories()` - Pull cloud categories locally
-   - Duplicate prevention by matching category names
-   - Updates existing categories with cloud data
+   - **UUID-first matching** (priority order):
+     1. PRIMARY: Match by UUID (cross-device identification)
+     2. SECONDARY: Match by cloud ID mapping
+     3. TERTIARY: Match by category name (backwards compatibility)
+   - Updates existing categories with cloud data including UUID
 
 7. **NoteSyncService.swift** - Note synchronization
    - `uploadAllNotes()` - Push local notes to cloud
    - `downloadAllNotes()` - Pull cloud notes locally
    - Skips empty notes during upload
    - Conflict resolution: most recent wins
+   - **UUID-first matching** (priority order):
+     1. PRIMARY: Match by UUID (cross-device identification)
+     2. SECONDARY: Match by cloud ID mapping
+     3. TERTIARY: Match by note title (backwards compatibility)
    - Maps category IDs between local and cloud
 
 8. **SyncEngine.swift** - Orchestrates full sync
@@ -496,7 +513,7 @@ Implemented with version tracking:
 1. Database schema versions tracked in database metadata
 2. `migrateDatabaseIfNeeded()` runs on app launch
 3. Migration code checks current schema version and applies updates incrementally
-4. Current versions: Notes schema v5, Categories schema v1, Sync schema v6
+4. Current versions: Database schema v9 (Notes v7 UUID, Categories v8 UUID, Sync v6)
 5. To add new migration:
    - Add version check in `migrateDatabaseIfNeeded()`
    - Apply schema changes with ALTER TABLE statements
@@ -610,6 +627,7 @@ Test targets exist but have minimal coverage:
 - [x] Auto-save functionality
 - [x] **Markdown support** - Edit/Preview toggle with native rendering
 - [x] **Cloud sync** - JWT authentication with bidirectional sync
+- [x] **UUID-based sync matching** - Cross-device identification with UUID priority
 
 ## Future Enhancements
 
@@ -703,6 +721,32 @@ Potential features to implement:
 7. Cloud sync preserves note content but NOT category passcodes
 
 ## Recent Changes
+
+### February 3, 2026 - UUID-Based Sync Matching
+- **Enhanced Cloud Sync: UUID-First Matching**
+  - UUID is now the PRIMARY means of comparison during synchronization
+  - Enables reliable cross-device identification of notes and categories
+  - Sync matching priority order:
+    1. PRIMARY: Match by UUID (stable cross-device identifier)
+    2. SECONDARY: Match by cloud ID mapping (existing sync relationship)
+    3. TERTIARY: Match by name/title (backwards compatibility fallback)
+- **New SyncMapping Methods**
+  - `findLocalNoteByUUID(_:)` - Find a note by its UUID
+  - `findLocalCategoryByUUID(_:)` - Find a category by its UUID
+  - `noteExistsLocally(uuid:)` - Check if note exists by UUID
+  - `categoryExistsLocally(uuid:)` - Check if category exists by UUID
+- **NoteRecords Enhancement**
+  - Added `updateNoteUUID(noteId:uuid:)` method for updating note UUIDs
+- **CategoryRecords Enhancement**
+  - `updateCategory()` now includes UUID in SQL update statement
+- **CloudModels Updates**
+  - Added `uuid` field to `CloudNote` and `CloudCategory` structs
+  - Added `uuid` field to `CreateNoteRequest` and `CreateCategoryRequest`
+  - Conversion methods now include UUID in both directions
+- **Backup/Import Enhancement**
+  - `NoteBackup.swift` now preserves UUIDs during import
+  - Categories import with `category.uuid = backupCategory.uuid`
+  - Notes import with `uuid: backupNote.uuid` parameter
 
 ### February 2, 2026 - Cloud Sync Feature
 - **New Feature: Cloud Synchronization**

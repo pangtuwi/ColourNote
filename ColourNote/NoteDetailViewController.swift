@@ -140,8 +140,8 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
             setNavigationBarColor(categoryColor)
             categoryButton?.setTitle(category.categoryName, for: .normal)
         } else {
-            // Use old colorIndex for title and navigation bar if no category
-            let color = Globals.CN_LIGHT_COLORS[note.colorIndex]
+            // Use default white when no category is set
+            let color = UIColor.white
             noteTitle.backgroundColor = color
             noteTitle.textColor = getContrastingTextColor(for: color)
             setNavigationBarColor(color)
@@ -474,14 +474,103 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
 
     // MARK: - Markdown Support
 
+    /// Style Segmented Control
+    ///
+    func styleSegmentedControl(_ control: UISegmentedControl?) {
+        guard let control = control else { return }
+
+        // 1. Remove the default solid backgrounds
+        let transparentImage = UIImage()
+        control.setBackgroundImage(transparentImage, for: .normal, barMetrics: .default)
+        control.setBackgroundImage(transparentImage, for: .selected, barMetrics: .default)
+        control.setDividerImage(transparentImage, forLeftSegmentState: .normal, rightSegmentState: .normal, barMetrics: .default)
+
+        // 2. Style the text for Liquid Glass (Vibrant look)
+        let normalAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.secondaryLabel
+        ]
+        let selectedAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.label,
+            .font: UIFont.systemFont(ofSize: 13, weight: .semibold)
+        ]
+        control.setTitleTextAttributes(normalAttributes, for: .normal)
+        control.setTitleTextAttributes(selectedAttributes, for: .selected)
+
+        // 3. Add the Glass Container
+        let glassEffect = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+        glassEffect.layer.cornerRadius = 10
+        glassEffect.clipsToBounds = true
+        glassEffect.isUserInteractionEnabled = false // Let touches pass to the control
+        
+        // 4. Add a subtle "Rim Light" border
+        glassEffect.layer.borderWidth = 0.5
+        glassEffect.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+
+        // Layout Logic (Assuming it's in a view hierarchy)
+        control.insertSubview(glassEffect, at: 0)
+        glassEffect.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        glassEffect.frame = control.bounds
+    }
+    
+    
+    func styleIconSegmentedControl(_ control: UISegmentedControl) {
+        // 1. Create a consistent symbol configuration
+        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold, scale: .medium)
+        
+        // 2. Re-apply icons with the configuration
+        control.setImage(UIImage(systemName: "pencil.and.outline", withConfiguration: config), forSegmentAt: 0)
+        control.setImage(UIImage(systemName: "eye", withConfiguration: config), forSegmentAt: 1)
+        
+        // 3. Set the icon colors
+        // In Liquid Glass, 'secondaryLabel' is used for inactive states
+        control.setTitleTextAttributes([.foregroundColor: UIColor.secondaryLabel], for: .normal)
+        
+        // 'label' or a specific tint color is used for the active state
+        control.setTitleTextAttributes([.foregroundColor: UIColor.systemBlue], for: .selected)
+        
+        // 4. Apply your glass background logic from before
+     
+        let glassEffect = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+        glassEffect.layer.cornerRadius = 10
+        glassEffect.clipsToBounds = true
+        glassEffect.isUserInteractionEnabled = false // Let touches pass to the control
+        
+        // 4. Add a subtle "Rim Light" border
+        glassEffect.layer.borderWidth = 0.5
+        glassEffect.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+
+        // Layout Logic (Assuming it's in a view hierarchy)
+        control.insertSubview(glassEffect, at: 0)
+        glassEffect.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        glassEffect.frame = control.bounds
+    }
     /// Set up Markdown edit/preview toggle
     private func setupMarkdownViews() {
         // Create segmented control programmatically
-        modeSegmentedControl = UISegmentedControl(items: ["Edit", "Preview"])
+        
+        let editIcon = UIImage(systemName: "pencil.and.outline")
+        let previewIcon = UIImage(systemName: "eye")
+
+        // Initialize with the images instead of strings
+        let modeSegmentedControl = UISegmentedControl(items: [editIcon as Any, previewIcon as Any])
+        //modeSegmentedControl = UISegmentedControl(items: ["Edit", "Preview"])
         modeSegmentedControl.selectedSegmentIndex = 0  // Default to edit mode
         modeSegmentedControl.addTarget(self, action: #selector(modeSegmentChanged), for: .valueChanged)
         modeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        
+        modeSegmentedControl.subviews[0].accessibilityLabel = "Edit Mode"
+        modeSegmentedControl.subviews[1].accessibilityLabel = "Preview Mode"
+        
+        // Setting width to 0 allows the segment to auto-size to the icon,
+        // but you can provide a specific value (e.g., 50) for a tighter look.
+        modeSegmentedControl.setWidth(50, forSegmentAt: 0)
+        modeSegmentedControl.setWidth(50, forSegmentAt: 1)
+       
+        // Ensure it doesn't stretch to fill the screen
+        modeSegmentedControl.apportionsSegmentWidthsByContent = true
 
+        styleIconSegmentedControl(modeSegmentedControl)
+        
         // Add to view
         view.addSubview(modeSegmentedControl)
 
@@ -490,7 +579,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
             NSLayoutConstraint.activate([
                 modeSegmentedControl.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
                 modeSegmentedControl.centerYAnchor.constraint(equalTo: categoryBtn.centerYAnchor),
-                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 130),
+                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 100),
                 modeSegmentedControl.heightAnchor.constraint(equalToConstant: 32)
             ])
         } else {
@@ -498,7 +587,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
             NSLayoutConstraint.activate([
                 modeSegmentedControl.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
                 modeSegmentedControl.topAnchor.constraint(equalTo: noteTitle.bottomAnchor, constant: 8),
-                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 130)
+                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 100)
             ])
         }
 

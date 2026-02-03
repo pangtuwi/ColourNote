@@ -10,7 +10,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 ## Features
 
 - ✍️ **Quick Note Taking** - Create and edit notes with a clean, distraction-free interface
-- 🎨 **Color-Coded Organization** - Choose from 10 beautiful colors to organize your notes
+- 🎨 **Color-Coded Organization** - Notes are colored based on their assigned category
 - 📁 **Category Management** - Organize notes into custom categories with personalized colors
 - ⚡ **Inline Category Creation** - Create new categories on-the-fly without leaving the note editor
 - 🔒 **Passcode Protection** - Protect sensitive categories with a 4-digit PIN (SHA-256 encrypted)
@@ -113,18 +113,18 @@ ColourNote/
 
 ## Database Schema
 
-The app uses SQLite with the following schema (current version: 6):
+The app uses SQLite with the following schema (current version: 9):
 
 **Table: `notes`**
 | Column | Type | Description |
 |--------|------|-------------|
 | _id | INTEGER | Primary key |
+| uuid | TEXT | UUID for cloud sync |
 | title | TEXT | Note title |
 | created_date | INTEGER | Creation timestamp (ms since epoch) |
 | modified_date | INTEGER | Last edit timestamp (ms since epoch) |
 | note | TEXT | Note content |
-| color_index | INTEGER | Color category (0-9) |
-| category_id | INTEGER | Category reference |
+| category_id | INTEGER | Category reference (color comes from category) |
 | active_state | INTEGER | 0=active, 1=deleted |
 | deleted_date | INTEGER | Deletion timestamp (ms since epoch) |
 | content_format | TEXT | Content format (default: "markdown") |
@@ -133,6 +133,7 @@ The app uses SQLite with the following schema (current version: 6):
 | Column | Type | Description |
 |--------|------|-------------|
 | category_id | INTEGER | Primary key |
+| uuid | TEXT | UUID for cloud sync |
 | category_name | TEXT | Category display name |
 | color_hex | TEXT | Category color (#RRGGBB) |
 | sort_order | INTEGER | Display order |
@@ -152,7 +153,7 @@ The app uses SQLite with the following schema (current version: 6):
 
 ## Color Palette
 
-ColourNote uses a 10-color palette for note organization:
+ColourNote uses category colors for note organization. Categories can be assigned any color via the color picker. The following 10-color palette is available as preset options:
 
 | Index | Color | Hex |
 |-------|-------|-----|
@@ -235,7 +236,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.1 (Build 4)** - Current Release (February 1, 2026)
+- **1.2 (Build 5)** - Current Release (February 3, 2026)
+  - **New Feature**: Cloud Sync with JWT Authentication
+  - Bidirectional sync of notes and categories with cloud server
+  - Login/Register UI for cloud account management
+  - UUID-based sync matching for reliable cross-device identification
+  - Database schema v9 with UUID columns and sync_mappings table
+  - Sync priority: UUID first, cloud ID second, name matching as fallback
+  - Auto-sync on app launch/foreground (when enabled)
+
+- **1.1 (Build 4)** - (February 1, 2026)
   - **New Feature**: Markdown Support
   - Edit/Preview toggle in note editor
   - Native Markdown renderer (headers, bold, italic, code, lists, links, blockquotes)

@@ -10,6 +10,7 @@ import UIKit
 
 class Category {
     var categoryId: Int
+    var uuid: String
     var categoryName: String
     var colorHex: String
     var sortOrder: Int
@@ -17,14 +18,16 @@ class Category {
 
     init() {
         categoryId = 0
+        uuid = UUID().uuidString
         categoryName = ""
         colorHex = "#FFFFFF"
         sortOrder = 0
         isProtected = false
     }
 
-    init(categoryId: Int, categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false) {
+    init(categoryId: Int, uuid: String? = nil, categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false) {
         self.categoryId = categoryId
+        self.uuid = uuid ?? UUID().uuidString
         self.categoryName = categoryName
         self.colorHex = colorHex
         self.sortOrder = sortOrder

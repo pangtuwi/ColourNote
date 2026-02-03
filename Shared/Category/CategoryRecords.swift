@@ -20,6 +20,7 @@ class CategoryRecords {
 
     let categories = Table("categories")
     let categoryId = SQLite.Expression<Int>("category_id")
+    let categoryUUID = SQLite.Expression<String?>("uuid")
     let categoryName = SQLite.Expression<String>("category_name")
     let colorHex = SQLite.Expression<String>("color_hex")
     let sortOrder = SQLite.Expression<Int>("sort_order")
@@ -114,6 +115,7 @@ class CategoryRecords {
             for category in try db.prepare(categories.order(sortOrder)) {
                 categoriesList.append(Category(
                     categoryId: category[categoryId],
+                    uuid: category[categoryUUID],
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
                     sortOrder: category[sortOrder],
@@ -140,6 +142,7 @@ class CategoryRecords {
             for category in try db.prepare(categories.filter(categoryId == searchCategoryId)) {
                 categoriesFound.append(Category(
                     categoryId: category[categoryId],
+                    uuid: category[categoryUUID],
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
                     sortOrder: category[sortOrder],
@@ -182,11 +185,11 @@ class CategoryRecords {
 
             do {
                 let sql = """
-                INSERT INTO categories (category_id, category_name, color_hex, sort_order, is_protected)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO categories (category_id, uuid, category_name, color_hex, sort_order, is_protected)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """
-                try db.run(sql, category.categoryId, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0)
-                print("CategoryRecords: Inserted category with ID \(category.categoryId)")
+                try db.run(sql, category.categoryId, category.uuid, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0)
+                print("CategoryRecords: Inserted category with ID \(category.categoryId), UUID \(category.uuid)")
                 result = Int64(category.categoryId)
             } catch {
                 print("CategoryRecords: Insert failed in insertCategory - \(error)")
@@ -211,10 +214,10 @@ class CategoryRecords {
             if self.categoryExists(searchId: category.categoryId) {
                 do {
                     let sql = """
-                    UPDATE categories SET category_name = ?, color_hex = ?, sort_order = ?, is_protected = ? WHERE category_id = ?
+                    UPDATE categories SET category_name = ?, color_hex = ?, sort_order = ?, is_protected = ?, uuid = ? WHERE category_id = ?
                     """
-                    try db.run(sql, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0, category.categoryId)
-                    print("CategoryRecords: Updated category with ID \(category.categoryId)")
+                    try db.run(sql, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0, category.uuid, category.categoryId)
+                    print("CategoryRecords: Updated category with ID \(category.categoryId), UUID \(category.uuid)")
                     result = category.categoryId
                 } catch {
                     print("CategoryRecords: Update failed in updateCategory - \(error)")

@@ -202,6 +202,30 @@ class SyncMapping {
         return getLocalId(cloudId: cloudId, entityType: entityType) != nil
     }
 
+    // MARK: - UUID-based Lookup Methods
+
+    /// Find a local note by UUID
+    func findLocalNoteByUUID(_ uuid: String) -> Note? {
+        let allNotes = NoteRecords.instance.getAllNotes()
+        return allNotes.first { $0.uuid == uuid }
+    }
+
+    /// Find a local category by UUID
+    func findLocalCategoryByUUID(_ uuid: String) -> Category? {
+        let allCategories = CategoryRecords.instance.getCategories()
+        return allCategories.first { $0.uuid == uuid }
+    }
+
+    /// Check if a note with the given UUID exists locally
+    func noteExistsLocally(uuid: String) -> Bool {
+        return findLocalNoteByUUID(uuid) != nil
+    }
+
+    /// Check if a category with the given UUID exists locally
+    func categoryExistsLocally(uuid: String) -> Bool {
+        return findLocalCategoryByUUID(uuid) != nil
+    }
+
     // MARK: - Write Methods
 
     /// Create a new mapping

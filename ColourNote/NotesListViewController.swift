@@ -177,11 +177,11 @@ extension NotesListViewController {
             dateFormatter.dateFormat = "d MMM yyyy, h:mm a"
             cell.detailTextLabel?.text = dateFormatter.string(from: date)
 
-            // Use category color if categoryId is set, otherwise use old colorIndex
+            // Use category color if categoryId is set, otherwise use default white
             if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
                 cell.backgroundColor = category.getColor()
             } else {
-                cell.backgroundColor = Globals.CN_LIGHT_COLORS[note.colorIndex]
+                cell.backgroundColor = UIColor.white
             }
 
          /*   if activity.ignore {
@@ -547,8 +547,7 @@ extension NotesListViewController {
             noteId: newNoteId,
             noteName: "",
             editedTime: newTimestamp,
-            noteText: "",
-            colorIndex: 0
+            noteText: ""
         )
 
         // Insert the note into the database

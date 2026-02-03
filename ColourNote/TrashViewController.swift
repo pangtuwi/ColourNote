@@ -96,13 +96,13 @@ class TrashViewController: UITableViewController {
             cell.detailTextLabel?.text = "Deleted: " + dateFormatter.string(from: date)
         }
 
-        // Use category color if available
+        // Use category color if available, otherwise default white
         if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
             cell.backgroundColor = category.getColor()
             cell.textLabel?.textColor = getContrastingTextColor(for: category.getColor())
             cell.detailTextLabel?.textColor = getContrastingTextColor(for: category.getColor())
         } else {
-            let color = Globals.CN_LIGHT_COLORS[note.colorIndex]
+            let color = UIColor.white
             cell.backgroundColor = color
             cell.textLabel?.textColor = getContrastingTextColor(for: color)
             cell.detailTextLabel?.textColor = getContrastingTextColor(for: color)

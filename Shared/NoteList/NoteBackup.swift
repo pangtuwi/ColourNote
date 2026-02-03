@@ -9,6 +9,7 @@ import Foundation
 
 struct NoteBackupModel: Codable {
     let id: String
+    let uuid: String
     let user_id: String
     let title: String
     let content: String
@@ -22,7 +23,6 @@ struct NoteMetadata: Codable {
     let tags: [String]
     let archived: Bool
     let pinned: Bool
-    let color_index: Int
     let category_id: Int?
     let deleted: Bool
     let deleted_date: String?
@@ -30,6 +30,7 @@ struct NoteMetadata: Codable {
 
 struct CategoryBackupModel: Codable {
     let category_id: Int
+    let uuid: String
     let category_name: String
     let color_hex: String
     let sort_order: Int
@@ -54,6 +55,7 @@ class NoteBackup {
         let backupCategories = categories.map { category -> CategoryBackupModel in
             return CategoryBackupModel(
                 category_id: category.categoryId,
+                uuid: category.uuid,
                 category_name: category.categoryName,
                 color_hex: category.colorHex,
                 sort_order: category.sortOrder
@@ -80,7 +82,6 @@ class NoteBackup {
                 tags: [],
                 archived: false,
                 pinned: false,
-                color_index: note.colorIndex,
                 category_id: note.categoryId > 0 ? note.categoryId : nil,
                 deleted: note.isDeleted,
                 deleted_date: deletedDateString
@@ -88,6 +89,7 @@ class NoteBackup {
 
             return NoteBackupModel(
                 id: String(note.noteId),
+                uuid: note.uuid,
                 user_id: "local_user",
                 title: note.noteName,
                 content: note.noteText,
@@ -175,6 +177,7 @@ class NoteBackup {
             for backupCategory in backupCategories {
                 let category = Category()
                 category.categoryId = backupCategory.category_id
+                category.uuid = backupCategory.uuid
                 category.categoryName = backupCategory.category_name
                 category.colorHex = backupCategory.color_hex
                 category.sortOrder = backupCategory.sort_order
@@ -206,10 +209,10 @@ class NoteBackup {
                 // Create Note object
                 let note = Note(
                     noteId: Int(backupNote.id) ?? 0,
+                    uuid: backupNote.uuid,
                     noteName: backupNote.title,
                     editedTime: modifiedTimestamp,
                     noteText: backupNote.content,
-                    colorIndex: backupNote.metadata.color_index,
                     categoryId: backupNote.metadata.category_id ?? 0,
                     isDeleted: backupNote.metadata.deleted,
                     deletedDate: deletedTimestamp,

@@ -217,8 +217,10 @@ class PasscodeViewController: UIViewController {
         case .entry:
             // Validate passcode
             if PasscodeManager.shared.validatePasscode(enteredPasscode) {
-                onSuccess?(enteredPasscode)
-                dismiss(animated: true)
+                // Dismiss first, then call onSuccess so presenting view can show next screen
+                dismiss(animated: true) { [weak self] in
+                    self?.onSuccess?(enteredPasscode)
+                }
             } else {
                 showError("Incorrect passcode")
                 clearPasscode()
@@ -235,8 +237,10 @@ class PasscodeViewController: UIViewController {
                 // Confirmation entry
                 if enteredPasscode == confirmPasscode {
                     if PasscodeManager.shared.setPasscode(enteredPasscode) {
-                        onSuccess?(enteredPasscode)
-                        dismiss(animated: true)
+                        // Dismiss first, then call onSuccess
+                        dismiss(animated: true) { [weak self] in
+                            self?.onSuccess?(enteredPasscode)
+                        }
                     } else {
                         showError("Failed to set passcode")
                         resetSetup()

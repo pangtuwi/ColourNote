@@ -184,20 +184,40 @@ class CategorySyncService {
 
     /// Process a single cloud category (create or update locally)
     private func processCloudCategory(_ cloudCategory: CloudCategory) -> Bool {
-        print("CategorySyncService: Processing cloud category - id: \(cloudCategory.id), name: '\(cloudCategory.categoryName)', colorHex: '\(cloudCategory.colorHex ?? "nil")'")
+        print("CategorySyncService: Processing cloud category - id: \(cloudCategory.id), uuid: '\(cloudCategory.uuid ?? "nil")', name: '\(cloudCategory.categoryName)', colorHex: '\(cloudCategory.colorHex ?? "nil")'")
 
-        // Check if we already have this cloud category mapped locally
+        // PRIMARY: Check by UUID first (cross-device identification)
+        if let cloudUUID = cloudCategory.uuid,
+           let existingCategory = syncMapping.findLocalCategoryByUUID(cloudUUID) {
+            print("CategorySyncService: Found local category by UUID: \(existingCategory.categoryId)")
+            // Ensure mapping exists
+            if syncMapping.getCloudId(localId: existingCategory.categoryId, entityType: .category) == nil {
+                syncMapping.createMapping(
+                    localId: existingCategory.categoryId,
+                    cloudId: cloudCategory.id,
+                    entityType: .category,
+                    status: .synced
+                )
+            }
+            return updateLocalCategory(cloudCategory: cloudCategory, localId: existingCategory.categoryId)
+        }
+
+        // SECONDARY: Check if we already have this cloud category mapped by cloud ID
         if let localId = syncMapping.getLocalId(cloudId: cloudCategory.id, entityType: .category) {
             // Update existing local category
             return updateLocalCategory(cloudCategory: cloudCategory, localId: localId)
-        } else {
-            // Create new local category
-            return createLocalCategory(cloudCategory: cloudCategory)
         }
+
+        // TERTIARY: Create new local category (no UUID or cloud ID match)
+        return createLocalCategory(cloudCategory: cloudCategory)
     }
 
     private func createLocalCategory(cloudCategory: CloudCategory) -> Bool {
-        // First, check if a category with the same name already exists locally
+        // UUID matching is now done in processCloudCategory, so if we get here,
+        // we have a truly new category from the cloud
+
+        // FALLBACK: Check if a category with the same name already exists locally
+        // (for backwards compatibility with data that doesn't have UUIDs yet)
         let existingCategories = CategoryRecords.instance.getCategories()
         if let existingCategory = existingCategories.first(where: {
             $0.categoryName.lowercased() == cloudCategory.categoryName.lowercased()
@@ -210,9 +230,10 @@ class CategorySyncService {
                 status: .synced
             )
 
-            // Update the existing category with cloud data (including color)
+            // Update the existing category with cloud data (including color and UUID)
             let updatedCategory = Category(
                 categoryId: existingCategory.categoryId,
+                uuid: cloudCategory.uuid ?? existingCategory.uuid,
                 categoryName: cloudCategory.categoryName,
                 colorHex: cloudCategory.colorHex ?? existingCategory.colorHex,
                 sortOrder: cloudCategory.sortOrder ?? existingCategory.sortOrder,
@@ -220,16 +241,17 @@ class CategorySyncService {
             )
             _ = CategoryRecords.instance.updateCategory(category: updatedCategory)
 
-            print("CategorySyncService: Mapped and updated existing local category \(existingCategory.categoryId) to cloud \(cloudCategory.id)")
+            print("CategorySyncService: Mapped and updated existing local category \(existingCategory.categoryId) to cloud \(cloudCategory.id) (matched by name)")
             return true
         }
 
         // Generate a new local ID
         let newLocalId = syncMapping.generateLocalId(entityType: .category)
 
-        // Create the local category
+        // Create the local category with UUID from cloud
         let localCategory = Category(
             categoryId: newLocalId,
+            uuid: cloudCategory.uuid,
             categoryName: cloudCategory.categoryName,
             colorHex: cloudCategory.colorHex ?? "#FFFFFF",
             sortOrder: cloudCategory.sortOrder ?? 0,
@@ -247,7 +269,7 @@ class CategorySyncService {
                 entityType: .category,
                 status: .synced
             )
-            print("CategorySyncService: Created local category \(newLocalId) from cloud \(cloudCategory.id)")
+            print("CategorySyncService: Created local category \(newLocalId) from cloud \(cloudCategory.id) with UUID \(cloudCategory.uuid ?? "nil")")
             return true
         }
 
@@ -257,16 +279,17 @@ class CategorySyncService {
 
     private func updateLocalCategory(cloudCategory: CloudCategory, localId: Int) -> Bool {
         // Get the existing local category
-        guard let _ = CategoryRecords.instance.getCategory(searchCategoryId: localId) else {
+        guard let existingCategory = CategoryRecords.instance.getCategory(searchCategoryId: localId) else {
             return false
         }
 
         // For categories, we don't have a modified timestamp locally, so always update
         // In a production app, you'd add a modified_at column to categories table
 
-        // Update the local category
+        // Update the local category, preserving or updating UUID
         let updatedCategory = Category(
             categoryId: localId,
+            uuid: cloudCategory.uuid ?? existingCategory.uuid,
             categoryName: cloudCategory.categoryName,
             colorHex: cloudCategory.colorHex ?? "#FFFFFF",
             sortOrder: cloudCategory.sortOrder ?? 0,
@@ -277,7 +300,7 @@ class CategorySyncService {
 
         if result > 0 {
             syncMapping.updateStatus(localId: localId, entityType: .category, status: .synced)
-            print("CategorySyncService: Updated local category \(localId) from cloud")
+            print("CategorySyncService: Updated local category \(localId) from cloud with UUID \(updatedCategory.uuid)")
             return true
         }
 

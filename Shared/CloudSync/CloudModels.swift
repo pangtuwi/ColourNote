@@ -42,6 +42,7 @@ struct SuccessMessageResponse: Codable {
 
 struct CloudNote: Codable {
     let noteId: Int  // Server uses _id
+    let uuid: String?  // UUID for cross-device identification
     let userId: Int?
     let title: String
     let note: String  // Server uses "note" for content
@@ -55,6 +56,7 @@ struct CloudNote: Codable {
 
     enum CodingKeys: String, CodingKey {
         case noteId = "_id"
+        case uuid
         case userId = "user_id"
         case title
         case note
@@ -87,6 +89,7 @@ struct CloudNote: Codable {
 
 struct CloudCategory: Codable {
     let categoryId: Int
+    let uuid: String?  // UUID for cross-device identification
     let userId: Int?
     let categoryName: String
     let colorHex: String?
@@ -95,6 +98,7 @@ struct CloudCategory: Codable {
 
     enum CodingKeys: String, CodingKey {
         case categoryId = "category_id"
+        case uuid
         case userId = "user_id"
         case categoryName = "category_name"
         case colorHex = "color_hex"
@@ -136,22 +140,22 @@ typealias CategoryResponse = CloudCategory
 // MARK: - Create/Update Request Models
 
 struct CreateNoteRequest: Codable {
+    let uuid: String  // UUID for cross-device identification
     let title: String
     let note: String  // Server uses "note" for content
     let createdDate: Int  // Milliseconds since epoch
     let modifiedDate: Int?  // Milliseconds since epoch
-    let colorIndex: Int?
     let categoryId: Int?  // Server uses integer category_id
     let activeState: Int?  // 0 = active, 1 = deleted
     let deletedDate: Int?  // Milliseconds since epoch
     let contentFormat: String?
 
     enum CodingKeys: String, CodingKey {
+        case uuid
         case title
         case note
         case createdDate = "created_date"
         case modifiedDate = "modified_date"
-        case colorIndex = "color_index"
         case categoryId = "category_id"
         case activeState = "active_state"
         case deletedDate = "deleted_date"
@@ -160,12 +164,14 @@ struct CreateNoteRequest: Codable {
 }
 
 struct CreateCategoryRequest: Codable {
+    let uuid: String  // UUID for cross-device identification
     let name: String  // Server might expect 'name' for input
     let colorHex: String?
     let sortOrder: Int?
     let isProtected: Int?
 
     enum CodingKeys: String, CodingKey {
+        case uuid
         case name
         case colorHex = "color_hex"
         case sortOrder = "sort_order"
@@ -233,12 +239,13 @@ extension CloudNote {
     static func from(localNote: Note, cloudCategoryId: Int?) -> CloudNote {
         return CloudNote(
             noteId: 0, // Will be assigned by server
+            uuid: localNote.uuid,
             userId: nil,
             title: localNote.noteName,
             note: localNote.noteText,
             createdDate: localNote.editedTime,
             modifiedDate: localNote.editedTime,
-            colorIndex: localNote.colorIndex,
+            colorIndex: nil,  // No longer used - color comes from category
             categoryId: cloudCategoryId,
             activeState: localNote.isDeleted ? 1 : 0,
             deletedDate: localNote.deletedDate,
@@ -250,10 +257,10 @@ extension CloudNote {
     func toLocalNote(localCategoryId: Int) -> Note {
         return Note(
             noteId: 0, // Must be set by caller
+            uuid: uuid,
             noteName: title,
             editedTime: modifiedDate ?? createdDate,
             noteText: note,
-            colorIndex: colorIndex ?? 0,
             categoryId: localCategoryId,
             isDeleted: isDeleted,
             deletedDate: deletedDate,
@@ -268,6 +275,7 @@ extension CloudCategory {
     static func from(localCategory: Category) -> CloudCategory {
         return CloudCategory(
             categoryId: 0, // Will be assigned by server
+            uuid: localCategory.uuid,
             userId: nil,
             categoryName: localCategory.categoryName,
             colorHex: localCategory.colorHex,
@@ -280,6 +288,7 @@ extension CloudCategory {
     func toLocalCategory() -> Category {
         return Category(
             categoryId: 0, // Must be set by caller
+            uuid: uuid,
             categoryName: categoryName,
             colorHex: colorHex ?? "#FFFFFF",
             sortOrder: sortOrder ?? 0,
@@ -295,11 +304,11 @@ extension CreateNoteRequest {
     /// Create a request from a local Note
     static func from(localNote: Note, cloudCategoryId: Int?) -> CreateNoteRequest {
         return CreateNoteRequest(
+            uuid: localNote.uuid,
             title: localNote.noteName,
             note: localNote.noteText,
             createdDate: localNote.editedTime,
             modifiedDate: localNote.editedTime,
-            colorIndex: localNote.colorIndex,
             categoryId: cloudCategoryId,
             activeState: localNote.isDeleted ? 1 : 0,
             deletedDate: localNote.deletedDate,
@@ -313,6 +322,7 @@ extension CreateCategoryRequest {
     /// Create a request from a local Category
     static func from(localCategory: Category) -> CreateCategoryRequest {
         return CreateCategoryRequest(
+            uuid: localCategory.uuid,
             name: localCategory.categoryName,
             colorHex: localCategory.colorHex,
             sortOrder: localCategory.sortOrder,

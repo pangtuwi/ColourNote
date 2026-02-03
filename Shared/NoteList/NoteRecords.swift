@@ -37,7 +37,7 @@ class NoteRecords {
     let editedTime = SQLite.Expression<Int>("modified_date")
     let createdDate = SQLite.Expression<Int>("created_date")
     let noteText = SQLite.Expression<String>("note")
-    let colorIndex = SQLite.Expression<Int>("color_index")
+    let noteUUID = SQLite.Expression<String?>("uuid")
     let categoryId = SQLite.Expression<Int>("category_id")
     let noteType = SQLite.Expression<Int>("type")
     let noteNoteType = SQLite.Expression<Int>("note_type")
@@ -106,7 +106,7 @@ class NoteRecords {
         }
 
         let dbSchemaVersionKey = "DatabaseSchemaVersion"
-        let currentSchemaVersion = 6 // Increment when adding new migrations
+        let currentSchemaVersion = 9 // Increment when adding new migrations
         let savedSchemaVersion = UserDefaults.standard.integer(forKey: dbSchemaVersionKey)
 
         print("=== Database Migration Check ===")
@@ -217,6 +217,68 @@ class NoteRecords {
                 UserDefaults.standard.set(6, forKey: dbSchemaVersionKey)
                 print("Migration to version 6 completed")
             }
+
+            if savedSchemaVersion < 7 {
+                // Migration to version 7: Add UUID to notes table
+                print("Running migration to version 7: Adding UUID to notes")
+
+                do {
+                    // Add uuid column to notes table
+                    try db.execute("ALTER TABLE notes ADD COLUMN uuid TEXT")
+                    print("Added uuid column to notes table")
+
+                    // Generate UUIDs for existing notes
+                    for row in try db.prepare("SELECT _id FROM notes WHERE uuid IS NULL") {
+                        let noteId = row[0] as! Int64
+                        let newUUID = UUID().uuidString
+                        try db.run("UPDATE notes SET uuid = ? WHERE _id = ?", newUUID, noteId)
+                    }
+                    print("Generated UUIDs for existing notes")
+                } catch {
+                    print("Error in migration to version 7: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(7, forKey: dbSchemaVersionKey)
+                print("Migration to version 7 completed")
+            }
+
+            if savedSchemaVersion < 8 {
+                // Migration to version 8: Add UUID to categories table
+                print("Running migration to version 8: Adding UUID to categories")
+
+                do {
+                    // Add uuid column to categories table
+                    try db.execute("ALTER TABLE categories ADD COLUMN uuid TEXT")
+                    print("Added uuid column to categories table")
+
+                    // Generate UUIDs for existing categories
+                    for row in try db.prepare("SELECT category_id FROM categories WHERE uuid IS NULL") {
+                        let categoryId = row[0] as! Int64
+                        let newUUID = UUID().uuidString
+                        try db.run("UPDATE categories SET uuid = ? WHERE category_id = ?", newUUID, categoryId)
+                    }
+                    print("Generated UUIDs for existing categories")
+                } catch {
+                    print("Error in migration to version 8: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(8, forKey: dbSchemaVersionKey)
+                print("Migration to version 8 completed")
+            }
+
+            if savedSchemaVersion < 9 {
+                // Migration to version 9: Deprecate color_index column (cannot drop in SQLite)
+                // The column remains in the table but is no longer used by the app
+                // Notes now get their color from their assigned category
+                print("Running migration to version 9: Deprecating color_index")
+                print("Note: color_index column retained for backward compatibility but no longer used")
+
+                // Update schema version
+                UserDefaults.standard.set(9, forKey: dbSchemaVersionKey)
+                print("Migration to version 9 completed")
+            }
         } else {
             print("Database schema is up to date")
         }
@@ -249,7 +311,7 @@ class NoteRecords {
                 table.column(noteName)
                 table.column(editedTime)
                 table.column(noteText)
-                table.column(colorIndex)
+                //table.column(colorIndex)
                // table.column(ignore)
             })
         } catch {
@@ -289,10 +351,10 @@ class NoteRecords {
                 for note in try self.db!.prepare(self.notes.filter(self.activeState == 0)) {
                         notez.append(Note(
                         noteId : note[self.noteId],
+                        uuid: note[self.noteUUID],
                         noteName : note[self.noteName],
                         editedTime: note[self.editedTime],
                         noteText: note[self.noteText],
-                        colorIndex: note[self.colorIndex],
                         categoryId: note[self.categoryId],
                         isDeleted: false,
                         deletedDate: nil,
@@ -316,10 +378,10 @@ class NoteRecords {
                 for note in try self.db!.prepare(self.notes.filter(self.activeState == 1).order(self.deletedDate.desc)) {
                         deletedNotez.append(Note(
                         noteId : note[self.noteId],
+                        uuid: note[self.noteUUID],
                         noteName : note[self.noteName],
                         editedTime: note[self.editedTime],
                         noteText: note[self.noteText],
-                        colorIndex: note[self.colorIndex],
                         categoryId: note[self.categoryId],
                         isDeleted: true,
                         deletedDate: note[self.deletedDate],
@@ -345,10 +407,10 @@ class NoteRecords {
                         let isDeleted = (note[self.activeState] == 1)
                         allNotez.append(Note(
                         noteId : note[self.noteId],
+                        uuid: note[self.noteUUID],
                         noteName : note[self.noteName],
                         editedTime: note[self.editedTime],
                         noteText: note[self.noteText],
-                        colorIndex: note[self.colorIndex],
                         categoryId: note[self.categoryId],
                         isDeleted: isDeleted,
                         deletedDate: note[self.deletedDate],
@@ -546,10 +608,10 @@ class NoteRecords {
                 let isDeleted = (note[self.activeState] == 1)
                 notesFound.append(Note(
                 noteId : note[self.noteId],
+                uuid: note[self.noteUUID],
                 noteName : note[self.noteName],
                 editedTime: note[self.editedTime],
                 noteText: note[self.noteText],
-                colorIndex: note[self.colorIndex],
                 categoryId: note[self.categoryId],
                 isDeleted: isDeleted,
                 deletedDate: note[self.deletedDate],
@@ -731,12 +793,13 @@ class NoteRecords {
 
             do {
                 // Use raw SQL to bypass COLLATE LOCALIZED issue
+                // Note: color_index column kept for backward compatibility but always set to 0
                 let sql = """
-                INSERT INTO notes (_id, title, created_date, modified_date, note, color_index, category_id, type, note_type, content_format)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO notes (_id, uuid, title, created_date, modified_date, note, color_index, category_id, type, note_type, content_format)
+                VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
                 """
-                try self.db!.run(sql, note.noteId, note.noteName, note.editedTime, note.editedTime, note.noteText, note.colorIndex, note.categoryId, 0, 0, note.contentFormat)
-                print("Inserted Note with ID \(note.noteId)")
+                try self.db!.run(sql, note.noteId, note.uuid, note.noteName, note.editedTime, note.editedTime, note.noteText, note.categoryId, 0, 0, note.contentFormat)
+                print("Inserted Note with ID \(note.noteId), UUID \(note.uuid)")
                 result = Int64(note.noteId)
             } catch {
                 print("Insert failed in NoteRecords.insertNote: \(error)")
@@ -803,6 +866,36 @@ class NoteRecords {
         }
         return result
     } //updateNoteCategory
+
+    func updateNoteUUID(noteId: Int, uuid: String) -> Int {
+        var result: Int = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            if self.noteExists(searchId: noteId) {
+                do {
+                    // Use raw SQL to update UUID
+                    let sql = "UPDATE notes SET uuid = ? WHERE _id = ?"
+                    try self.db!.run(sql, uuid, noteId)
+                    print("Updated Note UUID in local DB with ID \(noteId)")
+                    result = noteId
+                } catch {
+                    print("Update failed in updateNoteUUID: \(error)")
+                }
+            } else {
+                print("Can't find Note to update in NoteRecords.updateNoteUUID")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //updateNoteUUID
 
     // Soft delete: Mark note as deleted without removing from database
     func softDeleteNote(noteId: Int) -> Bool {
