@@ -288,7 +288,7 @@ extension CloudCategory {
     func toLocalCategory() -> Category {
         return Category(
             categoryId: 0, // Must be set by caller
-            uuid: uuid,
+            uuid: uuid ?? "",
             categoryName: categoryName,
             colorHex: colorHex ?? "#FFFFFF",
             sortOrder: sortOrder ?? 0,
@@ -330,3 +330,4 @@ extension CreateCategoryRequest {
         )
     }
 }
+

@@ -251,7 +251,7 @@ class CategorySyncService {
         // Create the local category with UUID from cloud
         let localCategory = Category(
             categoryId: newLocalId,
-            uuid: cloudCategory.uuid,
+            uuid: cloudCategory.uuid ?? "",
             categoryName: cloudCategory.categoryName,
             colorHex: cloudCategory.colorHex ?? "#FFFFFF",
             sortOrder: cloudCategory.sortOrder ?? 0,

@@ -27,7 +27,7 @@ class CategoryRecords {
     let isProtected = SQLite.Expression<Int>("is_protected")
 
     private let categorySchemaVersionKey = "CategoryDatabaseSchemaVersion"
-    private let currentCategorySchemaVersion = 1
+    private let currentCategorySchemaVersion = 2
 
     private init() {
         openDatabase()
@@ -59,6 +59,7 @@ class CategoryRecords {
         let createTableSQL = """
         CREATE TABLE IF NOT EXISTS categories (
             category_id INTEGER PRIMARY KEY,
+            uuid TEXT,
             category_name TEXT NOT NULL DEFAULT '',
             color_hex TEXT NOT NULL DEFAULT '#FFFFFF',
             sort_order INTEGER DEFAULT 0,
@@ -98,6 +99,31 @@ class CategoryRecords {
                 UserDefaults.standard.set(1, forKey: categorySchemaVersionKey)
                 print("CategoryRecords: Migration to version 1 completed")
             }
+            // Migration v2: Add uuid column
+            if savedSchemaVersion < 2 {
+                print("CategoryRecords: Running migration to version 2: Adding uuid column")
+                do {
+                    try db.execute("ALTER TABLE categories ADD COLUMN uuid TEXT")
+                    print("CategoryRecords: Added uuid column to categories table")
+
+                    // Backfill UUIDs for existing rows with NULL uuid
+                    do {
+                        for row in try db.prepare("SELECT category_id FROM categories WHERE uuid IS NULL") {
+                            if let idValue = row[0] as? Int64 {
+                                let newUUID = UUID().uuidString
+                                try db.run("UPDATE categories SET uuid = ? WHERE category_id = ?", newUUID, idValue)
+                            }
+                        }
+                        print("CategoryRecords: Backfilled UUIDs for existing categories")
+                    } catch {
+                        print("CategoryRecords: Error backfilling UUIDs - \(error)")
+                    }
+                } catch {
+                    print("CategoryRecords: uuid column may already exist or error: \(error)")
+                }
+                UserDefaults.standard.set(2, forKey: categorySchemaVersionKey)
+                print("CategoryRecords: Migration to version 2 completed")
+            }
         } else {
             print("CategoryRecords: Schema is up to date at version \(savedSchemaVersion)")
         }
@@ -115,7 +141,7 @@ class CategoryRecords {
             for category in try db.prepare(categories.order(sortOrder)) {
                 categoriesList.append(Category(
                     categoryId: category[categoryId],
-                    uuid: category[categoryUUID],
+                    uuid: category[categoryUUID] ?? "",
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
                     sortOrder: category[sortOrder],
@@ -142,7 +168,7 @@ class CategoryRecords {
             for category in try db.prepare(categories.filter(categoryId == searchCategoryId)) {
                 categoriesFound.append(Category(
                     categoryId: category[categoryId],
-                    uuid: category[categoryUUID],
+                    uuid: category[categoryUUID] ?? "",
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
                     sortOrder: category[sortOrder],
