@@ -15,6 +15,7 @@ class Category {
     var colorHex: String
     var sortOrder: Int
     var isProtected: Bool
+    var modifiedAt: Int?
 
     init() {
         categoryId = 0
@@ -23,15 +24,17 @@ class Category {
         colorHex = "#FFFFFF"
         sortOrder = 0
         isProtected = false
+        modifiedAt = Int(Date().timeIntervalSince1970 * 1000)
     }
 
-    init(categoryId: Int, uuid: String = "", categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false) {
+    init(categoryId: Int, uuid: String = "", categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false, modifiedAt: Int? = nil) {
         self.categoryId = categoryId
         self.uuid = uuid
         self.categoryName = categoryName
         self.colorHex = colorHex
         self.sortOrder = sortOrder
         self.isProtected = isProtected
+        self.modifiedAt = modifiedAt ?? Int(Date().timeIntervalSince1970 * 1000)
     }
 
     // Helper to convert hex string to UIColor

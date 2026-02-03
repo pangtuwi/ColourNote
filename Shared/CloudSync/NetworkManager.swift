@@ -18,6 +18,8 @@ enum NetworkError: Error, LocalizedError {
     case unauthorized
     case networkError(Error)
     case serverError(String)
+    case notModified           // 304 - data unchanged
+    case preconditionFailed    // 412 - ETag mismatch
 
     var errorDescription: String? {
         switch self {
@@ -37,6 +39,10 @@ enum NetworkError: Error, LocalizedError {
             return "Network error: \(error.localizedDescription)"
         case .serverError(let message):
             return "Server error: \(message)"
+        case .notModified:
+            return "Data not modified (304)"
+        case .preconditionFailed:
+            return "Precondition failed - resource was modified (412)"
         }
     }
 }
@@ -47,6 +53,12 @@ enum HTTPMethod: String {
     case POST = "POST"
     case PUT = "PUT"
     case DELETE = "DELETE"
+}
+
+// MARK: - Response with ETag
+struct ResponseWithETag<T> {
+    let data: T
+    let etag: String?
 }
 
 // MARK: - Network Manager
@@ -254,6 +266,17 @@ class NetworkManager {
                     return
                 }
 
+                // Handle special status codes
+                if httpResponse.statusCode == 304 {
+                    completion(.failure(.notModified))
+                    return
+                }
+
+                if httpResponse.statusCode == 412 {
+                    completion(.failure(.preconditionFailed))
+                    return
+                }
+
                 if httpResponse.statusCode == 401 {
                     completion(.failure(.unauthorized))
                     return
@@ -289,6 +312,72 @@ class NetworkManager {
         }.resume()
     }
 
+    /// Perform request and extract ETag from response headers
+    private func performRequestWithETag<T: Decodable>(
+        _ request: URLRequest,
+        completion: @escaping (Result<ResponseWithETag<T>, NetworkError>) -> Void
+    ) {
+        session.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(.networkError(error)))
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    completion(.failure(.noData))
+                    return
+                }
+
+                // Handle special status codes
+                if httpResponse.statusCode == 304 {
+                    completion(.failure(.notModified))
+                    return
+                }
+
+                if httpResponse.statusCode == 412 {
+                    completion(.failure(.preconditionFailed))
+                    return
+                }
+
+                if httpResponse.statusCode == 401 {
+                    completion(.failure(.unauthorized))
+                    return
+                }
+
+                if !(200...299).contains(httpResponse.statusCode) {
+                    var message: String?
+                    if let data = data {
+                        message = String(data: data, encoding: .utf8)
+                    }
+                    completion(.failure(.httpError(statusCode: httpResponse.statusCode, message: message)))
+                    return
+                }
+
+                guard let data = data else {
+                    completion(.failure(.noData))
+                    return
+                }
+
+                // Extract ETag from response headers
+                let etag = httpResponse.value(forHTTPHeaderField: APIConfig.Headers.eTag)
+
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .iso8601
+                    let result = try decoder.decode(T.self, from: data)
+                    completion(.success(ResponseWithETag(data: result, etag: etag)))
+                } catch {
+                    print("NetworkManager: Decoding error - \(error)")
+                    if let jsonString = String(data: data, encoding: .utf8) {
+                        print("NetworkManager: Raw response - \(jsonString)")
+                    }
+                    completion(.failure(.decodingError(error)))
+                }
+            }
+        }.resume()
+    }
+
     // MARK: - Convenience Methods
 
     func get<T: Decodable>(
@@ -297,6 +386,45 @@ class NetworkManager {
         completion: @escaping (Result<T, NetworkError>) -> Void
     ) {
         request(endpoint: endpoint, method: .GET, body: nil as String?, requiresAuth: requiresAuth, completion: completion)
+    }
+
+    /// GET with query parameters support
+    func get<T: Decodable>(
+        endpoint: String,
+        queryParams: [String: String]?,
+        requiresAuth: Bool = true,
+        completion: @escaping (Result<T, NetworkError>) -> Void
+    ) {
+        var urlString = APIConfig.baseURL + endpoint
+
+        // Build query string from parameters
+        if let params = queryParams, !params.isEmpty {
+            let queryItems = params.map { key, value in
+                URLQueryItem(name: key, value: value)
+            }
+            var components = URLComponents(string: urlString)
+            components?.queryItems = queryItems
+            if let fullURL = components?.url?.absoluteString {
+                urlString = fullURL
+            }
+        }
+
+        guard let url = URL(string: urlString) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = HTTPMethod.GET.rawValue
+        urlRequest.setValue(APIConfig.Headers.applicationJSON, forHTTPHeaderField: APIConfig.Headers.contentType)
+        urlRequest.setValue(APIConfig.Headers.applicationJSON, forHTTPHeaderField: APIConfig.Headers.accept)
+
+        // Add authorization header if required and token exists
+        if requiresAuth, let token = getToken() {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: APIConfig.Headers.authorization)
+        }
+
+        performRequest(urlRequest, completion: completion)
     }
 
     func post<T: Decodable, B: Encodable>(
@@ -315,6 +443,52 @@ class NetworkManager {
         completion: @escaping (Result<T, NetworkError>) -> Void
     ) {
         request(endpoint: endpoint, method: .PUT, body: body, requiresAuth: requiresAuth, completion: completion)
+    }
+
+    /// PUT with ETag support for optimistic concurrency control
+    func put<T: Decodable, B: Encodable>(
+        endpoint: String,
+        body: B,
+        eTag: String?,
+        requiresAuth: Bool = true,
+        completion: @escaping (Result<ResponseWithETag<T>, NetworkError>) -> Void
+    ) {
+        guard let url = APIConfig.fullURL(for: endpoint) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = HTTPMethod.PUT.rawValue
+        urlRequest.setValue(APIConfig.Headers.applicationJSON, forHTTPHeaderField: APIConfig.Headers.contentType)
+        urlRequest.setValue(APIConfig.Headers.applicationJSON, forHTTPHeaderField: APIConfig.Headers.accept)
+
+        // Add authorization header if required and token exists
+        if requiresAuth, let token = getToken() {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: APIConfig.Headers.authorization)
+        }
+
+        // Add If-Match header with ETag for optimistic concurrency
+        if let etag = eTag {
+            urlRequest.setValue(etag, forHTTPHeaderField: APIConfig.Headers.ifMatch)
+        }
+
+        // Encode body
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let jsonData = try encoder.encode(AnyEncodable(body))
+            urlRequest.httpBody = jsonData
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("NetworkManager: PUT with ETag - \(jsonString)")
+            }
+        } catch {
+            print("NetworkManager: Encoding error - \(error)")
+            completion(.failure(.encodingError(error)))
+            return
+        }
+
+        performRequestWithETag(urlRequest, completion: completion)
     }
 
     func delete(

@@ -38,6 +38,8 @@ struct APIConfig {
         static let contentType = "Content-Type"
         static let authorization = "Authorization"
         static let accept = "Accept"
+        static let ifMatch = "If-Match"
+        static let eTag = "ETag"
 
         static let applicationJSON = "application/json"
     }
@@ -53,6 +55,8 @@ struct APIConfig {
         static let lastSyncTime = "lastSyncTime"
         static let autoSyncEnabled = "autoSyncEnabled"
         static let syncSchemaVersion = "SyncDatabaseSchemaVersion"
+        static let lastCategorySyncTime = "lastCategorySyncTime"
+        static let lastNoteSyncTime = "lastNoteSyncTime"
     }
 
     // MARK: - Helper Methods

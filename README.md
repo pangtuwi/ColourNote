@@ -113,7 +113,7 @@ ColourNote/
 
 ## Database Schema
 
-The app uses SQLite with the following schema (current version: 9):
+The app uses SQLite with the following schema (current version: 10):
 
 **Table: `notes`**
 | Column | Type | Description |
@@ -138,6 +138,7 @@ The app uses SQLite with the following schema (current version: 9):
 | color_hex | TEXT | Category color (#RRGGBB) |
 | sort_order | INTEGER | Display order |
 | is_protected | INTEGER | 0=unprotected, 1=protected |
+| modified_at | INTEGER | Last modification timestamp (v1.2+) |
 
 **Table: `sync_mappings`** (Cloud Sync)
 | Column | Type | Description |
@@ -150,6 +151,7 @@ The app uses SQLite with the following schema (current version: 9):
 | sync_status | TEXT | "synced", "pending_upload", "pending_download", "conflict" |
 | created_at | INTEGER | Record creation timestamp |
 | modified_at | INTEGER | Record modification timestamp |
+| etag | TEXT | ETag for optimistic concurrency (v1.2+) |
 
 ## Color Palette
 
@@ -241,9 +243,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Bidirectional sync of notes and categories with cloud server
   - Login/Register UI for cloud account management
   - UUID-based sync matching for reliable cross-device identification
-  - Database schema v9 with UUID columns and sync_mappings table
+  - Database schema v10 with UUID columns and sync_mappings table
   - Sync priority: UUID first, cloud ID second, name matching as fallback
   - Auto-sync on app launch/foreground (when enabled)
+  - **Sync Engine v1.2**: Delta sync and ETag support
+    - Downloads only modified entities since last sync
+    - ETag-based optimistic concurrency control
+    - Automatic conflict resolution (most recent wins)
 
 - **1.1 (Build 4)** - (February 1, 2026)
   - **New Feature**: Markdown Support

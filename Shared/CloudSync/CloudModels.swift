@@ -95,6 +95,7 @@ struct CloudCategory: Codable {
     let colorHex: String?
     let sortOrder: Int?
     let isProtected: Int?
+    let modifiedAt: Int?  // Milliseconds since epoch for delta sync
 
     enum CodingKeys: String, CodingKey {
         case categoryId = "category_id"
@@ -104,6 +105,7 @@ struct CloudCategory: Codable {
         case colorHex = "color_hex"
         case sortOrder = "sort_order"
         case isProtected = "is_protected"
+        case modifiedAt = "modified_at"
     }
 
     // Convenience property to get string ID for mapping
@@ -169,6 +171,7 @@ struct CreateCategoryRequest: Codable {
     let colorHex: String?
     let sortOrder: Int?
     let isProtected: Int?
+    let modifiedAt: Int?  // Milliseconds since epoch for delta sync
 
     enum CodingKeys: String, CodingKey {
         case uuid
@@ -176,6 +179,7 @@ struct CreateCategoryRequest: Codable {
         case colorHex = "color_hex"
         case sortOrder = "sort_order"
         case isProtected = "is_protected"
+        case modifiedAt = "modified_at"
     }
 }
 
@@ -280,7 +284,8 @@ extension CloudCategory {
             categoryName: localCategory.categoryName,
             colorHex: localCategory.colorHex,
             sortOrder: localCategory.sortOrder,
-            isProtected: localCategory.isProtected ? 1 : 0
+            isProtected: localCategory.isProtected ? 1 : 0,
+            modifiedAt: localCategory.modifiedAt
         )
     }
 
@@ -292,7 +297,8 @@ extension CloudCategory {
             categoryName: categoryName,
             colorHex: colorHex ?? "#FFFFFF",
             sortOrder: sortOrder ?? 0,
-            isProtected: (isProtected ?? 0) != 0
+            isProtected: (isProtected ?? 0) != 0,
+            modifiedAt: modifiedAt
         )
     }
 }
@@ -326,7 +332,8 @@ extension CreateCategoryRequest {
             name: localCategory.categoryName,
             colorHex: localCategory.colorHex,
             sortOrder: localCategory.sortOrder,
-            isProtected: localCategory.isProtected ? 1 : 0
+            isProtected: localCategory.isProtected ? 1 : 0,
+            modifiedAt: localCategory.modifiedAt
         )
     }
 }

@@ -46,8 +46,9 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 2. **Category.swift** (`Shared/Category/Category.swift`)
    - Model class representing a note category
-   - Properties: `categoryId`, `uuid`, `categoryName`, `colorHex`, `sortOrder`, `isProtected`
+   - Properties: `categoryId`, `uuid`, `categoryName`, `colorHex`, `sortOrder`, `isProtected`, `modifiedAt`
    - UUID generated automatically on creation for cloud sync identification
+   - `modifiedAt` timestamp for delta sync and conflict resolution (v1.2+)
    - Helper methods:
      - `getColor()` - converts hex string to UIColor
      - `getDefaultCategories()` - returns default category set
@@ -80,7 +81,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 4. **Database Schema**
 
-   **Table: `notes`** (Schema Version 9)
+   **Table: `notes`** (Schema Version 10)
    - `_id` (INTEGER, PRIMARY KEY) - Unique note identifier
    - `uuid` (TEXT) - UUID for cloud sync and cross-device identification
    - `title` (TEXT) - Note title
@@ -93,7 +94,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `content_format` (TEXT) - Content format (default: "markdown")
    - Note: `color_index` column deprecated and no longer used - notes use category color
 
-   **Table: `categories`** (Schema Version 8)
+   **Table: `categories`** (Schema Version 3)
    - `category_id` (INTEGER, PRIMARY KEY) - Unique category identifier
    - `uuid` (TEXT) - UUID for cloud sync and cross-device identification
    - `category_name` (TEXT) - Category display name
@@ -101,8 +102,10 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `sort_order` (INTEGER) - Display order for categories
    - `is_protected` (INTEGER) - 0 = unprotected, 1 = protected with passcode
    - `passcode_hash` (TEXT, nullable) - SHA-256 hash of 4-digit PIN
+   - `modified_at` (INTEGER, nullable) - Last modification timestamp for delta sync (v3+)
+   - Index: `idx_categories_uuid` on uuid column (v3+)
 
-   **Table: `sync_mappings`** (Schema Version 6)
+   **Table: `sync_mappings`** (Schema Version 10)
    - `id` (INTEGER, PRIMARY KEY AUTOINCREMENT) - Unique mapping identifier
    - `local_id` (INTEGER) - Local entity ID
    - `cloud_id` (TEXT) - Cloud server ID
@@ -111,6 +114,8 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `sync_status` (TEXT) - "synced", "pending_upload", "pending_download", "conflict"
    - `created_at` (INTEGER) - Record creation timestamp
    - `modified_at` (INTEGER) - Record modification timestamp
+   - `etag` (TEXT, nullable) - ETag for optimistic concurrency control (v10+)
+   - Index: `idx_notes_uuid` on notes.uuid column (v10+)
 
 #### Cloud Sync Layer
 **Location**: `Shared/CloudSync/`
@@ -127,6 +132,13 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - Automatic Authorization header injection
    - Response parsing with Codable
    - WAL mode enabled for concurrent database access
+   - **Delta Sync Support (v1.2+)**:
+     - GET with query parameters for `since` timestamp filtering
+     - 304 Not Modified handling for unchanged data
+   - **ETag Support (v1.2+)**:
+     - PUT with If-Match header for optimistic concurrency
+     - 412 Precondition Failed handling for conflicts
+     - ETag extraction from response headers
 
 3. **CloudModels.swift** - API data models
    - `CloudNote` - Server note structure with integer IDs and timestamps
@@ -152,19 +164,25 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `noteExistsLocally(uuid:)` - Check if note exists by UUID
      - `categoryExistsLocally(uuid:)` - Check if category exists by UUID
    - ID mapping methods: `getCloudId()`, `getLocalId()`, `createMapping()`, `updateStatus()`
+   - **ETag methods (v1.2+)**:
+     - `getEtag(localId:entityType:)` - Get stored ETag for entity
+     - `updateEtag(localId:entityType:newEtag:)` - Update stored ETag
 
 6. **CategorySyncService.swift** - Category synchronization
    - `uploadAllCategories()` - Push local categories to cloud
-   - `downloadAllCategories()` - Pull cloud categories locally
+   - `downloadAllCategories(since:)` - Pull cloud categories locally (delta sync v1.2+)
    - **UUID-first matching** (priority order):
      1. PRIMARY: Match by UUID (cross-device identification)
      2. SECONDARY: Match by cloud ID mapping
      3. TERTIARY: Match by category name (backwards compatibility)
    - Updates existing categories with cloud data including UUID
+   - **ETag conflict handling (v1.2+)**:
+     - Sends If-Match header with stored ETag on updates
+     - `handleCategoryConflict()` - Resolves 412 conflicts using timestamp comparison
 
 7. **NoteSyncService.swift** - Note synchronization
    - `uploadAllNotes()` - Push local notes to cloud
-   - `downloadAllNotes()` - Pull cloud notes locally
+   - `downloadAllNotes(since:)` - Pull cloud notes locally (delta sync v1.2+)
    - Skips empty notes during upload
    - Conflict resolution: most recent wins
    - **UUID-first matching** (priority order):
@@ -172,6 +190,9 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      2. SECONDARY: Match by cloud ID mapping
      3. TERTIARY: Match by note title (backwards compatibility)
    - Maps category IDs between local and cloud
+   - **ETag conflict handling (v1.2+)**:
+     - Sends If-Match header with stored ETag on updates
+     - `handleNoteConflict()` - Resolves 412 conflicts using timestamp comparison
 
 8. **SyncEngine.swift** - Orchestrates full sync
    - `syncAll()` - Full bidirectional sync
@@ -179,6 +200,10 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `downloadCloudChanges()` - Download only
    - Progress callbacks for UI updates
    - Auto-sync on app launch/foreground (if enabled)
+   - **Per-entity sync timestamps (v1.2+)**:
+     - `getLastCategorySyncTime()` / `saveLastCategorySyncTime()` - Track category sync
+     - `getLastNoteSyncTime()` / `saveLastNoteSyncTime()` - Track note sync
+     - Passes `since` parameter to download methods for delta sync
 
 #### View Controllers
 **Location**: `ColourNote/`
@@ -722,6 +747,45 @@ Potential features to implement:
 
 ## Recent Changes
 
+### February 3, 2026 - Sync Engine v1.2: Delta Sync & ETag Support
+- **Delta Synchronization**
+  - Downloads only entities modified since last sync using `since` query parameter
+  - Per-entity sync timestamps tracked in UserDefaults:
+    - `lastCategorySyncTime` - Last successful category download
+    - `lastNoteSyncTime` - Last successful note download
+  - Handles HTTP 304 Not Modified as success with 0 changes
+  - Reduces bandwidth and improves sync performance
+- **ETag Optimistic Concurrency Control**
+  - Stores ETag in `sync_mappings.etag` column for each entity
+  - Sends `If-Match` header with stored ETag on PUT requests
+  - Server returns HTTP 412 Precondition Failed on ETag mismatch
+  - Automatic conflict resolution using timestamp comparison:
+    - Local newer → Force update (wins)
+    - Cloud newer → Accept cloud version (cloud wins)
+- **Database Schema Updates**
+  - Notes schema v10: Added `idx_notes_uuid` index
+  - Categories schema v3: Added `modified_at` column and `idx_categories_uuid` index
+  - Sync mappings: Added `etag` column
+- **Category Model Enhancement**
+  - Added `modifiedAt: Int?` property to Category class
+  - Auto-set on creation and update for conflict resolution
+- **New NetworkManager Methods**
+  - `get(endpoint:queryParams:)` - GET with query parameters
+  - `put(endpoint:body:eTag:)` - PUT with ETag support
+  - `performRequestWithETag()` - Extract ETag from response
+- **New SyncMapping Methods**
+  - `getEtag(localId:entityType:)` - Retrieve stored ETag
+  - `updateEtag(localId:entityType:newEtag:)` - Store new ETag
+- **New Sync Service Methods**
+  - `downloadAllCategories(since:)` - Delta category download
+  - `downloadAllNotes(since:)` - Delta note download
+  - `handleCategoryConflict()` - 412 resolution for categories
+  - `handleNoteConflict()` - 412 resolution for notes
+- **CloudModels Updates**
+  - Added `modifiedAt` to `CloudCategory` and `CreateCategoryRequest`
+- **Documentation**
+  - Updated `SYNC_DOCUMENTATION.md` to v1.2 with delta sync and ETag sections
+
 ### February 3, 2026 - UUID-Based Sync Matching
 - **Enhanced Cloud Sync: UUID-First Matching**
   - UUID is now the PRIMARY means of comparison during synchronization
@@ -876,7 +940,8 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: February 1, 2026
+**Last Updated**: February 3, 2026
 **Maintainer**: Paul Williams
 **Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)
+**Sync Engine Version**: 1.2

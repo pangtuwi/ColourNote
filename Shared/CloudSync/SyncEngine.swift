@@ -312,6 +312,9 @@ class SyncEngine {
         progress.phase = .uploadingCategories
         notifyProgress(progress)
 
+        // Get last category sync time for delta sync
+        let lastCategorySyncTime = getLastCategorySyncTime()
+
         // Upload local categories first
         categorySyncService.uploadAllCategories { [weak self] uploadResult in
             guard let self = self else { return }
@@ -329,10 +332,13 @@ class SyncEngine {
             progress.phase = .downloadingCategories
             self.notifyProgress(progress)
 
-            // Then download cloud categories
-            self.categorySyncService.downloadAllCategories { downloadResult in
+            // Then download cloud categories with delta sync
+            self.categorySyncService.downloadAllCategories(since: lastCategorySyncTime) { downloadResult in
                 switch downloadResult {
                 case .success(let count):
+                    // Save current time as last sync time for categories
+                    let now = Int(Date().timeIntervalSince1970 * 1000)
+                    self.saveLastCategorySyncTime(now)
                     completion(.success((uploaded, count)))
                 case .failure(let error):
                     // If upload succeeded but download failed, still return partial success
@@ -360,6 +366,9 @@ class SyncEngine {
         progress.phase = .uploadingNotes
         notifyProgress(progress)
 
+        // Get last note sync time for delta sync
+        let lastNoteSyncTime = getLastNoteSyncTime()
+
         // Upload local notes first
         noteSyncService.uploadAllNotes { [weak self] uploadResult in
             guard let self = self else { return }
@@ -377,10 +386,13 @@ class SyncEngine {
             progress.phase = .downloadingNotes
             self.notifyProgress(progress)
 
-            // Then download cloud notes
-            self.noteSyncService.downloadAllNotes { downloadResult in
+            // Then download cloud notes with delta sync
+            self.noteSyncService.downloadAllNotes(since: lastNoteSyncTime) { downloadResult in
                 switch downloadResult {
                 case .success(let count):
+                    // Save current time as last sync time for notes
+                    let now = Int(Date().timeIntervalSince1970 * 1000)
+                    self.saveLastNoteSyncTime(now)
                     completion(.success((uploaded, count)))
                 case .failure(let error):
                     // If upload succeeded but download failed, still return partial success
@@ -422,6 +434,30 @@ class SyncEngine {
         return formatter.localizedString(for: lastSync, relativeTo: Date())
     }
 
+    // MARK: - Per-Entity Sync Timestamps
+
+    /// Get last sync time for categories (milliseconds since epoch)
+    private func getLastCategorySyncTime() -> Int? {
+        let timestamp = UserDefaults.standard.integer(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
+        return timestamp > 0 ? timestamp : nil
+    }
+
+    /// Save last sync time for categories
+    private func saveLastCategorySyncTime(_ timestamp: Int) {
+        UserDefaults.standard.set(timestamp, forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
+    }
+
+    /// Get last sync time for notes (milliseconds since epoch)
+    private func getLastNoteSyncTime() -> Int? {
+        let timestamp = UserDefaults.standard.integer(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        return timestamp > 0 ? timestamp : nil
+    }
+
+    /// Save last sync time for notes
+    private func saveLastNoteSyncTime(_ timestamp: Int) {
+        UserDefaults.standard.set(timestamp, forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+    }
+
     // MARK: - Auto Sync Settings
 
     var isAutoSyncEnabled: Bool {
@@ -456,6 +492,8 @@ class SyncEngine {
     func clearSyncData() {
         SyncMapping.shared.clearAllMappings()
         UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
         print("SyncEngine: Cleared all sync data")
     }
 }

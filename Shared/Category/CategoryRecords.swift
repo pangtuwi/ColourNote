@@ -25,9 +25,10 @@ class CategoryRecords {
     let colorHex = SQLite.Expression<String>("color_hex")
     let sortOrder = SQLite.Expression<Int>("sort_order")
     let isProtected = SQLite.Expression<Int>("is_protected")
+    let modifiedAt = SQLite.Expression<Int?>("modified_at")
 
     private let categorySchemaVersionKey = "CategoryDatabaseSchemaVersion"
-    private let currentCategorySchemaVersion = 2
+    private let currentCategorySchemaVersion = 3
 
     private init() {
         openDatabase()
@@ -124,6 +125,34 @@ class CategoryRecords {
                 UserDefaults.standard.set(2, forKey: categorySchemaVersionKey)
                 print("CategoryRecords: Migration to version 2 completed")
             }
+
+            // Migration v3: Add modified_at column and UUID index
+            if savedSchemaVersion < 3 {
+                print("CategoryRecords: Running migration to version 3: Adding modified_at column and UUID index")
+                do {
+                    // Add modified_at column
+                    try db.execute("ALTER TABLE categories ADD COLUMN modified_at INTEGER DEFAULT NULL")
+                    print("CategoryRecords: Added modified_at column to categories table")
+
+                    // Backfill modified_at with current timestamp for existing rows
+                    let now = Int(Date().timeIntervalSince1970 * 1000)
+                    try db.run("UPDATE categories SET modified_at = ? WHERE modified_at IS NULL", now)
+                    print("CategoryRecords: Backfilled modified_at for existing categories")
+                } catch {
+                    print("CategoryRecords: modified_at column may already exist or error: \(error)")
+                }
+
+                do {
+                    // Create index on uuid for faster lookups
+                    try db.execute("CREATE INDEX IF NOT EXISTS idx_categories_uuid ON categories(uuid)")
+                    print("CategoryRecords: Created index on uuid column")
+                } catch {
+                    print("CategoryRecords: Error creating uuid index: \(error)")
+                }
+
+                UserDefaults.standard.set(3, forKey: categorySchemaVersionKey)
+                print("CategoryRecords: Migration to version 3 completed")
+            }
         } else {
             print("CategoryRecords: Schema is up to date at version \(savedSchemaVersion)")
         }
@@ -145,7 +174,8 @@ class CategoryRecords {
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
                     sortOrder: category[sortOrder],
-                    isProtected: category[isProtected] != 0
+                    isProtected: category[isProtected] != 0,
+                    modifiedAt: category[modifiedAt]
                 ))
             }
         } catch {
@@ -172,7 +202,8 @@ class CategoryRecords {
                     categoryName: category[categoryName],
                     colorHex: category[colorHex],
                     sortOrder: category[sortOrder],
-                    isProtected: category[isProtected] != 0
+                    isProtected: category[isProtected] != 0,
+                    modifiedAt: category[modifiedAt]
                 ))
             }
         } catch {
@@ -210,11 +241,12 @@ class CategoryRecords {
             }
 
             do {
+                let now = category.modifiedAt ?? Int(Date().timeIntervalSince1970 * 1000)
                 let sql = """
-                INSERT INTO categories (category_id, uuid, category_name, color_hex, sort_order, is_protected)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO categories (category_id, uuid, category_name, color_hex, sort_order, is_protected, modified_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """
-                try db.run(sql, category.categoryId, category.uuid, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0)
+                try db.run(sql, category.categoryId, category.uuid, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0, now)
                 print("CategoryRecords: Inserted category with ID \(category.categoryId), UUID \(category.uuid)")
                 result = Int64(category.categoryId)
             } catch {
@@ -239,10 +271,11 @@ class CategoryRecords {
 
             if self.categoryExists(searchId: category.categoryId) {
                 do {
+                    let now = Int(Date().timeIntervalSince1970 * 1000)
                     let sql = """
-                    UPDATE categories SET category_name = ?, color_hex = ?, sort_order = ?, is_protected = ?, uuid = ? WHERE category_id = ?
+                    UPDATE categories SET category_name = ?, color_hex = ?, sort_order = ?, is_protected = ?, uuid = ?, modified_at = ? WHERE category_id = ?
                     """
-                    try db.run(sql, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0, category.uuid, category.categoryId)
+                    try db.run(sql, category.categoryName, category.colorHex, category.sortOrder, category.isProtected ? 1 : 0, category.uuid, now, category.categoryId)
                     print("CategoryRecords: Updated category with ID \(category.categoryId), UUID \(category.uuid)")
                     result = category.categoryId
                 } catch {

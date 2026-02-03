@@ -13,6 +13,8 @@ enum CategorySyncError: Error, LocalizedError {
     case downloadFailed(String)
     case mappingFailed
     case networkError(Error)
+    case notModified
+    case conflictDetected(localId: Int, cloudId: String)
 
     var errorDescription: String? {
         switch self {
@@ -24,6 +26,10 @@ enum CategorySyncError: Error, LocalizedError {
             return "Failed to create category mapping"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
+        case .notModified:
+            return "Categories not modified since last sync"
+        case .conflictDetected(let localId, let cloudId):
+            return "Conflict detected for category local:\(localId) cloud:\(cloudId)"
         }
     }
 }
@@ -131,24 +137,91 @@ class CategorySyncService {
     private func updateCloudCategory(localCategory: Category, cloudId: String, completion: @escaping (Result<String, CategorySyncError>) -> Void) {
         let request = CreateCategoryRequest.from(localCategory: localCategory)
 
+        // Get stored ETag for optimistic concurrency control
+        let storedEtag = syncMapping.getEtag(localId: localCategory.categoryId, entityType: .category)
+
         // Server returns a message response for updates, not the category object
         networkManager.put(
             endpoint: APIConfig.Endpoints.category(id: cloudId),
             body: request,
+            eTag: storedEtag,
             requiresAuth: true
-        ) { [weak self] (result: Result<SuccessMessageResponse, NetworkError>) in
+        ) { [weak self] (result: Result<ResponseWithETag<SuccessMessageResponse>, NetworkError>) in
             switch result {
-            case .success:
+            case .success(let response):
+                // Update sync status and store new ETag
                 self?.syncMapping.updateStatus(
                     localId: localCategory.categoryId,
                     entityType: .category,
                     status: .synced
                 )
+                if let newEtag = response.etag {
+                    self?.syncMapping.updateEtag(
+                        localId: localCategory.categoryId,
+                        entityType: .category,
+                        newEtag: newEtag
+                    )
+                }
                 print("CategorySyncService: Updated cloud category \(cloudId)")
                 completion(.success(cloudId))
 
             case .failure(let error):
-                print("CategorySyncService: Failed to update cloud category - \(error)")
+                if case .preconditionFailed = error {
+                    // ETag mismatch - conflict detected, try to resolve
+                    print("CategorySyncService: Conflict detected for category \(cloudId), attempting resolution")
+                    self?.handleCategoryConflict(localCategory: localCategory, cloudId: cloudId, completion: completion)
+                } else {
+                    print("CategorySyncService: Failed to update cloud category - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        }
+    }
+
+    /// Handle conflict when ETag mismatch (412) occurs
+    private func handleCategoryConflict(localCategory: Category, cloudId: String, completion: @escaping (Result<String, CategorySyncError>) -> Void) {
+        // Fetch the current server version
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.category(id: cloudId),
+            requiresAuth: true
+        ) { [weak self] (result: Result<CloudCategory, NetworkError>) in
+            switch result {
+            case .success(let cloudCategory):
+                // Compare timestamps - most recent wins
+                let cloudModified = cloudCategory.modifiedAt ?? 0
+                let localModified = localCategory.modifiedAt ?? 0
+
+                if localModified > cloudModified {
+                    // Local is newer, force update (without ETag)
+                    print("CategorySyncService: Local category is newer, forcing update")
+                    let request = CreateCategoryRequest.from(localCategory: localCategory)
+                    self?.networkManager.put(
+                        endpoint: APIConfig.Endpoints.category(id: cloudId),
+                        body: request,
+                        requiresAuth: true
+                    ) { (result: Result<SuccessMessageResponse, NetworkError>) in
+                        switch result {
+                        case .success:
+                            self?.syncMapping.updateStatus(
+                                localId: localCategory.categoryId,
+                                entityType: .category,
+                                status: .synced
+                            )
+                            print("CategorySyncService: Conflict resolved - local wins")
+                            completion(.success(cloudId))
+                        case .failure(let error):
+                            completion(.failure(.networkError(error)))
+                        }
+                    }
+                } else {
+                    // Cloud is newer or same age, accept cloud version
+                    print("CategorySyncService: Cloud category is newer, accepting cloud version")
+                    _ = self?.updateLocalCategory(cloudCategory: cloudCategory, localId: localCategory.categoryId)
+                    completion(.success(cloudId))
+                }
+
+            case .failure(let error):
+                print("CategorySyncService: Failed to fetch cloud category for conflict resolution - \(error)")
                 completion(.failure(.networkError(error)))
             }
         }
@@ -156,10 +229,20 @@ class CategorySyncService {
 
     // MARK: - Download Methods
 
-    /// Download all categories from the cloud
-    func downloadAllCategories(completion: @escaping (Result<Int, CategorySyncError>) -> Void) {
+    /// Download all categories from the cloud (with optional delta sync)
+    /// - Parameters:
+    ///   - since: Optional timestamp in milliseconds. If provided, only returns categories modified after this time.
+    ///   - completion: Result with count of downloaded categories or error
+    func downloadAllCategories(since: Int? = nil, completion: @escaping (Result<Int, CategorySyncError>) -> Void) {
+        // Build query parameters for delta sync
+        var queryParams: [String: String]? = nil
+        if let sinceTimestamp = since {
+            queryParams = ["since": String(sinceTimestamp)]
+        }
+
         networkManager.get(
             endpoint: APIConfig.Endpoints.categories,
+            queryParams: queryParams,
             requiresAuth: true
         ) { [weak self] (result: Result<[CloudCategory], NetworkError>) in
             switch result {
@@ -172,12 +255,18 @@ class CategorySyncService {
                     }
                 }
 
-                print("CategorySyncService: Downloaded \(downloadedCount) categories")
+                print("CategorySyncService: Downloaded \(downloadedCount) categories (delta: \(since != nil))")
                 completion(.success(downloadedCount))
 
             case .failure(let error):
-                print("CategorySyncService: Failed to download categories - \(error)")
-                completion(.failure(.networkError(error)))
+                // Handle 304 Not Modified as success with 0 changes
+                if case .notModified = error {
+                    print("CategorySyncService: Categories not modified since last sync")
+                    completion(.success(0))
+                } else {
+                    print("CategorySyncService: Failed to download categories - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
             }
         }
     }

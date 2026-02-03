@@ -32,6 +32,7 @@ struct SyncMappingRecord {
     var syncStatus: SyncStatus
     let createdAt: Int
     var modifiedAt: Int
+    var etag: String?
 }
 
 // MARK: - Sync Mapping Manager
@@ -57,6 +58,7 @@ class SyncMapping {
     private let syncStatus = SQLite.Expression<String>("sync_status")
     private let createdAt = SQLite.Expression<Int>("created_at")
     private let modifiedAt = SQLite.Expression<Int>("modified_at")
+    private let etag = SQLite.Expression<String?>("etag")
 
     // MARK: - Initialization
     private init() {
@@ -128,7 +130,8 @@ class SyncMapping {
                     lastSynced: row[lastSynced],
                     syncStatus: SyncStatus(rawValue: row[syncStatus]) ?? .pendingUpload,
                     createdAt: row[createdAt],
-                    modifiedAt: row[modifiedAt]
+                    modifiedAt: row[modifiedAt],
+                    etag: row[etag]
                 )
             }
         } catch {
@@ -155,7 +158,8 @@ class SyncMapping {
                     lastSynced: row[lastSynced],
                     syncStatus: SyncStatus(rawValue: row[syncStatus]) ?? .pendingUpload,
                     createdAt: row[createdAt],
-                    modifiedAt: row[modifiedAt]
+                    modifiedAt: row[modifiedAt],
+                    etag: row[etag]
                 ))
             }
         } catch {
@@ -182,7 +186,8 @@ class SyncMapping {
                     lastSynced: row[lastSynced],
                     syncStatus: SyncStatus(rawValue: row[self.syncStatus]) ?? status,
                     createdAt: row[createdAt],
-                    modifiedAt: row[modifiedAt]
+                    modifiedAt: row[modifiedAt],
+                    etag: row[etag]
                 ))
             }
         } catch {
@@ -226,11 +231,27 @@ class SyncMapping {
         return findLocalCategoryByUUID(uuid) != nil
     }
 
-    // MARK: - Write Methods
+    // MARK: - ETag Methods
 
-    /// Create a new mapping
+    /// Get the ETag for a local entity
+    func getEtag(localId: Int, entityType: SyncEntityType) -> String? {
+        guard let db = db else { return nil }
+
+        do {
+            let query = syncMappings.filter(self.localId == localId && self.entityType == entityType.rawValue)
+            for row in try db.prepare(query) {
+                return row[etag]
+            }
+        } catch {
+            print("SyncMapping: Error getting ETag - \(error)")
+        }
+
+        return nil
+    }
+
+    /// Update the ETag for a local entity
     @discardableResult
-    func createMapping(localId: Int, cloudId: String, entityType: SyncEntityType, status: SyncStatus = .synced) -> Bool {
+    func updateEtag(localId: Int, entityType: SyncEntityType, newEtag: String?) -> Bool {
         var result = false
         let semaphore = DispatchSemaphore(value: 0)
 
@@ -244,10 +265,44 @@ class SyncMapping {
 
             do {
                 let sql = """
-                INSERT OR REPLACE INTO sync_mappings (local_id, cloud_id, entity_type, last_synced, sync_status, created_at, modified_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                UPDATE sync_mappings SET etag = ?, modified_at = ?
+                WHERE local_id = ? AND entity_type = ?
                 """
-                try db.run(sql, localId, cloudId, entityType.rawValue, now, status.rawValue, now, now)
+                try db.run(sql, newEtag, now, localId, entityType.rawValue)
+                print("SyncMapping: Updated ETag for local:\(localId) to \(newEtag ?? "nil")")
+                result = true
+            } catch {
+                print("SyncMapping: Error updating ETag - \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    }
+
+    // MARK: - Write Methods
+
+    /// Create a new mapping
+    @discardableResult
+    func createMapping(localId: Int, cloudId: String, entityType: SyncEntityType, status: SyncStatus = .synced, etag: String? = nil) -> Bool {
+        var result = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self, let db = self.db else {
+                semaphore.signal()
+                return
+            }
+
+            let now = Int(Date().timeIntervalSince1970 * 1000)
+
+            do {
+                let sql = """
+                INSERT OR REPLACE INTO sync_mappings (local_id, cloud_id, entity_type, last_synced, sync_status, created_at, modified_at, etag)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """
+                try db.run(sql, localId, cloudId, entityType.rawValue, now, status.rawValue, now, now, etag)
                 print("SyncMapping: Created mapping local:\(localId) <-> cloud:\(cloudId) for \(entityType.rawValue)")
                 result = true
             } catch {

@@ -14,6 +14,8 @@ enum NoteSyncError: Error, LocalizedError {
     case mappingFailed
     case categoryNotSynced
     case networkError(Error)
+    case notModified
+    case conflictDetected(localId: Int, cloudId: String)
 
     var errorDescription: String? {
         switch self {
@@ -27,6 +29,10 @@ enum NoteSyncError: Error, LocalizedError {
             return "Note's category has not been synced yet"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
+        case .notModified:
+            return "Notes not modified since last sync"
+        case .conflictDetected(let localId, let cloudId):
+            return "Conflict detected for note local:\(localId) cloud:\(cloudId)"
         }
     }
 }
@@ -169,24 +175,100 @@ class NoteSyncService {
 
         let request = CreateNoteRequest.from(localNote: localNote, cloudCategoryId: cloudCategoryId)
 
+        // Get stored ETag for optimistic concurrency control
+        let storedEtag = syncMapping.getEtag(localId: localNote.noteId, entityType: .note)
+
         // Server returns a message response for updates, not the note object
         networkManager.put(
             endpoint: APIConfig.Endpoints.note(id: cloudId),
             body: request,
+            eTag: storedEtag,
             requiresAuth: true
-        ) { [weak self] (result: Result<SuccessMessageResponse, NetworkError>) in
+        ) { [weak self] (result: Result<ResponseWithETag<SuccessMessageResponse>, NetworkError>) in
             switch result {
-            case .success:
+            case .success(let response):
+                // Update sync status and store new ETag
                 self?.syncMapping.updateStatus(
                     localId: localNote.noteId,
                     entityType: .note,
                     status: .synced
                 )
+                if let newEtag = response.etag {
+                    self?.syncMapping.updateEtag(
+                        localId: localNote.noteId,
+                        entityType: .note,
+                        newEtag: newEtag
+                    )
+                }
                 print("NoteSyncService: Updated cloud note \(cloudId)")
                 completion(.success(cloudId))
 
             case .failure(let error):
-                print("NoteSyncService: Failed to update cloud note - \(error)")
+                if case .preconditionFailed = error {
+                    // ETag mismatch - conflict detected, try to resolve
+                    print("NoteSyncService: Conflict detected for note \(cloudId), attempting resolution")
+                    self?.handleNoteConflict(localNote: localNote, cloudId: cloudId, completion: completion)
+                } else {
+                    print("NoteSyncService: Failed to update cloud note - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        }
+    }
+
+    /// Handle conflict when ETag mismatch (412) occurs
+    private func handleNoteConflict(localNote: Note, cloudId: String, completion: @escaping (Result<String, NoteSyncError>) -> Void) {
+        // Fetch the current server version
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.note(id: cloudId),
+            requiresAuth: true
+        ) { [weak self] (result: Result<CloudNote, NetworkError>) in
+            switch result {
+            case .success(let cloudNote):
+                // Compare timestamps - most recent wins
+                let cloudModified = cloudNote.modifiedDate ?? cloudNote.createdDate
+                let localModified = localNote.editedTime
+
+                if localModified > cloudModified {
+                    // Local is newer, force update (without ETag)
+                    print("NoteSyncService: Local note is newer, forcing update")
+                    var cloudCategoryId: Int? = nil
+                    if localNote.categoryId > 0 {
+                        if let cloudIdStr = self?.syncMapping.getCloudId(localId: localNote.categoryId, entityType: .category),
+                           let cloudIdInt = Int(cloudIdStr) {
+                            cloudCategoryId = cloudIdInt
+                        } else {
+                            cloudCategoryId = localNote.categoryId
+                        }
+                    }
+                    let request = CreateNoteRequest.from(localNote: localNote, cloudCategoryId: cloudCategoryId)
+                    self?.networkManager.put(
+                        endpoint: APIConfig.Endpoints.note(id: cloudId),
+                        body: request,
+                        requiresAuth: true
+                    ) { (result: Result<SuccessMessageResponse, NetworkError>) in
+                        switch result {
+                        case .success:
+                            self?.syncMapping.updateStatus(
+                                localId: localNote.noteId,
+                                entityType: .note,
+                                status: .synced
+                            )
+                            print("NoteSyncService: Conflict resolved - local wins")
+                            completion(.success(cloudId))
+                        case .failure(let error):
+                            completion(.failure(.networkError(error)))
+                        }
+                    }
+                } else {
+                    // Cloud is newer or same age, accept cloud version
+                    print("NoteSyncService: Cloud note is newer, accepting cloud version")
+                    _ = self?.updateLocalNote(cloudNote: cloudNote, localId: localNote.noteId)
+                    completion(.success(cloudId))
+                }
+
+            case .failure(let error):
+                print("NoteSyncService: Failed to fetch cloud note for conflict resolution - \(error)")
                 completion(.failure(.networkError(error)))
             }
         }
@@ -194,10 +276,20 @@ class NoteSyncService {
 
     // MARK: - Download Methods
 
-    /// Download all notes from the cloud
-    func downloadAllNotes(completion: @escaping (Result<Int, NoteSyncError>) -> Void) {
+    /// Download all notes from the cloud (with optional delta sync)
+    /// - Parameters:
+    ///   - since: Optional timestamp in milliseconds. If provided, only returns notes modified after this time.
+    ///   - completion: Result with count of downloaded notes or error
+    func downloadAllNotes(since: Int? = nil, completion: @escaping (Result<Int, NoteSyncError>) -> Void) {
+        // Build query parameters for delta sync
+        var queryParams: [String: String]? = nil
+        if let sinceTimestamp = since {
+            queryParams = ["since": String(sinceTimestamp)]
+        }
+
         networkManager.get(
             endpoint: APIConfig.Endpoints.notes,
+            queryParams: queryParams,
             requiresAuth: true
         ) { [weak self] (result: Result<[CloudNote], NetworkError>) in
             switch result {
@@ -210,12 +302,18 @@ class NoteSyncService {
                     }
                 }
 
-                print("NoteSyncService: Downloaded \(downloadedCount) notes")
+                print("NoteSyncService: Downloaded \(downloadedCount) notes (delta: \(since != nil))")
                 completion(.success(downloadedCount))
 
             case .failure(let error):
-                print("NoteSyncService: Failed to download notes - \(error)")
-                completion(.failure(.networkError(error)))
+                // Handle 304 Not Modified as success with 0 changes
+                if case .notModified = error {
+                    print("NoteSyncService: Notes not modified since last sync")
+                    completion(.success(0))
+                } else {
+                    print("NoteSyncService: Failed to download notes - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
             }
         }
     }

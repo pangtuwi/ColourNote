@@ -106,7 +106,7 @@ class NoteRecords {
         }
 
         let dbSchemaVersionKey = "DatabaseSchemaVersion"
-        let currentSchemaVersion = 9 // Increment when adding new migrations
+        let currentSchemaVersion = 10 // Increment when adding new migrations
         let savedSchemaVersion = UserDefaults.standard.integer(forKey: dbSchemaVersionKey)
 
         print("=== Database Migration Check ===")
@@ -278,6 +278,31 @@ class NoteRecords {
                 // Update schema version
                 UserDefaults.standard.set(9, forKey: dbSchemaVersionKey)
                 print("Migration to version 9 completed")
+            }
+
+            if savedSchemaVersion < 10 {
+                // Migration to version 10: Add UUID index on notes and etag column to sync_mappings
+                print("Running migration to version 10: Adding UUID index and etag support")
+
+                do {
+                    // Create index on uuid for faster lookups
+                    try db.execute("CREATE INDEX IF NOT EXISTS idx_notes_uuid ON notes(uuid)")
+                    print("Created index on notes.uuid column")
+                } catch {
+                    print("Error creating notes uuid index: \(error)")
+                }
+
+                do {
+                    // Add etag column to sync_mappings table
+                    try db.execute("ALTER TABLE sync_mappings ADD COLUMN etag TEXT DEFAULT NULL")
+                    print("Added etag column to sync_mappings table")
+                } catch {
+                    print("etag column may already exist or error: \(error)")
+                }
+
+                // Update schema version
+                UserDefaults.standard.set(10, forKey: dbSchemaVersionKey)
+                print("Migration to version 10 completed")
             }
         } else {
             print("Database schema is up to date")
