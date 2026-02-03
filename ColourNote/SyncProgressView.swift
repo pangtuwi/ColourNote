@@ -166,6 +166,8 @@ class SyncProgressView: UIView {
             progressValue = 0.5
         case .downloadingNotes:
             progressValue = 0.7
+        case .processingPermanentDeletes:
+            progressValue = 0.9
         case .complete:
             progressValue = 1.0
         case .failed:
@@ -302,3 +304,4 @@ extension UIViewController {
         syncProgressView = nil
     }
 }
+

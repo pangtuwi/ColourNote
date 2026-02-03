@@ -38,6 +38,34 @@ struct SuccessMessageResponse: Codable {
     let message: String?
 }
 
+// MARK: - Conflict Response Models (412 Precondition Failed)
+
+/// Response body returned when a 412 conflict occurs for a note
+struct NoteConflictResponse: Codable {
+    let error: String?
+    let message: String?
+    let currentVersion: CloudNote?
+
+    enum CodingKeys: String, CodingKey {
+        case error
+        case message
+        case currentVersion = "current_version"
+    }
+}
+
+/// Response body returned when a 412 conflict occurs for a category
+struct CategoryConflictResponse: Codable {
+    let error: String?
+    let message: String?
+    let currentVersion: CloudCategory?
+
+    enum CodingKeys: String, CodingKey {
+        case error
+        case message
+        case currentVersion = "current_version"
+    }
+}
+
 // MARK: - Cloud Note Model
 
 struct CloudNote: Codable {

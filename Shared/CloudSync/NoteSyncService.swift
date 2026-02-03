@@ -204,10 +204,10 @@ class NoteSyncService {
                 completion(.success(cloudId))
 
             case .failure(let error):
-                if case .preconditionFailed = error {
-                    // ETag mismatch - conflict detected, try to resolve
+                if case .preconditionFailed(let responseData) = error {
+                    // ETag mismatch - conflict detected, try to resolve using response body
                     print("NoteSyncService: Conflict detected for note \(cloudId), attempting resolution")
-                    self?.handleNoteConflict(localNote: localNote, cloudId: cloudId, completion: completion)
+                    self?.handleNoteConflict(localNote: localNote, cloudId: cloudId, responseData: responseData, completion: completion)
                 } else {
                     print("NoteSyncService: Failed to update cloud note - \(error)")
                     completion(.failure(.networkError(error)))
@@ -217,60 +217,87 @@ class NoteSyncService {
     }
 
     /// Handle conflict when ETag mismatch (412) occurs
-    private func handleNoteConflict(localNote: Note, cloudId: String, completion: @escaping (Result<String, NoteSyncError>) -> Void) {
-        // Fetch the current server version
-        networkManager.get(
-            endpoint: APIConfig.Endpoints.note(id: cloudId),
-            requiresAuth: true
-        ) { [weak self] (result: Result<CloudNote, NetworkError>) in
-            switch result {
-            case .success(let cloudNote):
-                // Compare timestamps - most recent wins
-                let cloudModified = cloudNote.modifiedDate ?? cloudNote.createdDate
-                let localModified = localNote.editedTime
-
-                if localModified > cloudModified {
-                    // Local is newer, force update (without ETag)
-                    print("NoteSyncService: Local note is newer, forcing update")
-                    var cloudCategoryId: Int? = nil
-                    if localNote.categoryId > 0 {
-                        if let cloudIdStr = self?.syncMapping.getCloudId(localId: localNote.categoryId, entityType: .category),
-                           let cloudIdInt = Int(cloudIdStr) {
-                            cloudCategoryId = cloudIdInt
-                        } else {
-                            cloudCategoryId = localNote.categoryId
-                        }
-                    }
-                    let request = CreateNoteRequest.from(localNote: localNote, cloudCategoryId: cloudCategoryId)
-                    self?.networkManager.put(
-                        endpoint: APIConfig.Endpoints.note(id: cloudId),
-                        body: request,
-                        requiresAuth: true
-                    ) { (result: Result<SuccessMessageResponse, NetworkError>) in
-                        switch result {
-                        case .success:
-                            self?.syncMapping.updateStatus(
-                                localId: localNote.noteId,
-                                entityType: .note,
-                                status: .synced
-                            )
-                            print("NoteSyncService: Conflict resolved - local wins")
-                            completion(.success(cloudId))
-                        case .failure(let error):
-                            completion(.failure(.networkError(error)))
-                        }
-                    }
-                } else {
-                    // Cloud is newer or same age, accept cloud version
-                    print("NoteSyncService: Cloud note is newer, accepting cloud version")
-                    _ = self?.updateLocalNote(cloudNote: cloudNote, localId: localNote.noteId)
-                    completion(.success(cloudId))
+    /// Uses the current_version from the 412 response body to avoid an extra GET request
+    private func handleNoteConflict(localNote: Note, cloudId: String, responseData: Data?, completion: @escaping (Result<String, NoteSyncError>) -> Void) {
+        // Try to parse the current version from the 412 response body
+        var cloudNote: CloudNote? = nil
+        if let data = responseData {
+            do {
+                let decoder = JSONDecoder()
+                let conflictResponse = try decoder.decode(NoteConflictResponse.self, from: data)
+                cloudNote = conflictResponse.currentVersion
+                if cloudNote != nil {
+                    print("NoteSyncService: Using current_version from 412 response body")
                 }
-
-            case .failure(let error):
-                print("NoteSyncService: Failed to fetch cloud note for conflict resolution - \(error)")
-                completion(.failure(.networkError(error)))
+            } catch {
+                print("NoteSyncService: Could not parse 412 response body: \(error)")
             }
+        }
+
+        // If we couldn't get the current version from response body, fall back to GET request
+        if cloudNote == nil {
+            print("NoteSyncService: Falling back to GET request for current version")
+            networkManager.get(
+                endpoint: APIConfig.Endpoints.note(id: cloudId),
+                requiresAuth: true
+            ) { [weak self] (result: Result<CloudNote, NetworkError>) in
+                switch result {
+                case .success(let fetchedNote):
+                    self?.resolveNoteConflict(localNote: localNote, cloudNote: fetchedNote, cloudId: cloudId, completion: completion)
+                case .failure(let error):
+                    print("NoteSyncService: Failed to fetch cloud note for conflict resolution - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+            return
+        }
+
+        // We have the current version from response body, resolve directly
+        resolveNoteConflict(localNote: localNote, cloudNote: cloudNote!, cloudId: cloudId, completion: completion)
+    }
+
+    /// Resolve note conflict by comparing timestamps
+    private func resolveNoteConflict(localNote: Note, cloudNote: CloudNote, cloudId: String, completion: @escaping (Result<String, NoteSyncError>) -> Void) {
+        // Compare timestamps - most recent wins
+        let cloudModified = cloudNote.modifiedDate ?? cloudNote.createdDate
+        let localModified = localNote.editedTime
+
+        if localModified > cloudModified {
+            // Local is newer, force update (without ETag)
+            print("NoteSyncService: Local note is newer (\(localModified) > \(cloudModified)), forcing update")
+            var cloudCategoryId: Int? = nil
+            if localNote.categoryId > 0 {
+                if let cloudIdStr = syncMapping.getCloudId(localId: localNote.categoryId, entityType: .category),
+                   let cloudIdInt = Int(cloudIdStr) {
+                    cloudCategoryId = cloudIdInt
+                } else {
+                    cloudCategoryId = localNote.categoryId
+                }
+            }
+            let request = CreateNoteRequest.from(localNote: localNote, cloudCategoryId: cloudCategoryId)
+            networkManager.put(
+                endpoint: APIConfig.Endpoints.note(id: cloudId),
+                body: request,
+                requiresAuth: true
+            ) { [weak self] (result: Result<SuccessMessageResponse, NetworkError>) in
+                switch result {
+                case .success:
+                    self?.syncMapping.updateStatus(
+                        localId: localNote.noteId,
+                        entityType: .note,
+                        status: .synced
+                    )
+                    print("NoteSyncService: Conflict resolved - local wins")
+                    completion(.success(cloudId))
+                case .failure(let error):
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        } else {
+            // Cloud is newer or same age, accept cloud version
+            print("NoteSyncService: Cloud note is newer (\(cloudModified) >= \(localModified)), accepting cloud version")
+            _ = updateLocalNote(cloudNote: cloudNote, localId: localNote.noteId)
+            completion(.success(cloudId))
         }
     }
 

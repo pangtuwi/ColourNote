@@ -805,6 +805,14 @@ Potential features to implement:
   - During full sync, compares local synced notes with server response
   - Notes missing from server (but have sync mapping) are deleted locally
   - Only runs during full sync (delta sync can't detect deletions)
+- **Optimized 412 Conflict Resolution**
+  - `NetworkError.preconditionFailed` now includes response body data
+  - Conflict handlers parse `current_version` from 412 response body
+  - Eliminates extra GET request when server returns current version
+  - Falls back to GET request if response body parsing fails
+  - New models: `NoteConflictResponse`, `CategoryConflictResponse`
+  - Refactored: `handleNoteConflict()` and `handleCategoryConflict()` use response data
+  - Added: `resolveNoteConflict()` and `resolveCategoryConflict()` helper methods
 
 ### February 3, 2026 - Sync Engine v1.2: Delta Sync & ETag Support
 - **Delta Synchronization**

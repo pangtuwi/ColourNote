@@ -19,7 +19,7 @@ enum NetworkError: Error, LocalizedError {
     case networkError(Error)
     case serverError(String)
     case notModified           // 304 - data unchanged
-    case preconditionFailed    // 412 - ETag mismatch
+    case preconditionFailed(Data?)    // 412 - ETag mismatch, includes response body
 
     var errorDescription: String? {
         switch self {
@@ -273,7 +273,8 @@ class NetworkManager {
                 }
 
                 if httpResponse.statusCode == 412 {
-                    completion(.failure(.preconditionFailed))
+                    // Include response body for conflict resolution
+                    completion(.failure(.preconditionFailed(data)))
                     return
                 }
 
@@ -336,7 +337,8 @@ class NetworkManager {
                 }
 
                 if httpResponse.statusCode == 412 {
-                    completion(.failure(.preconditionFailed))
+                    // Include response body for conflict resolution
+                    completion(.failure(.preconditionFailed(data)))
                     return
                 }
 
