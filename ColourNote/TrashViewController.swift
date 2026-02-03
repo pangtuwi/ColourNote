@@ -50,12 +50,79 @@ class TrashViewController: UITableViewController {
 
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Empty Trash", style: .destructive) { [weak self] _ in
-            let deletedCount = NoteRecords.instance.emptyTrash()
-            print("Emptied trash: \(deletedCount) notes permanently deleted")
-            self?.loadDeletedNotes()
+            self?.emptyTrashWithSync()
         })
 
         present(alert, animated: true)
+    }
+
+    /// Empty trash with cloud sync support
+    private func emptyTrashWithSync() {
+        // Get all deleted notes before emptying
+        let notesToDelete = deletedNotes
+
+        guard !notesToDelete.isEmpty else {
+            loadDeletedNotes()
+            return
+        }
+
+        // Check if logged in to cloud sync
+        guard AuthManager.shared.isLoggedIn else {
+            // Not logged in - just delete locally
+            let deletedCount = NoteRecords.instance.emptyTrash()
+            print("Emptied trash (offline): \(deletedCount) notes permanently deleted")
+            // Clean up orphaned sync mappings
+            for note in notesToDelete {
+                SyncMapping.shared.deleteMapping(localId: note.noteId, entityType: .note)
+            }
+            loadDeletedNotes()
+            return
+        }
+
+        // Logged in - try to delete from cloud first, then locally
+        let localIds = notesToDelete.map { $0.noteId }
+
+        // Show activity indicator
+        let activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.center = view.center
+        activityIndicator.startAnimating()
+        view.addSubview(activityIndicator)
+        navigationItem.rightBarButtonItem?.isEnabled = false
+
+        NoteSyncService.shared.permanentlyDeleteCloudNotes(localIds: localIds) { [weak self] result in
+            DispatchQueue.main.async {
+                activityIndicator.removeFromSuperview()
+                self?.navigationItem.rightBarButtonItem?.isEnabled = true
+
+                switch result {
+                case .success(let cloudDeletedCount):
+                    // Now delete locally
+                    let localDeletedCount = NoteRecords.instance.emptyTrash()
+                    print("Emptied trash: \(localDeletedCount) notes locally, \(cloudDeletedCount) from cloud")
+                    self?.loadDeletedNotes()
+
+                case .failure(let error):
+                    print("Cloud delete failed: \(error)")
+                    // Mark notes for pending permanent delete and delete locally
+                    for note in notesToDelete {
+                        NoteSyncService.shared.markForPermanentDelete(localId: note.noteId)
+                    }
+                    let localDeletedCount = NoteRecords.instance.emptyTrash()
+                    print("Emptied trash (pending sync): \(localDeletedCount) notes")
+
+                    // Show warning that deletion will sync later
+                    let warningAlert = UIAlertController(
+                        title: "Offline Mode",
+                        message: "Notes deleted locally. Cloud deletion will complete when you're back online.",
+                        preferredStyle: .alert
+                    )
+                    warningAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self?.present(warningAlert, animated: true)
+
+                    self?.loadDeletedNotes()
+                }
+            }
+        }
     }
 
     // MARK: - Table View Data Source
@@ -154,12 +221,7 @@ class TrashViewController: UITableViewController {
                 completionHandler(false)
             })
             alert.addAction(UIAlertAction(title: "Delete Forever", style: .destructive) { _ in
-                if NoteRecords.instance.permanentlyDeleteNote(noteId: note.noteId) {
-                    self.loadDeletedNotes()
-                    completionHandler(true)
-                } else {
-                    completionHandler(false)
-                }
+                self.permanentlyDeleteNoteWithSync(note: note, completionHandler: completionHandler)
             })
             self.present(alert, animated: true)
         }
@@ -168,6 +230,53 @@ class TrashViewController: UITableViewController {
 
         let configuration = UISwipeActionsConfiguration(actions: [deleteForeverAction, restoreAction])
         return configuration
+    }
+
+    // MARK: - Sync-Aware Deletion
+
+    /// Permanently delete a single note with cloud sync support
+    private func permanentlyDeleteNoteWithSync(note: Note, completionHandler: @escaping (Bool) -> Void) {
+        // Check if logged in to cloud sync
+        guard AuthManager.shared.isLoggedIn else {
+            // Not logged in - just delete locally
+            if NoteRecords.instance.permanentlyDeleteNote(noteId: note.noteId) {
+                // Clean up orphaned sync mapping
+                SyncMapping.shared.deleteMapping(localId: note.noteId, entityType: .note)
+                loadDeletedNotes()
+                completionHandler(true)
+            } else {
+                completionHandler(false)
+            }
+            return
+        }
+
+        // Logged in - try to delete from cloud first
+        NoteSyncService.shared.permanentlyDeleteCloudNote(localId: note.noteId) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    // Cloud delete succeeded (or note wasn't synced), now delete locally
+                    if NoteRecords.instance.permanentlyDeleteNote(noteId: note.noteId) {
+                        self?.loadDeletedNotes()
+                        completionHandler(true)
+                    } else {
+                        completionHandler(false)
+                    }
+
+                case .failure(let error):
+                    print("Cloud delete failed for single note: \(error)")
+                    // Mark for pending permanent delete
+                    NoteSyncService.shared.markForPermanentDelete(localId: note.noteId)
+                    // Delete locally anyway
+                    if NoteRecords.instance.permanentlyDeleteNote(noteId: note.noteId) {
+                        self?.loadDeletedNotes()
+                        completionHandler(true)
+                    } else {
+                        completionHandler(false)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Helper Methods

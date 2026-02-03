@@ -1032,6 +1032,38 @@ class NoteRecords {
         return deletedCount
     } //emptyTrash
 
+    // Permanently delete a note without triggering sync (used by sync engine)
+    // This only deletes the local note - sync mapping cleanup is handled separately
+    func permanentlyDeleteNoteWithoutSync(noteId: Int) -> Bool {
+        var result = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        concurrentDBQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else {
+                semaphore.signal()
+                return
+            }
+
+            do {
+                let sql = "DELETE FROM notes WHERE _id = ?"
+                try self.db!.run(sql, noteId)
+                print("Permanently deleted Note with ID \(noteId) (without sync)")
+                result = true
+            } catch {
+                print("Permanent delete failed in NoteRecords.permanentlyDeleteNoteWithoutSync: \(error)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return result
+    } //permanentlyDeleteNoteWithoutSync
+
+    // Get deleted notes (soft-deleted, in trash)
+    func getDeletedNotesForSync() -> [Note] {
+        return getDeletedNotes()
+    }
+
     // Legacy method for compatibility - redirects to soft delete
     func deleteNote(noteId: Int) -> Bool {
         return softDeleteNote(noteId: noteId)

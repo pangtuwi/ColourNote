@@ -20,6 +20,7 @@ enum SyncStatus: String {
     case pendingUpload = "pending_upload"
     case pendingDownload = "pending_download"
     case conflict = "conflict"
+    case pendingPermanentDelete = "pending_permanent_delete"
 }
 
 // MARK: - Sync Mapping Model

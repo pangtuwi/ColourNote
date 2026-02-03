@@ -10,7 +10,8 @@ import Foundation
 struct APIConfig {
 
     // MARK: - Base URL
-    static let baseURL = "http://irids.co.uk"
+    static let baseURL = "http://localhost:3002"
+    //static let baseURL = "http://irids.co.uk"
 
     // MARK: - Endpoints
     struct Endpoints {
@@ -25,6 +26,7 @@ struct APIConfig {
         // Notes
         static let notes = "/notes"
         static func note(id: String) -> String { "/notes/\(id)" }
+        static func notePermanent(id: String) -> String { "/notes/\(id)/permanent" }
     }
 
     // MARK: - Timeouts

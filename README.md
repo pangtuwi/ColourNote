@@ -148,7 +148,7 @@ The app uses SQLite with the following schema (current version: 10):
 | cloud_id | TEXT | Cloud server ID |
 | entity_type | TEXT | "note" or "category" |
 | last_synced | INTEGER | Last sync timestamp (ms since epoch) |
-| sync_status | TEXT | "synced", "pending_upload", "pending_download", "conflict" |
+| sync_status | TEXT | "synced", "pending_upload", "pending_download", "conflict", "pending_permanent_delete" |
 | created_at | INTEGER | Record creation timestamp |
 | modified_at | INTEGER | Record modification timestamp |
 | etag | TEXT | ETag for optimistic concurrency (v1.2+) |
@@ -238,7 +238,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2 (Build 5)** - Current Release (February 3, 2026)
+- **1.2 (Build 6)** - Current Release (February 3, 2026)
   - **New Feature**: Cloud Sync with JWT Authentication
   - Bidirectional sync of notes and categories with cloud server
   - Login/Register UI for cloud account management
@@ -246,6 +246,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Database schema v10 with UUID columns and sync_mappings table
   - Sync priority: UUID first, cloud ID second, name matching as fallback
   - Auto-sync on app launch/foreground (when enabled)
+  - **Sync Engine v1.3**: Permanent deletion sync
+    - Notes permanently deleted from trash sync to cloud
+    - Offline support with pending deletion queue
+    - Server-side deletion detection during full sync
+    - Graceful handling of 404 (already deleted) responses
   - **Sync Engine v1.2**: Delta sync and ETag support
     - Downloads only modified entities since last sync
     - ETag-based optimistic concurrency control

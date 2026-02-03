@@ -54,6 +54,8 @@ struct SyncProgress {
             return "Uploading notes..."
         case .downloadingNotes:
             return "Downloading notes..."
+        case .processingPermanentDeletes:
+            return "Processing deletions..."
         case .complete:
             return "Sync complete"
         case .failed:
@@ -67,6 +69,7 @@ struct SyncProgress {
         case downloadingCategories
         case uploadingNotes
         case downloadingNotes
+        case processingPermanentDeletes
         case complete
         case failed
     }
@@ -161,29 +164,41 @@ class SyncEngine {
                     case .success(let (notesUploaded, notesDownloaded)):
                         progress.notesUploaded = notesUploaded
                         progress.notesDownloaded = notesDownloaded
-                        progress.phase = .complete
+
+                        // Process pending permanent deletes
+                        progress.phase = .processingPermanentDeletes
                         self.notifyProgress(progress)
 
-                        // Save last sync time
-                        self.saveLastSyncTime()
+                        self.processPendingPermanentDeletes { deleteResult in
+                            // Continue regardless of delete result (non-critical)
+                            if case .failure(let error) = deleteResult {
+                                print("SyncEngine: Pending permanent deletes failed - \(error)")
+                            }
 
-                        // Post notification
-                        DispatchQueue.main.async {
-                            NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
+                            progress.phase = .complete
+                            self.notifyProgress(progress)
+
+                            // Save last sync time
+                            self.saveLastSyncTime()
+
+                            // Post notification
+                            DispatchQueue.main.async {
+                                NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
+                            }
+
+                            let result = SyncResult(
+                                success: true,
+                                categoriesUploaded: progress.categoriesUploaded,
+                                categoriesDownloaded: progress.categoriesDownloaded,
+                                notesUploaded: progress.notesUploaded,
+                                notesDownloaded: progress.notesDownloaded,
+                                error: nil,
+                                syncedAt: Date()
+                            )
+
+                            self.isSyncing = false
+                            completion(.success(result))
                         }
-
-                        let result = SyncResult(
-                            success: true,
-                            categoriesUploaded: progress.categoriesUploaded,
-                            categoriesDownloaded: progress.categoriesDownloaded,
-                            notesUploaded: progress.notesUploaded,
-                            notesDownloaded: progress.notesDownloaded,
-                            error: nil,
-                            syncedAt: Date()
-                        )
-
-                        self.isSyncing = false
-                        completion(.success(result))
 
                     case .failure(let error):
                         progress.phase = .failed
@@ -269,11 +284,12 @@ class SyncEngine {
             group.leave()
         }
 
-        // Download notes after categories
+        // Download notes after categories (using deletion-aware download)
         group.notify(queue: .main) { [weak self] in
             guard let self = self else { return }
 
-            self.noteSyncService.downloadAllNotes { result in
+            // Use deletion-aware download to handle server-side deletions
+            self.noteSyncService.downloadAllNotesWithDeletionHandling(since: nil) { result in
                 switch result {
                 case .success(let count):
                     totalDownloaded += count
@@ -386,8 +402,9 @@ class SyncEngine {
             progress.phase = .downloadingNotes
             self.notifyProgress(progress)
 
-            // Then download cloud notes with delta sync
-            self.noteSyncService.downloadAllNotes(since: lastNoteSyncTime) { downloadResult in
+            // Use deletion-aware download for full sync (when no lastNoteSyncTime)
+            // This detects notes that were permanently deleted on the server
+            self.noteSyncService.downloadAllNotesWithDeletionHandling(since: lastNoteSyncTime) { downloadResult in
                 switch downloadResult {
                 case .success(let count):
                     // Save current time as last sync time for notes
@@ -410,6 +427,21 @@ class SyncEngine {
         currentProgress = progress
         DispatchQueue.main.async { [weak self] in
             self?.onProgressUpdate?(progress)
+        }
+    }
+
+    /// Process pending permanent deletes from the queue
+    private func processPendingPermanentDeletes(completion: @escaping (Result<Int, Error>) -> Void) {
+        noteSyncService.processPendingPermanentDeletes { result in
+            switch result {
+            case .success(let count):
+                if count > 0 {
+                    print("SyncEngine: Processed \(count) pending permanent deletes")
+                }
+                completion(.success(count))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
 

@@ -158,6 +158,12 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - Maps local integer IDs to cloud string IDs
    - Tracks sync status per entity
    - Stores mappings in SQLite `sync_mappings` table
+   - **Sync Status Values**:
+     - `synced` - Entity is in sync with cloud
+     - `pendingUpload` - Entity needs to be uploaded
+     - `pendingDownload` - Entity needs to be downloaded
+     - `conflict` - Conflict detected, needs resolution
+     - `pendingPermanentDelete` - Entity awaiting permanent deletion on cloud (v1.3+)
    - **UUID-based lookup methods**:
      - `findLocalNoteByUUID(_:)` - Find note by UUID
      - `findLocalCategoryByUUID(_:)` - Find category by UUID
@@ -193,6 +199,13 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - **ETag conflict handling (v1.2+)**:
      - Sends If-Match header with stored ETag on updates
      - `handleNoteConflict()` - Resolves 412 conflicts using timestamp comparison
+   - **Permanent deletion sync (v1.3+)**:
+     - `permanentlyDeleteCloudNote(localId:)` - Delete single note permanently
+     - `permanentlyDeleteCloudNotes(localIds:)` - Batch permanent delete
+     - `processPendingPermanentDeletes()` - Process queued deletions
+     - `markForPermanentDelete(localId:)` - Queue note for cloud deletion
+     - `handleServerSideDeletions(cloudNoteIds:)` - Handle server-deleted notes
+     - `downloadAllNotesWithDeletionHandling(since:)` - Download with deletion detection
 
 8. **SyncEngine.swift** - Orchestrates full sync
    - `syncAll()` - Full bidirectional sync
@@ -204,6 +217,11 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `getLastCategorySyncTime()` / `saveLastCategorySyncTime()` - Track category sync
      - `getLastNoteSyncTime()` / `saveLastNoteSyncTime()` - Track note sync
      - Passes `since` parameter to download methods for delta sync
+   - **Sync phases** (v1.3+):
+     - `starting` → `uploadingCategories` → `downloadingCategories` → `uploadingNotes` → `downloadingNotes` → `processingPermanentDeletes` → `complete`
+   - **Permanent deletion processing (v1.3+)**:
+     - `processPendingPermanentDeletes()` - Processes queued permanent deletes after note sync
+     - Full sync detects and handles server-side deletions
 
 #### View Controllers
 **Location**: `ColourNote/`
@@ -747,6 +765,47 @@ Potential features to implement:
 
 ## Recent Changes
 
+### February 3, 2026 - Sync Engine v1.3: Permanent Deletion Sync
+- **Permanent Deletion Synchronization**
+  - Notes permanently deleted from trash are now synced to the cloud
+  - Uses `DELETE /notes/{cloud_id}/permanent` endpoint
+  - Handles HTTP 200 OK (success) and 404 Not Found (already deleted)
+  - Offline support with pending deletion queue
+- **New Sync Status**
+  - Added `pendingPermanentDelete` status to `SyncStatus` enum
+  - Tracks notes awaiting permanent deletion on server
+- **New API Endpoint**
+  - Added `APIConfig.Endpoints.notePermanent(id:)` for permanent delete calls
+- **New NoteSyncService Methods**
+  - `permanentlyDeleteCloudNote(localId:)` - Delete single note permanently from cloud
+  - `permanentlyDeleteCloudNotes(localIds:)` - Batch permanent delete
+  - `getNotesPendingPermanentDelete()` - Get notes awaiting cloud deletion
+  - `markForPermanentDelete(localId:)` - Mark note for pending permanent delete
+  - `processPendingPermanentDeletes()` - Process queued permanent deletes
+  - `handleServerSideDeletions(cloudNoteIds:)` - Detect and handle server-deleted notes
+  - `downloadAllNotesWithDeletionHandling(since:)` - Download with server-side deletion detection
+- **New NoteRecords Method**
+  - `permanentlyDeleteNoteWithoutSync(noteId:)` - Delete locally without triggering sync
+- **SyncEngine Updates**
+  - Added `processingPermanentDeletes` sync phase
+  - `syncAll()` now processes pending permanent deletes after note sync
+  - `downloadCloudChanges()` now uses deletion-aware download
+  - Full sync (no delta) detects notes permanently deleted on other devices
+- **TrashViewController Updates**
+  - `emptyTrashWithSync()` - Empty trash with cloud sync support
+  - `permanentlyDeleteNoteWithSync(note:)` - Single note permanent delete with sync
+  - Shows activity indicator during cloud deletion
+  - Graceful offline handling with pending deletion queue
+  - Warning alert when operating in offline mode
+- **Offline Behavior**
+  - When offline: marks sync mapping as `pendingPermanentDelete`, deletes locally
+  - On next sync: `processPendingPermanentDeletes()` completes cloud deletion
+  - 404 responses treated as success (note already deleted on server)
+- **Server-Side Deletion Detection**
+  - During full sync, compares local synced notes with server response
+  - Notes missing from server (but have sync mapping) are deleted locally
+  - Only runs during full sync (delta sync can't detect deletions)
+
 ### February 3, 2026 - Sync Engine v1.2: Delta Sync & ETag Support
 - **Delta Synchronization**
   - Downloads only entities modified since last sync using `since` query parameter
@@ -944,4 +1003,4 @@ Potential features to implement:
 **Maintainer**: Paul Williams
 **Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)
-**Sync Engine Version**: 1.2
+**Sync Engine Version**: 1.3

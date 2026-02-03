@@ -486,7 +486,7 @@ class NoteSyncService {
 
     // MARK: - Delete Methods
 
-    /// Delete a note from the cloud
+    /// Delete a note from the cloud (soft delete - moves to trash)
     func deleteCloudNote(localId: Int, completion: @escaping (Result<Void, NoteSyncError>) -> Void) {
         guard let cloudId = syncMapping.getCloudId(localId: localId, entityType: .note) else {
             // No cloud mapping, nothing to delete
@@ -508,6 +508,251 @@ class NoteSyncService {
             case .failure(let error):
                 print("NoteSyncService: Failed to delete cloud note - \(error)")
                 completion(.failure(.networkError(error)))
+            }
+        }
+    }
+
+    /// Permanently delete a note from the cloud (hard delete)
+    /// - Parameters:
+    ///   - localId: The local note ID
+    ///   - completion: Result with success or error
+    func permanentlyDeleteCloudNote(localId: Int, completion: @escaping (Result<Void, NoteSyncError>) -> Void) {
+        guard let cloudId = syncMapping.getCloudId(localId: localId, entityType: .note) else {
+            // No cloud mapping - note was never synced, can safely delete locally
+            print("NoteSyncService: No cloud mapping for note \(localId), nothing to delete from cloud")
+            completion(.success(()))
+            return
+        }
+
+        print("NoteSyncService: Permanently deleting cloud note \(cloudId)")
+
+        networkManager.delete(
+            endpoint: APIConfig.Endpoints.notePermanent(id: cloudId),
+            requiresAuth: true
+        ) { [weak self] result in
+            switch result {
+            case .success:
+                // Remove the sync mapping
+                self?.syncMapping.deleteMapping(localId: localId, entityType: .note)
+                print("NoteSyncService: Permanently deleted cloud note \(cloudId)")
+                completion(.success(()))
+
+            case .failure(let error):
+                // Handle 404 (already deleted on server) as success
+                if case .httpError(statusCode: 404, _) = error {
+                    print("NoteSyncService: Cloud note \(cloudId) already deleted on server (404)")
+                    self?.syncMapping.deleteMapping(localId: localId, entityType: .note)
+                    completion(.success(()))
+                } else {
+                    print("NoteSyncService: Failed to permanently delete cloud note - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        }
+    }
+
+    /// Permanently delete multiple notes from the cloud
+    /// - Parameters:
+    ///   - localIds: Array of local note IDs to permanently delete
+    ///   - completion: Result with count of successfully deleted notes or error
+    func permanentlyDeleteCloudNotes(localIds: [Int], completion: @escaping (Result<Int, NoteSyncError>) -> Void) {
+        guard !localIds.isEmpty else {
+            completion(.success(0))
+            return
+        }
+
+        var deletedCount = 0
+        var lastError: NoteSyncError?
+        let group = DispatchGroup()
+
+        for localId in localIds {
+            group.enter()
+            permanentlyDeleteCloudNote(localId: localId) { result in
+                switch result {
+                case .success:
+                    deletedCount += 1
+                case .failure(let error):
+                    lastError = error
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            if let error = lastError, deletedCount == 0 {
+                completion(.failure(error))
+            } else {
+                print("NoteSyncService: Permanently deleted \(deletedCount) notes from cloud")
+                completion(.success(deletedCount))
+            }
+        }
+    }
+
+    /// Get notes that are pending permanent deletion from the cloud
+    func getNotesPendingPermanentDelete() -> [SyncMappingRecord] {
+        return syncMapping.getMappings(withStatus: .pendingPermanentDelete, entityType: .note)
+    }
+
+    /// Mark a note for pending permanent deletion (when offline)
+    func markForPermanentDelete(localId: Int) {
+        if syncMapping.isSynced(localId: localId, entityType: .note) {
+            syncMapping.updateStatus(localId: localId, entityType: .note, status: .pendingPermanentDelete)
+            print("NoteSyncService: Marked note \(localId) for pending permanent delete")
+        }
+    }
+
+    /// Process all pending permanent deletes
+    /// - Parameter completion: Result with count of processed deletes or error
+    func processPendingPermanentDeletes(completion: @escaping (Result<Int, NoteSyncError>) -> Void) {
+        let pendingDeletes = getNotesPendingPermanentDelete()
+
+        guard !pendingDeletes.isEmpty else {
+            print("NoteSyncService: No pending permanent deletes")
+            completion(.success(0))
+            return
+        }
+
+        print("NoteSyncService: Processing \(pendingDeletes.count) pending permanent deletes")
+
+        var processedCount = 0
+        var lastError: NoteSyncError?
+        let group = DispatchGroup()
+
+        for mapping in pendingDeletes {
+            group.enter()
+
+            // Call permanent delete on the cloud
+            networkManager.delete(
+                endpoint: APIConfig.Endpoints.notePermanent(id: mapping.cloudId),
+                requiresAuth: true
+            ) { [weak self] result in
+                switch result {
+                case .success:
+                    // Delete the sync mapping and local note
+                    self?.syncMapping.deleteMapping(localId: mapping.localId, entityType: .note)
+                    _ = NoteRecords.instance.permanentlyDeleteNoteWithoutSync(noteId: mapping.localId)
+                    processedCount += 1
+                    print("NoteSyncService: Processed pending delete for note \(mapping.localId)")
+
+                case .failure(let error):
+                    // Handle 404 (already deleted on server) as success
+                    if case .httpError(statusCode: 404, _) = error {
+                        self?.syncMapping.deleteMapping(localId: mapping.localId, entityType: .note)
+                        _ = NoteRecords.instance.permanentlyDeleteNoteWithoutSync(noteId: mapping.localId)
+                        processedCount += 1
+                        print("NoteSyncService: Cloud note already deleted (404), cleaned up local")
+                    } else {
+                        // Network error - keep in pending state for retry
+                        print("NoteSyncService: Failed to process pending delete - \(error)")
+                        lastError = .networkError(error)
+                    }
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            if processedCount > 0 {
+                completion(.success(processedCount))
+            } else if let error = lastError {
+                completion(.failure(error))
+            } else {
+                completion(.success(0))
+            }
+        }
+    }
+
+    // MARK: - Server-Side Deletion Handling
+
+    /// Handle notes that were permanently deleted on the server
+    /// This should only be called during a full sync (not delta sync)
+    /// - Parameter cloudNoteIds: Set of cloud note IDs returned from the server
+    /// - Returns: Count of locally deleted notes
+    func handleServerSideDeletions(cloudNoteIds: Set<String>) -> Int {
+        // Get all note mappings
+        let allMappings = syncMapping.getAllMappings(entityType: .note)
+        var deletedCount = 0
+
+        for mapping in allMappings {
+            // Skip notes that are pending permanent delete (we're handling those)
+            if mapping.syncStatus == .pendingPermanentDelete {
+                continue
+            }
+
+            // If a synced note isn't in the server response, it was permanently deleted on server
+            if !cloudNoteIds.contains(mapping.cloudId) {
+                print("NoteSyncService: Note \(mapping.localId) (cloud: \(mapping.cloudId)) was permanently deleted on server")
+
+                // Delete the local note
+                _ = NoteRecords.instance.permanentlyDeleteNoteWithoutSync(noteId: mapping.localId)
+
+                // Delete the sync mapping
+                syncMapping.deleteMapping(localId: mapping.localId, entityType: .note)
+
+                deletedCount += 1
+            }
+        }
+
+        if deletedCount > 0 {
+            print("NoteSyncService: Deleted \(deletedCount) notes that were permanently deleted on server")
+        }
+
+        return deletedCount
+    }
+
+    /// Download all notes from the cloud with server-side deletion handling
+    /// - Parameters:
+    ///   - since: Optional timestamp in milliseconds. If nil, performs full sync with deletion detection.
+    ///   - completion: Result with count of downloaded notes or error
+    func downloadAllNotesWithDeletionHandling(since: Int? = nil, completion: @escaping (Result<Int, NoteSyncError>) -> Void) {
+        // Build query parameters for delta sync
+        var queryParams: [String: String]? = nil
+        if let sinceTimestamp = since {
+            queryParams = ["since": String(sinceTimestamp)]
+        }
+
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.notes,
+            queryParams: queryParams,
+            requiresAuth: true
+        ) { [weak self] (result: Result<[CloudNote], NetworkError>) in
+            guard let self = self else {
+                completion(.failure(.downloadFailed("Service deallocated")))
+                return
+            }
+
+            switch result {
+            case .success(let cloudNotes):
+                var downloadedCount = 0
+
+                // Process each cloud note
+                for cloudNote in cloudNotes {
+                    if self.processCloudNote(cloudNote) {
+                        downloadedCount += 1
+                    }
+                }
+
+                // Only handle server-side deletions during full sync (not delta)
+                // Delta sync only returns modified notes, so we can't detect deletions
+                if since == nil {
+                    let cloudNoteIds = Set(cloudNotes.map { $0.id })
+                    let serverDeletedCount = self.handleServerSideDeletions(cloudNoteIds: cloudNoteIds)
+                    print("NoteSyncService: Full sync completed - \(downloadedCount) downloaded, \(serverDeletedCount) server-deleted")
+                } else {
+                    print("NoteSyncService: Delta sync completed - \(downloadedCount) downloaded")
+                }
+
+                completion(.success(downloadedCount))
+
+            case .failure(let error):
+                // Handle 304 Not Modified as success with 0 changes
+                if case .notModified = error {
+                    print("NoteSyncService: Notes not modified since last sync")
+                    completion(.success(0))
+                } else {
+                    print("NoteSyncService: Failed to download notes - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
             }
         }
     }
