@@ -765,6 +765,26 @@ Potential features to implement:
 
 ## Recent Changes
 
+### February 4, 2026 - UI Improvements: Note Detail View & Search Filter
+- **Note Detail View Redesign**
+  - Moved category color from note title to category button
+  - Category button now displays with category background color and contrasting text
+  - Note title uses neutral system colors (`systemBackground`, `label`)
+  - Category button has rounded corners (8pt radius)
+  - Back button changed from "< List" text to round chevron button
+  - Back button now positioned next to title (not above it)
+  - Back button styled as circular 36x36 button with `systemGray5` background
+  - Added `styleListButton()` method for circular button styling
+- **Search Filter Fix**
+  - Fixed bug where clearing search text with backspace didn't show all notes
+  - Changed from `shouldChangeCharactersIn` (fires before update) to `.editingChanged` (fires after)
+  - Added `searchTextChanged()` method using `.editingChanged` control event
+  - Added `textFieldShouldClear(_:)` to handle clear button tap
+- **Sync Settings Display**
+  - Changed "Last Sync" from relative time ("5 minutes ago") to absolute date/time
+  - Now displays format: "4 Feb 2026, 10:30 AM"
+  - Eliminates need for timer-based updates on the sync settings page
+
 ### February 4, 2026 - Backup System: Iridescence Format Support
 - **New Backup Format (Iridescence v2)**
   - Exports now use Iridescence server-compatible format

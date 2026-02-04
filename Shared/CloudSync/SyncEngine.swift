@@ -461,9 +461,9 @@ class SyncEngine {
             return "Never"
         }
 
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter.localizedString(for: lastSync, relativeTo: Date())
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM yyyy, h:mm a"
+        return formatter.string(from: lastSync)
     }
 
     // MARK: - Per-Entity Sync Timestamps

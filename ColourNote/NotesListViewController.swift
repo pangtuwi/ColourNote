@@ -36,6 +36,7 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
 
         SearchTextEditor.delegate = self
         SearchTextEditor.clearButtonMode = .whileEditing
+        SearchTextEditor.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
 
         NotificationCenter.default.addObserver(
             self,
@@ -345,8 +346,12 @@ extension NotesListViewController {
         return configuration
     }
     
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        // Delay to allow text field to update
+    @objc func searchTextChanged() {
+        applyFilters()
+    }
+
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        // Handle clear button tap - apply filters after clearing
         DispatchQueue.main.async { [weak self] in
             self?.applyFilters()
         }

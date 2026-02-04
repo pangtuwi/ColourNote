@@ -238,7 +238,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2 (Build 7)** - Current Release (February 4, 2026)
+- **1.2 (Build 8)** - Current Release (February 4, 2026)
   - **New Feature**: Cloud Sync with JWT Authentication
   - Bidirectional sync of notes and categories with cloud server
   - Login/Register UI for cloud account management
@@ -246,6 +246,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Database schema v10 with UUID columns and sync_mappings table
   - Sync priority: UUID first, cloud ID second, name matching as fallback
   - Auto-sync on app launch/foreground (when enabled)
+  - **UI Improvements**: Note detail view redesign
+    - Category button now shows category color (not note title)
+    - Round chevron back button positioned next to title
+    - Fixed search filter not clearing properly
+    - Last sync time shows absolute date/time instead of relative
   - **Backup Format Update**: Iridescence server compatibility
     - New backup format matches Iridescence cloud server format
     - Backwards compatible - imports both old and new formats

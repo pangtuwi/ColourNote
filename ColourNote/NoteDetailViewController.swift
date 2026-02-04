@@ -62,6 +62,9 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         textView.isSelectable = true
         noteTitle.isEnabled = true
 
+        // Style the list button as a round button
+        styleListButton()
+
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
@@ -76,6 +79,20 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
 
     @objc func titleDidChange() {
         titleHasChanged = true
+    }
+
+    func styleListButton() {
+        guard let button = listButton else { return }
+
+        // Make it circular
+        button.layer.cornerRadius = 18  // Half of 36pt height
+        button.clipsToBounds = true
+
+        // Add background color
+        button.backgroundColor = .systemGray5
+
+        // Set tint color for the chevron icon
+        button.tintColor = .label
     }
     
     @objc func adjustForKeyboard(notification: Notification) {
@@ -132,20 +149,24 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
             renderMarkdownPreview()
         }
 
-        // Set title background and navigation bar color based on category
+        // Set category button color based on category
+        noteTitle.backgroundColor = .systemBackground
+        noteTitle.textColor = .label
+
         if note.categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: note.categoryId) {
             let categoryColor = category.getColor()
-            noteTitle.backgroundColor = categoryColor
-            noteTitle.textColor = getContrastingTextColor(for: categoryColor)
-            setNavigationBarColor(categoryColor)
+            categoryButton?.backgroundColor = categoryColor
+            categoryButton?.setTitleColor(getContrastingTextColor(for: categoryColor), for: .normal)
             categoryButton?.setTitle(category.categoryName, for: .normal)
+            categoryButton?.layer.cornerRadius = 8
+            categoryButton?.clipsToBounds = true
         } else {
-            // Use default white when no category is set
-            let color = UIColor.white
-            noteTitle.backgroundColor = color
-            noteTitle.textColor = getContrastingTextColor(for: color)
-            setNavigationBarColor(color)
+            // Use default styling when no category is set
+            categoryButton?.backgroundColor = .systemGray5
+            categoryButton?.setTitleColor(.label, for: .normal)
             categoryButton?.setTitle("No Category", for: .normal)
+            categoryButton?.layer.cornerRadius = 8
+            categoryButton?.clipsToBounds = true
         }
 
         textHasChanged = false
@@ -284,17 +305,15 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         currentCategoryId = categoryId
         _ = NoteRecords.instance.updateNoteCategory(changedNoteId: lastNoteID, newCategoryId: categoryId)
 
-        // Update title background, navigation bar color and category button
+        // Update category button color
         if categoryId > 0, let category = CategoryRecords.instance.getCategory(searchCategoryId: categoryId) {
             let categoryColor = category.getColor()
-            noteTitle.backgroundColor = categoryColor
-            noteTitle.textColor = getContrastingTextColor(for: categoryColor)
-            setNavigationBarColor(categoryColor)
+            categoryButton?.backgroundColor = categoryColor
+            categoryButton?.setTitleColor(getContrastingTextColor(for: categoryColor), for: .normal)
             categoryButton?.setTitle(category.categoryName, for: .normal)
         } else {
-            noteTitle.backgroundColor = .white
-            noteTitle.textColor = .black
-            setNavigationBarColor(.white)
+            categoryButton?.backgroundColor = .systemGray5
+            categoryButton?.setTitleColor(.label, for: .normal)
             categoryButton?.setTitle("No Category", for: .normal)
         }
     }
