@@ -3,43 +3,12 @@
 //  ColourNote
 //
 //  Created for backup/export functionality
+//  Supports Iridescence server format (v2) and legacy format (v1)
 //
 
 import Foundation
 
-struct NoteBackupModel: Codable {
-    let id: String
-    let uuid: String
-    let user_id: String
-    let title: String
-    let content: String
-    let content_format: String
-    let timestamp_created: String
-    let timestamp_modified: String
-    let metadata: NoteMetadata
-}
-
-struct NoteMetadata: Codable {
-    let tags: [String]
-    let archived: Bool
-    let pinned: Bool
-    let category_id: Int?
-    let deleted: Bool
-    let deleted_date: String?
-}
-
-struct CategoryBackupModel: Codable {
-    let category_id: Int
-    let uuid: String
-    let category_name: String
-    let color_hex: String
-    let sort_order: Int
-}
-
-struct NoteBackupContainer: Codable {
-    let Categories: [CategoryBackupModel]
-    let Notes: [NoteBackupModel]
-}
+// MARK: - Import Result
 
 struct ImportResult {
     let success: Bool
@@ -47,60 +16,160 @@ struct ImportResult {
     let errorMessage: String?
 }
 
+// MARK: - Iridescence Format (v2) - Primary Format
+
+/// User information for backup
+struct BackupUser: Codable {
+    let user_id: Int
+    let username: String
+    let email: String
+    let created_at: Int  // Milliseconds since epoch
+}
+
+/// Summary statistics for backup
+struct BackupSummary: Codable {
+    let total_categories: Int
+    let total_notes: Int
+    let active_notes: Int
+    let trashed_notes: Int
+    let export_date: String  // ISO 8601 format
+}
+
+/// Category model for Iridescence backup format
+struct IridescenceCategoryBackup: Codable {
+    let category_id: Int
+    let user_id: Int?
+    let uuid: String
+    let category_name: String
+    let color_hex: String
+    let sort_order: Int
+    let is_protected: Int  // 0 or 1
+    let modified_at: Int?  // Milliseconds since epoch
+}
+
+/// Note model for Iridescence backup format
+struct IridescenceNoteBackup: Codable {
+    let _id: Int
+    let user_id: Int?
+    let title: String
+    let created_date: Int  // Milliseconds since epoch
+    let modified_date: Int  // Milliseconds since epoch
+    let note: String  // Content
+    let category_id: Int?
+    let active_state: Int  // 0 = active, 1 = deleted
+    let deleted_date: Int?  // Milliseconds since epoch
+    let content_format: String
+    let uuid: String
+}
+
+/// Main container for Iridescence backup format
+struct IridescenceBackupContainer: Codable {
+    let user: BackupUser?
+    let summary: BackupSummary
+    let categories: [IridescenceCategoryBackup]
+    let notes: [IridescenceNoteBackup]
+}
+
+// MARK: - Legacy Format (v1) - For Backwards Compatibility
+
+struct LegacyNoteBackupModel: Codable {
+    let id: String
+    let uuid: String
+    let user_id: String
+    let title: String
+    let content: String
+    let content_format: String
+    let timestamp_created: String  // ISO 8601
+    let timestamp_modified: String  // ISO 8601
+    let metadata: LegacyNoteMetadata
+}
+
+struct LegacyNoteMetadata: Codable {
+    let tags: [String]
+    let archived: Bool
+    let pinned: Bool
+    let category_id: Int?
+    let deleted: Bool
+    let deleted_date: String?  // ISO 8601
+}
+
+struct LegacyCategoryBackupModel: Codable {
+    let category_id: Int
+    let uuid: String
+    let category_name: String
+    let color_hex: String
+    let sort_order: Int
+}
+
+struct LegacyNoteBackupContainer: Codable {
+    let Categories: [LegacyCategoryBackupModel]
+    let Notes: [LegacyNoteBackupModel]
+}
+
+// MARK: - NoteBackup Class
+
 class NoteBackup {
 
+    // MARK: - Export (Iridescence Format)
+
+    /// Export notes to JSON in Iridescence format
     static func exportNotesToJSON(notes: [Note]) -> String? {
-        // Export categories first
         let categories = CategoryRecords.instance.getCategories()
-        let backupCategories = categories.map { category -> CategoryBackupModel in
-            return CategoryBackupModel(
+
+        // Build category backup models
+        let backupCategories = categories.map { category -> IridescenceCategoryBackup in
+            return IridescenceCategoryBackup(
                 category_id: category.categoryId,
+                user_id: nil,  // Local backup, no user_id
                 uuid: category.uuid,
                 category_name: category.categoryName,
                 color_hex: category.colorHex,
-                sort_order: category.sortOrder
+                sort_order: category.sortOrder,
+                is_protected: category.isProtected ? 1 : 0,
+                modified_at: category.modifiedAt
             )
         }
 
-        // Export notes with category and deletion information
-        let backupNotes = notes.map { note -> NoteBackupModel in
-            // Convert Unix timestamp (milliseconds) to ISO 8601 format
-            let createdDate = Date(timeIntervalSince1970: TimeInterval(note.editedTime / 1000))
-            let modifiedDate = Date(timeIntervalSince1970: TimeInterval(note.editedTime / 1000))
-
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime]
-
-            // Format deleted date if present
-            var deletedDateString: String? = nil
-            if let deletedTimestamp = note.deletedDate {
-                let deletedDate = Date(timeIntervalSince1970: TimeInterval(deletedTimestamp / 1000))
-                deletedDateString = formatter.string(from: deletedDate)
-            }
-
-            let metadata = NoteMetadata(
-                tags: [],
-                archived: false,
-                pinned: false,
-                category_id: note.categoryId > 0 ? note.categoryId : nil,
-                deleted: note.isDeleted,
-                deleted_date: deletedDateString
-            )
-
-            return NoteBackupModel(
-                id: String(note.noteId),
-                uuid: note.uuid,
-                user_id: "local_user",
+        // Build note backup models
+        let backupNotes = notes.map { note -> IridescenceNoteBackup in
+            return IridescenceNoteBackup(
+                _id: note.noteId,
+                user_id: nil,  // Local backup, no user_id
                 title: note.noteName,
-                content: note.noteText,
+                created_date: note.editedTime,  // Using editedTime as created_date
+                modified_date: note.editedTime,
+                note: note.noteText,
+                category_id: note.categoryId > 0 ? note.categoryId : nil,
+                active_state: note.isDeleted ? 1 : 0,
+                deleted_date: note.deletedDate,
                 content_format: note.contentFormat,
-                timestamp_created: formatter.string(from: createdDate),
-                timestamp_modified: formatter.string(from: modifiedDate),
-                metadata: metadata
+                uuid: note.uuid
             )
         }
 
-        let container = NoteBackupContainer(Categories: backupCategories, Notes: backupNotes)
+        // Calculate summary statistics
+        let activeNotes = notes.filter { !$0.isDeleted }.count
+        let trashedNotes = notes.filter { $0.isDeleted }.count
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let exportDateString = formatter.string(from: Date())
+
+        let summary = BackupSummary(
+            total_categories: categories.count,
+            total_notes: notes.count,
+            active_notes: activeNotes,
+            trashed_notes: trashedNotes,
+            export_date: exportDateString
+        )
+
+        // Build container (user is nil for local backups)
+        let container = IridescenceBackupContainer(
+            user: nil,
+            summary: summary,
+            categories: backupCategories,
+            notes: backupNotes
+        )
 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -114,6 +183,7 @@ class NoteBackup {
         }
     }
 
+    /// Save backup string to file
     static func saveBackupToFile(jsonString: String, filename: String = "notes_backup.json") -> URL? {
         let fileManager = FileManager.default
 
@@ -134,6 +204,7 @@ class NoteBackup {
         }
     }
 
+    /// Export all notes to a backup file
     static func exportAllNotes(skipProtected: Bool = false) -> URL? {
         // Get ALL notes including deleted ones
         var notes = NoteRecords.instance.getAllNotes()
@@ -161,11 +232,117 @@ class NoteBackup {
         return saveBackupToFile(jsonString: jsonString, filename: filename)
     }
 
+    // MARK: - Import (Supports Both Formats)
+
+    /// Import notes from JSON data (auto-detects format)
     static func importNotesFromJSON(jsonData: Data) -> ImportResult {
+        // Try to detect format by parsing as generic JSON first
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+            return ImportResult(success: false, importedCount: 0, errorMessage: "Invalid JSON format")
+        }
+
+        // Detect format: Iridescence format uses lowercase "categories" and "notes"
+        // Legacy format uses uppercase "Categories" and "Notes"
+        if jsonObject["categories"] != nil || jsonObject["notes"] != nil {
+            return importIridescenceFormat(jsonData: jsonData)
+        } else if jsonObject["Categories"] != nil || jsonObject["Notes"] != nil {
+            return importLegacyFormat(jsonData: jsonData)
+        } else {
+            return ImportResult(success: false, importedCount: 0, errorMessage: "Unrecognized backup format")
+        }
+    }
+
+    // MARK: - Import Iridescence Format (v2)
+
+    private static func importIridescenceFormat(jsonData: Data) -> ImportResult {
         let decoder = JSONDecoder()
 
         do {
-            let container = try decoder.decode(NoteBackupContainer.self, from: jsonData)
+            let container = try decoder.decode(IridescenceBackupContainer.self, from: jsonData)
+            let backupCategories = container.categories
+            let backupNotes = container.notes
+
+            if backupNotes.isEmpty {
+                return ImportResult(success: false, importedCount: 0, errorMessage: "No notes found in backup file")
+            }
+
+            // Import categories first
+            for backupCategory in backupCategories {
+                let category = Category()
+                category.categoryId = backupCategory.category_id
+                category.uuid = backupCategory.uuid
+                category.categoryName = backupCategory.category_name
+                category.colorHex = backupCategory.color_hex
+                category.sortOrder = backupCategory.sort_order
+                category.isProtected = backupCategory.is_protected != 0
+                category.modifiedAt = backupCategory.modified_at
+
+                // Check if category already exists
+                if CategoryRecords.instance.getCategory(searchCategoryId: category.categoryId) == nil {
+                    _ = CategoryRecords.instance.insertCategory(category: category)
+                } else {
+                    _ = CategoryRecords.instance.updateCategory(category: category)
+                }
+            }
+
+            var importedCount = 0
+
+            for backupNote in backupNotes {
+                // Parse deleted date
+                let deletedTimestamp: Int? = backupNote.deleted_date
+
+                // Create Note object
+                let note = Note(
+                    noteId: backupNote._id,
+                    uuid: backupNote.uuid,
+                    noteName: backupNote.title,
+                    editedTime: backupNote.modified_date,
+                    noteText: backupNote.note,
+                    categoryId: backupNote.category_id ?? 0,
+                    isDeleted: backupNote.active_state != 0,
+                    deletedDate: deletedTimestamp,
+                    contentFormat: backupNote.content_format
+                )
+
+                // Check if note already exists
+                if NoteRecords.instance.noteExists(searchId: note.noteId) {
+                    // Update existing note
+                    _ = NoteRecords.instance.updateNoteText(changedNoteId: note.noteId, newText: note.noteText)
+                    _ = NoteRecords.instance.updateNoteTitle(changedNoteId: note.noteId, newTitle: note.noteName)
+                    _ = NoteRecords.instance.updateNoteCategory(changedNoteId: note.noteId, newCategoryId: note.categoryId)
+                    _ = NoteRecords.instance.setNoteDeletionStatus(noteId: note.noteId, isDeleted: note.isDeleted, deletedDate: deletedTimestamp)
+                    // Update UUID if different
+                    if let existingNote = NoteRecords.instance.getNote(searchNoteId: note.noteId), existingNote.uuid != note.uuid {
+                        _ = NoteRecords.instance.updateNoteUUID(noteId: note.noteId, uuid: note.uuid)
+                    }
+                } else {
+                    // Add new note
+                    _ = NoteRecords.instance.insertNote(note: note)
+                    // Set deletion status if needed
+                    if note.isDeleted {
+                        _ = NoteRecords.instance.setNoteDeletionStatus(noteId: note.noteId, isDeleted: true, deletedDate: deletedTimestamp)
+                    }
+                }
+
+                importedCount += 1
+            }
+
+            print("NoteBackup: Imported \(importedCount) notes using Iridescence format")
+            return ImportResult(success: true, importedCount: importedCount, errorMessage: nil)
+
+        } catch {
+            print("Error decoding Iridescence format JSON: \(error)")
+            return ImportResult(success: false, importedCount: 0, errorMessage: "Invalid Iridescence backup format: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Import Legacy Format (v1)
+
+    private static func importLegacyFormat(jsonData: Data) -> ImportResult {
+        let decoder = JSONDecoder()
+
+        do {
+            let container = try decoder.decode(LegacyNoteBackupContainer.self, from: jsonData)
             let backupCategories = container.Categories
             let backupNotes = container.Notes
 
@@ -194,7 +371,7 @@ class NoteBackup {
             let formatter = ISO8601DateFormatter()
 
             for backupNote in backupNotes {
-                // Parse timestamp
+                // Parse timestamp (ISO 8601 string to milliseconds)
                 let modifiedDate = formatter.date(from: backupNote.timestamp_modified) ?? Date()
                 let modifiedTimestamp = Int(modifiedDate.timeIntervalSince1970 * 1000)
 
@@ -237,11 +414,12 @@ class NoteBackup {
                 importedCount += 1
             }
 
+            print("NoteBackup: Imported \(importedCount) notes using legacy format")
             return ImportResult(success: true, importedCount: importedCount, errorMessage: nil)
 
         } catch {
-            print("Error decoding JSON: \(error)")
-            return ImportResult(success: false, importedCount: 0, errorMessage: "Invalid JSON format: \(error.localizedDescription)")
+            print("Error decoding legacy format JSON: \(error)")
+            return ImportResult(success: false, importedCount: 0, errorMessage: "Invalid legacy backup format: \(error.localizedDescription)")
         }
     }
 }

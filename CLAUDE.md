@@ -765,6 +765,33 @@ Potential features to implement:
 
 ## Recent Changes
 
+### February 4, 2026 - Backup System: Iridescence Format Support
+- **New Backup Format (Iridescence v2)**
+  - Exports now use Iridescence server-compatible format
+  - Lowercase keys (`categories`, `notes` instead of `Categories`, `Notes`)
+  - Added `summary` section with statistics (total_categories, total_notes, active_notes, trashed_notes, export_date)
+  - Optional `user` section for cloud backups
+  - Notes use `_id` (integer), `note` (content), `created_date`/`modified_date` (milliseconds)
+  - Notes use `active_state` (0/1) instead of nested metadata
+  - Categories include `is_protected` and `modified_at` fields
+- **Backwards Compatible Import**
+  - Auto-detects format based on JSON keys
+  - Iridescence format: lowercase `categories`/`notes`
+  - Legacy format: uppercase `Categories`/`Notes`
+  - Both formats fully supported during import
+- **New Data Models**
+  - `BackupUser` - User info for cloud backups
+  - `BackupSummary` - Export statistics
+  - `IridescenceCategoryBackup` - Category in new format
+  - `IridescenceNoteBackup` - Note in new format
+  - `IridescenceBackupContainer` - Main container
+  - Legacy models renamed with `Legacy` prefix
+- **Import Enhancements**
+  - `importNotesFromJSON()` auto-detects and routes to correct parser
+  - `importIridescenceFormat()` - Handles new format
+  - `importLegacyFormat()` - Handles old format
+  - Better UUID handling during import
+
 ### February 3, 2026 - Sync Engine v1.3: Permanent Deletion Sync
 - **Permanent Deletion Synchronization**
   - Notes permanently deleted from trash are now synced to the cloud

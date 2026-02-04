@@ -238,7 +238,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2 (Build 6)** - Current Release (February 3, 2026)
+- **1.2 (Build 7)** - Current Release (February 4, 2026)
   - **New Feature**: Cloud Sync with JWT Authentication
   - Bidirectional sync of notes and categories with cloud server
   - Login/Register UI for cloud account management
@@ -246,6 +246,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   - Database schema v10 with UUID columns and sync_mappings table
   - Sync priority: UUID first, cloud ID second, name matching as fallback
   - Auto-sync on app launch/foreground (when enabled)
+  - **Backup Format Update**: Iridescence server compatibility
+    - New backup format matches Iridescence cloud server format
+    - Backwards compatible - imports both old and new formats
+    - Includes summary statistics (note counts, export date)
+    - Categories include is_protected and modified_at fields
   - **Sync Engine v1.3**: Permanent deletion sync
     - Notes permanently deleted from trash sync to cloud
     - Offline support with pending deletion queue
