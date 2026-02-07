@@ -82,16 +82,20 @@ struct SyncResult {
     let categoriesDownloaded: Int
     let notesUploaded: Int
     let notesDownloaded: Int
+    let categoriesAdded: Int
+    let categoriesUpdated: Int
+    let categoriesDeleted: Int
+    let notesAdded: Int
+    let notesUpdated: Int
+    let notesDeleted: Int
+    let resultingCategoryCount: Int
+    let resultingNoteCount: Int
     let error: Error?
     let syncedAt: Date
 
-    var totalSynced: Int {
-        return categoriesUploaded + categoriesDownloaded + notesUploaded + notesDownloaded
-    }
-
     var summary: String {
         if success {
-            return "Synced \(totalSynced) items (\(categoriesUploaded + categoriesDownloaded) categories, \(notesUploaded + notesDownloaded) notes)"
+            return "Categories: \(resultingCategoryCount) (added \(categoriesAdded), updated \(categoriesUpdated), deleted \(categoriesDeleted))\nNotes: \(resultingNoteCount) (added \(notesAdded), updated \(notesUpdated), deleted \(notesDeleted))"
         } else {
             return "Sync failed: \(error?.localizedDescription ?? "Unknown error")"
         }
@@ -149,6 +153,13 @@ class SyncEngine {
         currentProgress = progress
         notifyProgress(progress)
 
+        // Variables to capture detailed breakdowns
+        var categoriesAdded = 0
+        var categoriesUpdated = 0
+        var notesAdded = 0
+        var notesUpdated = 0
+        var notesDeletedCount = 0
+
         // Start sync chain: Categories first (notes depend on them), then Notes
         syncCategories { [weak self] categoryResult in
             guard let self = self else { return }
@@ -157,13 +168,20 @@ class SyncEngine {
             case .success(let (uploaded, downloaded)):
                 progress.categoriesUploaded = uploaded
                 progress.categoriesDownloaded = downloaded
+                // We approximate categoriesAdded as 0 and categoriesUpdated as downloaded as before
+                categoriesAdded = 0
+                categoriesUpdated = downloaded
 
-                // Now sync notes
-                self.syncNotes { noteResult in
+                // Now sync notes with updated breakdown including deletions
+                self.syncNotesWithBreakdown { noteResult in
                     switch noteResult {
-                    case .success(let (notesUploaded, notesDownloaded)):
-                        progress.notesUploaded = notesUploaded
-                        progress.notesDownloaded = notesDownloaded
+                    case .success(let (uploaded, added, updated, deleted)):
+                        progress.notesUploaded = uploaded
+                        progress.notesDownloaded = updated
+
+                        notesAdded = added
+                        notesUpdated = updated
+                        notesDeletedCount = deleted
 
                         // Process pending permanent deletes
                         progress.phase = .processingPermanentDeletes
@@ -171,6 +189,11 @@ class SyncEngine {
 
                         self.processPendingPermanentDeletes { deleteResult in
                             // Continue regardless of delete result (non-critical)
+                            if case .success(let count) = deleteResult {
+                                if count > 0 {
+                                    print("SyncEngine: Processed \(count) pending permanent deletes")
+                                }
+                            }
                             if case .failure(let error) = deleteResult {
                                 print("SyncEngine: Pending permanent deletes failed - \(error)")
                             }
@@ -186,12 +209,26 @@ class SyncEngine {
                                 NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
                             }
 
+                            // Compute resulting counts
+                            let resultingCategoryCount = CategoryRecords.instance.getCategories().count
+                            let resultingNoteCount = NoteRecords.instance.getAllNotes().count
+
+                            let categoriesDeleted = 0
+
                             let result = SyncResult(
                                 success: true,
                                 categoriesUploaded: progress.categoriesUploaded,
                                 categoriesDownloaded: progress.categoriesDownloaded,
                                 notesUploaded: progress.notesUploaded,
                                 notesDownloaded: progress.notesDownloaded,
+                                categoriesAdded: categoriesAdded,
+                                categoriesUpdated: categoriesUpdated,
+                                categoriesDeleted: categoriesDeleted,
+                                notesAdded: notesAdded,
+                                notesUpdated: notesUpdated,
+                                notesDeleted: notesDeletedCount,
+                                resultingCategoryCount: resultingCategoryCount,
+                                resultingNoteCount: resultingNoteCount,
                                 error: nil,
                                 syncedAt: Date()
                             )
@@ -348,14 +385,14 @@ class SyncEngine {
             progress.phase = .downloadingCategories
             self.notifyProgress(progress)
 
-            // Then download cloud categories with delta sync
-            self.categorySyncService.downloadAllCategories(since: lastCategorySyncTime) { downloadResult in
+            // Then download cloud categories with delta sync using new breakdown API
+            self.categorySyncService.downloadAllCategoriesWithBreakdown(since: lastCategorySyncTime) { downloadResult in
                 switch downloadResult {
-                case .success(let count):
+                case .success(let breakdown):
                     // Save current time as last sync time for categories
                     let now = Int(Date().timeIntervalSince1970 * 1000)
                     self.saveLastCategorySyncTime(now)
-                    completion(.success((uploaded, count)))
+                    completion(.success((uploaded, breakdown.added + breakdown.updated)))
                 case .failure(let error):
                     // If upload succeeded but download failed, still return partial success
                     if uploaded > 0 {
@@ -445,6 +482,53 @@ class SyncEngine {
         }
     }
 
+    // MARK: - New Sync Notes with Breakdown including deletions
+
+    private func syncNotesWithBreakdown(completion: @escaping (Result<(uploaded: Int, added: Int, updated: Int, deleted: Int), Error>) -> Void) {
+        var progress = currentProgress ?? SyncProgress(
+            phase: .uploadingNotes,
+            categoriesUploaded: 0,
+            categoriesDownloaded: 0,
+            notesUploaded: 0,
+            notesDownloaded: 0,
+            totalCategories: 0,
+            totalNotes: 0
+        )
+
+        progress.phase = .uploadingNotes
+        notifyProgress(progress)
+
+        let lastNoteSyncTime = getLastNoteSyncTime()
+
+        noteSyncService.uploadAllNotes { [weak self] uploadResult in
+            guard let self = self else { return }
+            var uploaded = 0
+            switch uploadResult {
+            case .success(let count): uploaded = count
+            case .failure(let error): print("SyncEngine: Note upload failed - \(error)")
+            }
+
+            progress.notesUploaded = uploaded
+            progress.phase = .downloadingNotes
+            self.notifyProgress(progress)
+
+            self.noteSyncService.downloadAllNotesWithDeletionHandlingAndBreakdown(since: lastNoteSyncTime) { result in
+                switch result {
+                case .success(let breakdown):
+                    let now = Int(Date().timeIntervalSince1970 * 1000)
+                    self.saveLastNoteSyncTime(now)
+                    completion(.success((uploaded: uploaded, added: breakdown.added, updated: breakdown.updated, deleted: breakdown.deleted)))
+                case .failure(let error):
+                    if uploaded > 0 {
+                        completion(.success((uploaded: uploaded, added: 0, updated: 0, deleted: 0)))
+                    } else {
+                        completion(.failure(error))
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Sync Time Management
 
     private func saveLastSyncTime() {
@@ -529,3 +613,4 @@ class SyncEngine {
         print("SyncEngine: Cleared all sync data")
     }
 }
+

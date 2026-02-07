@@ -78,6 +78,24 @@ class NetworkManager {
         session = URLSession(configuration: configuration)
     }
 
+    // MARK: - Re-authentication
+    private func attemptReauthentication(completion: @escaping (Bool) -> Void) {
+        // Retrieve stored credentials
+        guard let email = AuthManager.shared.userEmail, let password = AuthManager.shared.userPassword else {
+            completion(false)
+            return
+        }
+        // Perform login
+        AuthManager.shared.login(email: email, password: password) { result in
+            switch result {
+            case .success:
+                completion(true)
+            case .failure:
+                completion(false)
+            }
+        }
+    }
+
     // MARK: - JWT Token Management (Keychain)
 
     func saveToken(_ token: String) -> Bool {
@@ -229,8 +247,46 @@ class NetworkManager {
                     return
                 }
 
-                if httpResponse.statusCode == 401 {
-                    completion(.failure(.unauthorized))
+                if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
+                    self.attemptReauthentication { success in
+                        if success {
+                            var retriedRequest = request
+                            if let token = self.getToken() {
+                                retriedRequest.setValue("Bearer \(token)", forHTTPHeaderField: APIConfig.Headers.authorization)
+                            }
+                            self.session.dataTask(with: retriedRequest) { data2, response2, error2 in
+                                DispatchQueue.main.async {
+                                    if let error2 = error2 {
+                                        completion(.failure(.networkError(error2)))
+                                        return
+                                    }
+                                    guard let httpResponse2 = response2 as? HTTPURLResponse else {
+                                        completion(.failure(.noData))
+                                        return
+                                    }
+                                    if !(200...299).contains(httpResponse2.statusCode) {
+                                        var message: String?
+                                        if let data2 = data2 {
+                                            message = String(data: data2, encoding: .utf8)
+                                        }
+                                        completion(.failure(.httpError(statusCode: httpResponse2.statusCode, message: message)))
+                                        return
+                                    }
+                                    completion(.success(()))
+                                }
+                            }.resume()
+                        } else {
+                            if httpResponse.statusCode == 401 {
+                                completion(.failure(.unauthorized))
+                            } else {
+                                var message: String?
+                                if let data = data {
+                                    message = String(data: data, encoding: .utf8)
+                                }
+                                completion(.failure(.httpError(statusCode: httpResponse.statusCode, message: message)))
+                            }
+                        }
+                    }
                     return
                 }
 
@@ -278,8 +334,28 @@ class NetworkManager {
                     return
                 }
 
-                if httpResponse.statusCode == 401 {
-                    completion(.failure(.unauthorized))
+                if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
+                    // Attempt re-authentication once
+                    self.attemptReauthentication { success in
+                        if success {
+                            // Retry the original request with new token
+                            var retriedRequest = request
+                            if let token = self.getToken() {
+                                retriedRequest.setValue("Bearer \(token)", forHTTPHeaderField: APIConfig.Headers.authorization)
+                            }
+                            self.performRequest(retriedRequest, completion: completion)
+                        } else {
+                            if httpResponse.statusCode == 401 {
+                                completion(.failure(.unauthorized))
+                            } else {
+                                var message: String?
+                                if let data = data {
+                                    message = String(data: data, encoding: .utf8)
+                                }
+                                completion(.failure(.httpError(statusCode: httpResponse.statusCode, message: message)))
+                            }
+                        }
+                    }
                     return
                 }
 

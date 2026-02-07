@@ -73,7 +73,7 @@ struct CloudNote: Codable {
     let uuid: String?  // UUID for cross-device identification
     let userId: Int?
     let title: String
-    let note: String  // Server uses "note" for content
+    let note: String?  // Server uses "note" for content (may be null)
     let createdDate: Int  // Milliseconds since epoch
     let modifiedDate: Int?  // Milliseconds since epoch
     let colorIndex: Int?
@@ -104,7 +104,7 @@ struct CloudNote: Codable {
 
     // Convenience property for content
     var content: String {
-        return note
+        return note ?? ""
     }
 
     // Convenience property for isDeleted
@@ -292,7 +292,7 @@ extension CloudNote {
             uuid: uuid,
             noteName: title,
             editedTime: modifiedDate ?? createdDate,
-            noteText: note,
+            noteText: note ?? "",
             categoryId: localCategoryId,
             isDeleted: isDeleted,
             deletedDate: deletedDate,
@@ -365,4 +365,3 @@ extension CreateCategoryRequest {
         )
     }
 }
-

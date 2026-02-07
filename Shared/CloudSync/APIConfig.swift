@@ -50,6 +50,7 @@ struct APIConfig {
     struct KeychainKeys {
         static let jwtToken = "com.colornote.jwt_token"
         static let userEmail = "com.colornote.user_email"
+        static let userPassword = "com.colornote.user_password"
     }
 
     // MARK: - UserDefaults Keys
@@ -66,3 +67,4 @@ struct APIConfig {
         return URL(string: baseURL + endpoint)
     }
 }
+

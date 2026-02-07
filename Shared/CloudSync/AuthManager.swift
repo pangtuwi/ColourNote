@@ -8,6 +8,12 @@
 import Foundation
 import Security
 
+struct RegisterRequest: Encodable {
+    let username: String
+    let email: String
+    let password: String
+}
+
 // MARK: - Auth Error
 enum AuthError: Error, LocalizedError {
     case invalidCredentials
@@ -43,10 +49,12 @@ class AuthManager {
 
     // User email stored in Keychain
     private var _userEmail: String?
+    private var _userPassword: String?
 
     // MARK: - Initialization
     private init() {
         _userEmail = loadUserEmail()
+        _userPassword = loadUserPassword()
     }
 
     // MARK: - Public Properties
@@ -61,15 +69,21 @@ class AuthManager {
         return _userEmail
     }
 
+    /// Get the stored password (if saved)
+    var userPassword: String? {
+        return _userPassword
+    }
+
     // MARK: - Authentication Methods
 
     /// Register a new user
     /// - Parameters:
+    ///   - username: User's username
     ///   - email: User's email address
     ///   - password: User's password
     ///   - completion: Callback with result
-    func register(email: String, password: String, completion: @escaping (Result<Void, AuthError>) -> Void) {
-        let request = AuthRequest(email: email, password: password)
+    func register(username: String, email: String, password: String, completion: @escaping (Result<Void, AuthError>) -> Void) {
+        let request = RegisterRequest(username: username, email: email, password: password)
 
         networkManager.post(
             endpoint: APIConfig.Endpoints.register,
@@ -83,6 +97,8 @@ class AuthManager {
                     // Save email
                     self?.saveUserEmail(email)
                     self?._userEmail = email
+                    self?.saveUserPassword(password)
+                    self?._userPassword = password
                     print("AuthManager: Registration successful for \(email)")
                     completion(.success(()))
                 } else {
@@ -123,6 +139,8 @@ class AuthManager {
                     // Save email
                     self?.saveUserEmail(email)
                     self?._userEmail = email
+                    self?.saveUserPassword(password)
+                    self?._userPassword = password
                     print("AuthManager: Login successful for \(email)")
                     completion(.success(()))
                 } else {
@@ -155,6 +173,10 @@ class AuthManager {
         // Delete stored email
         deleteUserEmail()
         _userEmail = nil
+
+        // Delete stored password
+        deleteUserPassword()
+        _userPassword = nil
 
         // Clear last sync time
         UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastSyncTime)
@@ -210,4 +232,47 @@ class AuthManager {
         ]
         SecItemDelete(query as CFDictionary)
     }
+
+    // MARK: - Password Storage (Keychain)
+
+    private func saveUserPassword(_ password: String) {
+        let data = password.data(using: .utf8)!
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: APIConfig.KeychainKeys.userPassword,
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        ]
+        SecItemDelete(query as CFDictionary)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            print("AuthManager: Failed to save user password to Keychain")
+        }
+    }
+
+    private func loadUserPassword() -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: APIConfig.KeychainKeys.userPassword,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var dataTypeRef: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+        guard status == errSecSuccess,
+              let data = dataTypeRef as? Data,
+              let password = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        return password
+    }
+
+    private func deleteUserPassword() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: APIConfig.KeychainKeys.userPassword
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
 }
+

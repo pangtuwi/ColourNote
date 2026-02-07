@@ -37,6 +37,13 @@ enum NoteSyncError: Error, LocalizedError {
     }
 }
 
+// MARK: - Apply Outcome for Notes
+enum NoteApplyOutcome {
+    case added
+    case updated
+    case unchanged
+}
+
 // MARK: - Note Sync Service
 class NoteSyncService {
 
@@ -321,16 +328,20 @@ class NoteSyncService {
         ) { [weak self] (result: Result<[CloudNote], NetworkError>) in
             switch result {
             case .success(let cloudNotes):
-                var downloadedCount = 0
+                let receivedCount = cloudNotes.count
+                var appliedCount = 0
 
                 for cloudNote in cloudNotes {
-                    if self?.processCloudNote(cloudNote) == true {
-                        downloadedCount += 1
+                    let applied = self?.processCloudNote(cloudNote) ?? false
+                    if applied {
+                        appliedCount += 1
+                    } else {
+                        print("NoteSyncService: Skipped applying cloud note id=\(cloudNote.id) title='\(cloudNote.title)'")
                     }
                 }
 
-                print("NoteSyncService: Downloaded \(downloadedCount) notes (delta: \(since != nil))")
-                completion(.success(downloadedCount))
+                print("NoteSyncService: Downloaded \(receivedCount) notes, applied \(appliedCount) (delta: \(since != nil))")
+                completion(.success(appliedCount))
 
             case .failure(let error):
                 // Handle 304 Not Modified as success with 0 changes
@@ -343,6 +354,66 @@ class NoteSyncService {
                 }
             }
         }
+    }
+
+    /// Download all notes with breakdown of added vs updated
+    func downloadAllNotesWithBreakdown(since: Int? = nil, completion: @escaping (Result<(added: Int, updated: Int), NoteSyncError>) -> Void) {
+        var queryParams: [String: String]? = nil
+        if let sinceTimestamp = since {
+            queryParams = ["since": String(sinceTimestamp)]
+        }
+
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.notes,
+            queryParams: queryParams,
+            requiresAuth: true
+        ) { [weak self] (result: Result<[CloudNote], NetworkError>) in
+            switch result {
+            case .success(let cloudNotes):
+                var added = 0
+                var updated = 0
+                for cloudNote in cloudNotes {
+                    let outcome = self?.applyCloudNote(cloudNote) ?? .unchanged
+                    switch outcome {
+                    case .added: added += 1
+                    case .updated: updated += 1
+                    case .unchanged: break
+                    }
+                }
+                print("NoteSyncService: Downloaded notes — added=\(added), updated=\(updated) (delta: \(since != nil))")
+                completion(.success((added: added, updated: updated)))
+            case .failure(let error):
+                if case .notModified = error {
+                    print("NoteSyncService: Notes not modified since last sync")
+                    completion(.success((added: 0, updated: 0)))
+                } else {
+                    print("NoteSyncService: Failed to download notes - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        }
+    }
+
+    /// Apply a single cloud note and return outcome
+    private func applyCloudNote(_ cloudNote: CloudNote) -> NoteApplyOutcome {
+        // Try UUID first
+        if let cloudUUID = cloudNote.uuid, let existingNote = syncMapping.findLocalNoteByUUID(cloudUUID) {
+            if syncMapping.getCloudId(localId: existingNote.noteId, entityType: .note) == nil {
+                syncMapping.createMapping(localId: existingNote.noteId, cloudId: cloudNote.id, entityType: .note, status: .synced)
+            }
+            let changed = updateLocalNote(cloudNote: cloudNote, localId: existingNote.noteId)
+            return changed ? .updated : .unchanged
+        }
+
+        // Check mapping by cloud ID
+        if let localId = syncMapping.getLocalId(cloudId: cloudNote.id, entityType: .note) {
+            let changed = updateLocalNote(cloudNote: cloudNote, localId: localId)
+            return changed ? .updated : .unchanged
+        }
+
+        // Create new local note
+        let created = createLocalNote(cloudNote: cloudNote)
+        return created ? .added : .unchanged
     }
 
     /// Process a single cloud note (create or update locally)
@@ -421,7 +492,7 @@ class NoteSyncService {
             uuid: cloudNote.uuid,
             noteName: cloudNote.title,
             editedTime: cloudNote.modifiedDate ?? cloudNote.createdDate,
-            noteText: cloudNote.note,
+            noteText: cloudNote.note ?? "",
             categoryId: localCategoryId,
             isDeleted: cloudNote.isDeleted,
             deletedDate: cloudNote.deletedDate,
@@ -434,7 +505,7 @@ class NoteSyncService {
         if result > 0 {
             // Set deletion status if needed
             if cloudNote.isDeleted {
-                NoteRecords.instance.setNoteDeletionStatus(
+                _ = NoteRecords.instance.setNoteDeletionStatus(
                     noteId: newLocalId,
                     isDeleted: true,
                     deletedDate: cloudNote.deletedDate
@@ -462,52 +533,57 @@ class NoteSyncService {
             return false
         }
 
-        // Check if cloud is newer using timestamps (both are now integers)
-        let cloudModified = cloudNote.modifiedDate ?? cloudNote.createdDate
-        let localModified = existingNote.editedTime
-
-        // Only update if cloud is newer (conflict resolution: most recent wins)
-        if cloudModified <= localModified {
-            print("NoteSyncService: Local note \(localId) is newer or same age, skipping update")
-            // Still update UUID if cloud has one and local doesn't match
-            if let cloudUUID = cloudNote.uuid, existingNote.uuid != cloudUUID {
-                _ = NoteRecords.instance.updateNoteUUID(noteId: localId, uuid: cloudUUID)
-            }
-            syncMapping.updateStatus(localId: localId, entityType: .note, status: .synced)
-            return true
-        }
-
-        // Map cloud category to local category
-        var localCategoryId = existingNote.categoryId
+        // Determine mapped local category id from cloud category
+        var mappedCategoryId = existingNote.categoryId
         if let cloudCatId = cloudNote.categoryId {
             if let mappedLocalId = syncMapping.getLocalId(cloudId: String(cloudCatId), entityType: .category) {
-                localCategoryId = mappedLocalId
+                mappedCategoryId = mappedLocalId
             } else {
-                localCategoryId = cloudCatId
+                mappedCategoryId = cloudCatId
             }
         }
 
-        // Update the local note
-        _ = NoteRecords.instance.updateNoteText(changedNoteId: localId, newText: cloudNote.note)
-        _ = NoteRecords.instance.updateNoteTitle(changedNoteId: localId, newTitle: cloudNote.title)
-        _ = NoteRecords.instance.updateNoteCategory(changedNoteId: localId, newCategoryId: localCategoryId)
+        // Compute desired target values from cloud
+        let targetTitle = cloudNote.title
+        let targetText = cloudNote.note ?? ""
+        let targetUUID = cloudNote.uuid ?? existingNote.uuid
+        let targetIsDeleted = cloudNote.isDeleted
+        let targetDeletedDate = cloudNote.deletedDate
+        
+        // Detect differences
+        let titleDiffers = existingNote.noteName != targetTitle
+        let textDiffers = existingNote.noteText != targetText
+        let categoryDiffers = existingNote.categoryId != mappedCategoryId
+        let uuidDiffers = existingNote.uuid != targetUUID
+        let deletionDiffers = existingNote.isDeleted != targetIsDeleted || existingNote.deletedDate != targetDeletedDate
 
-        // Update UUID if cloud has one
-        if let cloudUUID = cloudNote.uuid, existingNote.uuid != cloudUUID {
-            _ = NoteRecords.instance.updateNoteUUID(noteId: localId, uuid: cloudUUID)
+        let hasChanges = titleDiffers || textDiffers || categoryDiffers || uuidDiffers || deletionDiffers
+
+        if !hasChanges {
+            // No changes; ensure status is synced and return unchanged
+            syncMapping.updateStatus(localId: localId, entityType: .note, status: .synced)
+            print("NoteSyncService: Local note \(localId) already up-to-date; skipping update")
+            return false
         }
 
-        // Handle deletion status
-        if cloudNote.isDeleted != existingNote.isDeleted {
-            NoteRecords.instance.setNoteDeletionStatus(
+        // Apply updates
+        if textDiffers { _ = NoteRecords.instance.updateNoteText(changedNoteId: localId, newText: targetText) }
+        if titleDiffers { _ = NoteRecords.instance.updateNoteTitle(changedNoteId: localId, newTitle: targetTitle) }
+        if categoryDiffers { _ = NoteRecords.instance.updateNoteCategory(changedNoteId: localId, newCategoryId: mappedCategoryId) }
+        if uuidDiffers { _ = NoteRecords.instance.updateNoteUUID(noteId: localId, uuid: targetUUID) }
+
+        if deletionDiffers {
+            _ = NoteRecords.instance.setNoteDeletionStatus(
                 noteId: localId,
-                isDeleted: cloudNote.isDeleted,
-                deletedDate: cloudNote.deletedDate
+                isDeleted: targetIsDeleted,
+                deletedDate: targetDeletedDate
             )
         }
 
+        // Removed updateNoteEditedTime call as per instruction
+
         syncMapping.updateStatus(localId: localId, entityType: .note, status: .synced)
-        print("NoteSyncService: Updated local note \(localId) from cloud with UUID \(cloudNote.uuid ?? "nil")")
+        print("NoteSyncService: Updated local note \(localId) from cloud with UUID \(targetUUID)")
         return true
     }
 
@@ -727,6 +803,58 @@ class NoteSyncService {
         return deletedCount
     }
 
+    /// Deletion-aware download with breakdown of added/updated/deleted
+    func downloadAllNotesWithDeletionHandlingAndBreakdown(since: Int? = nil, completion: @escaping (Result<(added: Int, updated: Int, deleted: Int), NoteSyncError>) -> Void) {
+        var queryParams: [String: String]? = nil
+        if let sinceTimestamp = since {
+            queryParams = ["since": String(sinceTimestamp)]
+        }
+
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.notes,
+            queryParams: queryParams,
+            requiresAuth: true
+        ) { [weak self] (result: Result<[CloudNote], NetworkError>) in
+            guard let self = self else {
+                completion(.failure(.downloadFailed("Service deallocated")))
+                return
+            }
+            switch result {
+            case .success(let cloudNotes):
+                var addedCount = 0
+                var updatedCount = 0
+
+                for cloudNote in cloudNotes {
+                    let outcome = self.applyCloudNote(cloudNote)
+                    switch outcome {
+                    case .added: addedCount += 1
+                    case .updated: updatedCount += 1
+                    case .unchanged: break
+                    }
+                }
+
+                var deletedCount = 0
+                if since == nil {
+                    let cloudNoteIds = Set(cloudNotes.map { $0.id })
+                    deletedCount = self.handleServerSideDeletions(cloudNoteIds: cloudNoteIds)
+                    print("NoteSyncService: Full sync (breakdown) - added=\(addedCount), updated=\(updatedCount), server-deleted=\(deletedCount)")
+                } else {
+                    print("NoteSyncService: Delta sync (breakdown) - added=\(addedCount), updated=\(updatedCount)")
+                }
+
+                completion(.success((added: addedCount, updated: updatedCount, deleted: deletedCount)))
+            case .failure(let error):
+                if case .notModified = error {
+                    print("NoteSyncService: Notes not modified since last sync")
+                    completion(.success((added: 0, updated: 0, deleted: 0)))
+                } else {
+                    print("NoteSyncService: Failed to download notes (breakdown) - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        }
+    }
+
     /// Download all notes from the cloud with server-side deletion handling
     /// - Parameters:
     ///   - since: Optional timestamp in milliseconds. If nil, performs full sync with deletion detection.
@@ -750,26 +878,30 @@ class NoteSyncService {
 
             switch result {
             case .success(let cloudNotes):
-                var downloadedCount = 0
+                let receivedCount = cloudNotes.count
+                var addedCount = 0
+                var updatedCount = 0
 
                 // Process each cloud note
                 for cloudNote in cloudNotes {
-                    if self.processCloudNote(cloudNote) {
-                        downloadedCount += 1
+                    let outcome = self.applyCloudNote(cloudNote)
+                    switch outcome {
+                    case .added: addedCount += 1
+                    case .updated: updatedCount += 1
+                    case .unchanged: break
                     }
                 }
 
                 // Only handle server-side deletions during full sync (not delta)
-                // Delta sync only returns modified notes, so we can't detect deletions
                 if since == nil {
                     let cloudNoteIds = Set(cloudNotes.map { $0.id })
                     let serverDeletedCount = self.handleServerSideDeletions(cloudNoteIds: cloudNoteIds)
-                    print("NoteSyncService: Full sync completed - \(downloadedCount) downloaded, \(serverDeletedCount) server-deleted")
+                    print("NoteSyncService: Full sync completed - received=\(receivedCount), added=\(addedCount), updated=\(updatedCount), server-deleted=\(serverDeletedCount)")
                 } else {
-                    print("NoteSyncService: Delta sync completed - \(downloadedCount) downloaded")
+                    print("NoteSyncService: Delta sync completed - received=\(receivedCount), added=\(addedCount), updated=\(updatedCount)")
                 }
 
-                completion(.success(downloadedCount))
+                completion(.success(addedCount + updatedCount))
 
             case .failure(let error):
                 // Handle 304 Not Modified as success with 0 changes
@@ -815,3 +947,4 @@ class NoteSyncService {
         }
     }
 }
+

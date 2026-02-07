@@ -34,6 +34,13 @@ enum CategorySyncError: Error, LocalizedError {
     }
 }
 
+// MARK: - Apply Outcome for Categories
+enum CategoryApplyOutcome {
+    case added
+    case updated
+    case unchanged
+}
+
 // MARK: - Category Sync Service
 class CategorySyncService {
 
@@ -298,6 +305,63 @@ class CategorySyncService {
         }
     }
 
+    /// Download all categories with breakdown of added vs updated
+    func downloadAllCategoriesWithBreakdown(since: Int? = nil, completion: @escaping (Result<(added: Int, updated: Int), CategorySyncError>) -> Void) {
+        var queryParams: [String: String]? = nil
+        if let sinceTimestamp = since {
+            queryParams = ["since": String(sinceTimestamp)]
+        }
+
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.categories,
+            queryParams: queryParams,
+            requiresAuth: true
+        ) { [weak self] (result: Result<[CloudCategory], NetworkError>) in
+            switch result {
+            case .success(let cloudCategories):
+                var added = 0
+                var updated = 0
+                for cloudCategory in cloudCategories {
+                    let outcome = self?.applyCloudCategory(cloudCategory) ?? .unchanged
+                    switch outcome {
+                    case .added: added += 1
+                    case .updated: updated += 1
+                    case .unchanged: break
+                    }
+                }
+                print("CategorySyncService: Downloaded categories — added=\(added), updated=\(updated) (delta: \(since != nil))")
+                completion(.success((added: added, updated: updated)))
+            case .failure(let error):
+                if case .notModified = error {
+                    print("CategorySyncService: Categories not modified since last sync")
+                    completion(.success((added: 0, updated: 0)))
+                } else {
+                    print("CategorySyncService: Failed to download categories - \(error)")
+                    completion(.failure(.networkError(error)))
+                }
+            }
+        }
+    }
+
+    /// Apply a single cloud category and return outcome
+    private func applyCloudCategory(_ cloudCategory: CloudCategory) -> CategoryApplyOutcome {
+        if let cloudUUID = cloudCategory.uuid, let existingCategory = syncMapping.findLocalCategoryByUUID(cloudUUID) {
+            if syncMapping.getCloudId(localId: existingCategory.categoryId, entityType: .category) == nil {
+                syncMapping.createMapping(localId: existingCategory.categoryId, cloudId: cloudCategory.id, entityType: .category, status: .synced)
+            }
+            let changed = updateLocalCategory(cloudCategory: cloudCategory, localId: existingCategory.categoryId)
+            return changed ? .updated : .unchanged
+        }
+
+        if let localId = syncMapping.getLocalId(cloudId: cloudCategory.id, entityType: .category) {
+            let changed = updateLocalCategory(cloudCategory: cloudCategory, localId: localId)
+            return changed ? .updated : .unchanged
+        }
+
+        let created = createLocalCategory(cloudCategory: cloudCategory)
+        return created ? .added : .unchanged
+    }
+
     /// Process a single cloud category (create or update locally)
     private func processCloudCategory(_ cloudCategory: CloudCategory) -> Bool {
         print("CategorySyncService: Processing cloud category - id: \(cloudCategory.id), uuid: '\(cloudCategory.uuid ?? "nil")', name: '\(cloudCategory.categoryName)', colorHex: '\(cloudCategory.colorHex ?? "nil")'")
@@ -399,17 +463,37 @@ class CategorySyncService {
             return false
         }
 
-        // For categories, we don't have a modified timestamp locally, so always update
-        // In a production app, you'd add a modified_at column to categories table
+        // Compute the would-be updated category values
+        let newUUID = cloudCategory.uuid ?? existingCategory.uuid
+        let newName = cloudCategory.categoryName
+        let newColorHex = cloudCategory.colorHex ?? existingCategory.colorHex
+        let newSortOrder = cloudCategory.sortOrder ?? existingCategory.sortOrder
+        let newIsProtected = (cloudCategory.isProtected ?? 0) != 0
 
-        // Update the local category, preserving or updating UUID
+        // Check if any field actually changed
+        let didChange = (
+            existingCategory.uuid != newUUID ||
+            existingCategory.categoryName != newName ||
+            existingCategory.colorHex != newColorHex ||
+            existingCategory.sortOrder != newSortOrder ||
+            existingCategory.isProtected != newIsProtected
+        )
+
+        if !didChange {
+            // No changes needed; mark as synced and don't count as an update
+            syncMapping.updateStatus(localId: localId, entityType: .category, status: .synced)
+            print("CategorySyncService: No changes for local category \(localId); skipping update")
+            return false
+        }
+
+        // Build updated category
         let updatedCategory = Category(
             categoryId: localId,
-            uuid: cloudCategory.uuid ?? existingCategory.uuid,
-            categoryName: cloudCategory.categoryName,
-            colorHex: cloudCategory.colorHex ?? "#FFFFFF",
-            sortOrder: cloudCategory.sortOrder ?? 0,
-            isProtected: (cloudCategory.isProtected ?? 0) != 0
+            uuid: newUUID,
+            categoryName: newName,
+            colorHex: newColorHex,
+            sortOrder: newSortOrder,
+            isProtected: newIsProtected
         )
 
         let result = CategoryRecords.instance.updateCategory(category: updatedCategory)

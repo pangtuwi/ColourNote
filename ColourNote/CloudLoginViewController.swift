@@ -31,6 +31,16 @@ class CloudLoginViewController: UIViewController {
         return label
     }()
 
+    private let usernameTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "Username"
+        tf.borderStyle = .roundedRect
+        tf.autocapitalizationType = .none
+        tf.autocorrectionType = .no
+        tf.textContentType = .username
+        return tf
+    }()
+
     private let emailTextField: UITextField = {
         let tf = UITextField()
         tf.placeholder = "Email"
@@ -121,7 +131,7 @@ class CloudLoginViewController: UIViewController {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
-        [titleLabel, subtitleLabel, emailTextField, passwordTextField,
+        [titleLabel, subtitleLabel, usernameTextField, emailTextField, passwordTextField,
          confirmPasswordTextField, errorLabel, actionButton, toggleModeButton, activityIndicator].forEach {
             contentView.addSubview($0)
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -142,6 +152,7 @@ class CloudLoginViewController: UIViewController {
         emailTextField.delegate = self
         passwordTextField.delegate = self
         confirmPasswordTextField.delegate = self
+        usernameTextField.delegate = self
     }
 
     private func setupConstraints() {
@@ -165,7 +176,12 @@ class CloudLoginViewController: UIViewController {
             subtitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
             subtitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
 
-            emailTextField.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 40),
+            usernameTextField.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 40),
+            usernameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
+            usernameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
+            usernameTextField.heightAnchor.constraint(equalToConstant: 50),
+
+            emailTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 16),
             emailTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
             emailTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
             emailTextField.heightAnchor.constraint(equalToConstant: 50),
@@ -203,10 +219,12 @@ class CloudLoginViewController: UIViewController {
             actionButton.setTitle("Log In", for: .normal)
             toggleModeButton.setTitle("Don't have an account? Register", for: .normal)
             confirmPasswordTextField.isHidden = true
+            usernameTextField.isHidden = true
         } else {
             actionButton.setTitle("Register", for: .normal)
             toggleModeButton.setTitle("Already have an account? Log In", for: .normal)
             confirmPasswordTextField.isHidden = false
+            usernameTextField.isHidden = false
         }
         errorLabel.isHidden = true
     }
@@ -225,7 +243,8 @@ class CloudLoginViewController: UIViewController {
         if isLoginMode {
             login(email: email, password: password)
         } else {
-            register(email: email, password: password)
+            let username = usernameTextField.text!.trimmingCharacters(in: .whitespacesAndNewlines)
+            register(username: username, email: email, password: password)
         }
     }
 
@@ -263,6 +282,12 @@ class CloudLoginViewController: UIViewController {
         }
 
         if !isLoginMode {
+            guard let username = usernameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !username.isEmpty else {
+                showError("Please enter a username")
+                return false
+            }
+
             guard let confirmPassword = confirmPasswordTextField.text,
                   confirmPassword == password else {
                 showError("Passwords do not match")
@@ -293,8 +318,8 @@ class CloudLoginViewController: UIViewController {
         }
     }
 
-    private func register(email: String, password: String) {
-        AuthManager.shared.register(email: email, password: password) { [weak self] result in
+    private func register(username: String, email: String, password: String) {
+        AuthManager.shared.register(username: username, email: email, password: password) { [weak self] result in
             self?.setLoading(false)
 
             switch result {
@@ -320,6 +345,7 @@ class CloudLoginViewController: UIViewController {
             emailTextField.isEnabled = false
             passwordTextField.isEnabled = false
             confirmPasswordTextField.isEnabled = false
+            usernameTextField.isEnabled = false
         } else {
             activityIndicator.stopAnimating()
             actionButton.isEnabled = true
@@ -327,6 +353,7 @@ class CloudLoginViewController: UIViewController {
             emailTextField.isEnabled = true
             passwordTextField.isEnabled = true
             confirmPasswordTextField.isEnabled = true
+            usernameTextField.isEnabled = true
         }
     }
 
@@ -348,6 +375,7 @@ class CloudLoginViewController: UIViewController {
         emailTextField.text = ""
         passwordTextField.text = ""
         confirmPasswordTextField.text = ""
+        usernameTextField.text = ""
         errorLabel.isHidden = true
     }
 
@@ -359,7 +387,9 @@ class CloudLoginViewController: UIViewController {
 // MARK: - UITextFieldDelegate
 extension CloudLoginViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == emailTextField {
+        if textField == usernameTextField {
+            emailTextField.becomeFirstResponder()
+        } else if textField == emailTextField {
             passwordTextField.becomeFirstResponder()
         } else if textField == passwordTextField {
             if isLoginMode {
