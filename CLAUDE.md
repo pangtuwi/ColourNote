@@ -121,7 +121,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 **Location**: `Shared/CloudSync/`
 
 1. **APIConfig.swift** - API configuration constants
-   - Base URL: `http://irids.co.uk`
+   - Base URL: `https://irids.co.uk`
    - Endpoint paths for auth, notes, and categories
    - Keychain keys for JWT token storage
    - Request timeout settings
@@ -722,7 +722,7 @@ Potential features to implement:
 
 ### Cloud Sync Security
 - **JWT Authentication**: Tokens stored securely in iOS Keychain
-- **HTTPS**: Server communication should use HTTPS in production
+- **HTTPS**: All server communication uses HTTPS encryption
 - **Token Expiry**: Expired tokens require re-authentication
 - **No Password Storage**: Only JWT tokens stored, not user passwords
 - **Protected Categories**: `is_protected` flag synced but NOT passcode hashes
@@ -764,6 +764,12 @@ Potential features to implement:
 7. Cloud sync preserves note content but NOT category passcodes
 
 ## Recent Changes
+
+### February 8, 2026 - HTTPS Migration
+- **API Base URL Updated to HTTPS**
+  - Changed `APIConfig.baseURL` from `http://irids.co.uk` to `https://irids.co.uk`
+  - All cloud sync traffic now uses secure HTTPS encryption
+  - No ATS (App Transport Security) exceptions required for HTTPS
 
 ### February 4, 2026 - UI Improvements: Note Detail View & Search Filter
 - **Note Detail View Redesign**
@@ -1054,7 +1060,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: February 3, 2026
+**Last Updated**: February 8, 2026
 **Maintainer**: Paul Williams
 **Original Project**: EFRT (Fitness Tracking App) - Legacy code fully removed December 2025
 **Current Project**: ColourNote (Note-Taking App)

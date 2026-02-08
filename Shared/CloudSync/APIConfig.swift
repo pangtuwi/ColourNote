@@ -11,7 +11,7 @@ struct APIConfig {
 
     // MARK: - Base URL
     //static let baseURL = "http://localhost:3002"
-    static let baseURL = "http://irids.co.uk"
+    static let baseURL = "https://irids.co.uk"
 
     // MARK: - Endpoints
     struct Endpoints {

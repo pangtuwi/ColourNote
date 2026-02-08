@@ -320,4 +320,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Note**: This app stores all data locally on your device by default. Cloud sync is optional and requires user login. When enabled, notes and categories are synchronized with the cloud server using secure JWT authentication.
+**Note**: This app stores all data locally on your device by default. Cloud sync is optional and requires user login. When enabled, notes and categories are synchronized with the cloud server over HTTPS using secure JWT authentication.
