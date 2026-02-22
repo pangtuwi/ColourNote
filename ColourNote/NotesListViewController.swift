@@ -256,6 +256,7 @@ extension NotesListViewController {
 
             // Move to trash immediately without confirmation
             _ = NoteRecords.instance.softDeleteNote(noteId: note.noteId)
+            SyncEngine.shared.syncIfNeeded()
 
             // Remove the note from the arrays without reloading everything
             if let noteIndex = self.notes.firstIndex(where: { $0.noteId == note.noteId }) {

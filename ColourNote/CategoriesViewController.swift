@@ -81,6 +81,7 @@ class CategoriesViewController: UITableViewController {
                 if let category = category {
                     category.categoryName = name
                     _ = CategoryRecords.instance.updateCategory(category: category)
+                    CategorySyncService.shared.markForUpload(categoryId: category.categoryId)
                     self?.loadCategories()
 
                     // Post notification to refresh other views
@@ -117,6 +118,7 @@ class CategoriesViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
                 category.isProtected = false
                 _ = CategoryRecords.instance.updateCategory(category: category)
+                CategorySyncService.shared.markForUpload(categoryId: category.categoryId)
                 self?.loadCategories()
                 self?.showAlert(title: "Success", message: "Protection removed from category")
             })
@@ -132,6 +134,7 @@ class CategoriesViewController: UITableViewController {
                     if success {
                         category.isProtected = true
                         _ = CategoryRecords.instance.updateCategory(category: category)
+                        CategorySyncService.shared.markForUpload(categoryId: category.categoryId)
                         self?.loadCategories()
                         self?.showAlert(title: "Success", message: "Category is now protected")
                     }
@@ -140,6 +143,7 @@ class CategoriesViewController: UITableViewController {
                 // Passcode already exists, just enable protection
                 category.isProtected = true
                 _ = CategoryRecords.instance.updateCategory(category: category)
+                CategorySyncService.shared.markForUpload(categoryId: category.categoryId)
                 loadCategories()
                 showAlert(title: "Success", message: "Category is now protected")
             }
@@ -188,6 +192,7 @@ class CategoriesViewController: UITableViewController {
             existingCategory.categoryName = name
             existingCategory.colorHex = color.toHexString()
             _ = CategoryRecords.instance.updateCategory(category: existingCategory)
+            CategorySyncService.shared.markForUpload(categoryId: categoryId)
         }
 
         loadCategories()
@@ -261,6 +266,7 @@ class CategoriesViewController: UITableViewController {
         for (index, category) in categories.enumerated() {
             category.sortOrder = index
             _ = CategoryRecords.instance.updateCategory(category: category)
+            CategorySyncService.shared.markForUpload(categoryId: category.categoryId)
         }
     }
 }

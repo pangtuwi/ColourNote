@@ -587,7 +587,16 @@ class SyncEngine {
 
     /// Called when app launches or enters foreground
     func syncIfNeeded() {
-        guard isAutoSyncEnabled, authManager.isLoggedIn, !isSyncing else {
+        guard isAutoSyncEnabled else {
+            print("SyncEngine: Skipping sync — auto-sync is disabled")
+            return
+        }
+        guard authManager.isLoggedIn else {
+            print("SyncEngine: Skipping sync — user is not logged in")
+            return
+        }
+        guard !isSyncing else {
+            print("SyncEngine: Skipping sync — sync already in progress")
             return
         }
 

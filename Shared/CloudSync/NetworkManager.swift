@@ -418,8 +418,26 @@ class NetworkManager {
                     return
                 }
 
-                if httpResponse.statusCode == 401 {
-                    completion(.failure(.unauthorized))
+                if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
+                    self.attemptReauthentication { success in
+                        if success {
+                            var retriedRequest = request
+                            if let token = self.getToken() {
+                                retriedRequest.setValue("Bearer \(token)", forHTTPHeaderField: APIConfig.Headers.authorization)
+                            }
+                            self.performRequestWithETag(retriedRequest, completion: completion)
+                        } else {
+                            if httpResponse.statusCode == 401 {
+                                completion(.failure(.unauthorized))
+                            } else {
+                                var message: String?
+                                if let data = data {
+                                    message = String(data: data, encoding: .utf8)
+                                }
+                                completion(.failure(.httpError(statusCode: httpResponse.statusCode, message: message)))
+                            }
+                        }
+                    }
                     return
                 }
 

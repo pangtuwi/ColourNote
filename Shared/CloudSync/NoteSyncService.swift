@@ -62,7 +62,23 @@ class NoteSyncService {
     /// Upload all local notes to the cloud
     func uploadAllNotes(completion: @escaping (Result<Int, NoteSyncError>) -> Void) {
         // Get all notes including deleted ones
-        let notes = NoteRecords.instance.getAllNotes()
+        let allNotes = NoteRecords.instance.getAllNotes()
+
+        // Only upload notes that are new (no mapping) or explicitly marked as pending upload
+        let notes = allNotes.filter { note in
+            guard let mapping = syncMapping.getMapping(localId: note.noteId, entityType: .note) else {
+                return true // no mapping = new note, needs creating
+            }
+            return mapping.syncStatus == .pendingUpload
+        }
+
+        guard !notes.isEmpty else {
+            print("NoteSyncService: No notes pending upload")
+            completion(.success(0))
+            return
+        }
+
+        print("NoteSyncService: \(notes.count) note(s) pending upload (of \(allNotes.count) total)")
         var uploadedCount = 0
         var lastError: NoteSyncError?
 

@@ -238,7 +238,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2 (Build 8)** - Current Release (February 4, 2026)
+- **1.2 (Build 9)** - Current Release (February 22, 2026)
+  - **Sync Engine v1.4**: Efficient pending-upload tracking
+    - Notes and categories are only uploaded when actually changed (marked `pendingUpload`)
+    - Eliminates redundant PUTs for unmodified entities on every sync
+    - Auto-sync triggered immediately after note save, delete, and swipe-to-delete
+    - Auto-sync enabled automatically on login/register
+  - **Bug Fix**: JWT expiry (403) now correctly triggers re-authentication on ETag-based PUT requests
+  - **Bug Fix**: `syncIfNeeded()` now logs the reason when sync is skipped (disabled/logged-out/in-progress)
+
+- **1.2 (Build 8)** - (February 4, 2026)
   - **New Feature**: Cloud Sync with JWT Authentication
   - Bidirectional sync of notes and categories with cloud server
   - Login/Register UI for cloud account management

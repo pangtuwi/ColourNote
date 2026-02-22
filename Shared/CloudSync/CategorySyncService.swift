@@ -58,7 +58,23 @@ class CategorySyncService {
 
     /// Upload all local categories to the cloud
     func uploadAllCategories(completion: @escaping (Result<Int, CategorySyncError>) -> Void) {
-        let categories = CategoryRecords.instance.getCategories()
+        let allCategories = CategoryRecords.instance.getCategories()
+
+        // Only upload categories that are new (no mapping) or explicitly marked as pending upload
+        let categories = allCategories.filter { category in
+            guard let mapping = syncMapping.getMapping(localId: category.categoryId, entityType: .category) else {
+                return true // no mapping = new category, needs creating
+            }
+            return mapping.syncStatus == .pendingUpload
+        }
+
+        guard !categories.isEmpty else {
+            print("CategorySyncService: No categories pending upload")
+            completion(.success(0))
+            return
+        }
+
+        print("CategorySyncService: \(categories.count) category(ies) pending upload (of \(allCategories.count) total)")
         var uploadedCount = 0
         var lastError: CategorySyncError?
 

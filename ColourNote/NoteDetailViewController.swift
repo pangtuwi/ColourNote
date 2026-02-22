@@ -221,6 +221,8 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
             textHasChanged = false
             titleHasChanged = false
             print("Note saved with ID: \(lastNoteID)")
+            NoteSyncService.shared.markForUpload(noteId: lastNoteID)
+            SyncEngine.shared.syncIfNeeded()
         }
     }
 
@@ -247,6 +249,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         if NoteRecords.instance.deleteNote(noteId: lastNoteID) {
             print("Note deleted with ID: \(lastNoteID)")
             dismiss(animated: true)
+            SyncEngine.shared.syncIfNeeded()
         } else {
             let alert = UIAlertController(
                 title: "Delete Failed",

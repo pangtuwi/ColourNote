@@ -332,6 +332,7 @@ class CloudLoginViewController: UIViewController {
     }
 
     private func handleLoginSuccess() {
+        SyncEngine.shared.isAutoSyncEnabled = true
         onLoginSuccess?()
         dismiss(animated: true)
     }
