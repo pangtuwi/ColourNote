@@ -4,7 +4,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Version](https://img.shields.io/badge/version-1.1-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-1.2.2-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## Features
@@ -195,6 +195,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [x] Search and filter
 - [x] Markdown support with Edit/Preview toggle
 - [x] Cloud sync with JWT authentication
+- [x] Cloud Restore on fresh install (auto-detects previous account credentials)
 
 ### Planned Features
 
@@ -238,7 +239,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2 (Build 9)** - Current Release (February 22, 2026)
+- **1.2.2 (Build 10)** - Current Release (February 24, 2026)
+  - **New Feature**: Cloud Restore on startup screen
+    - Detects Keychain credentials from a previous install and shows a "Cloud Restore" button
+    - Silently re-authenticates and downloads all notes and categories without a backup file
+  - **Bug fix**: `SyncMapping.resetConnection()` resolves stale database connection after Cloud Restore
+  - **Bug fix**: `SyncEngine` now guards on `isRegistered()` before attempting any sync
+  - **Debug cleanup**: Removed per-call log spam from note/category database read methods
+
+- **1.2 (Build 9)** - (February 22, 2026)
   - **Sync Engine v1.4**: Efficient pending-upload tracking
     - Notes and categories are only uploaded when actually changed (marked `pendingUpload`)
     - Eliminates redundant PUTs for unmodified entities on every sync

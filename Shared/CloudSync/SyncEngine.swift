@@ -126,6 +126,13 @@ class SyncEngine {
 
     /// Perform a full bidirectional sync
     func syncAll(completion: @escaping (Result<SyncResult, SyncError>) -> Void) {
+        // Check local database is ready
+        guard UserDefaults.standard.isRegistered() else {
+            print("SyncEngine: Cannot sync — app not yet registered (no local database)")
+            completion(.failure(.notAuthenticated))
+            return
+        }
+
         // Check if already syncing
         guard !isSyncing else {
             print("SyncEngine: Sync already in progress")
@@ -587,6 +594,10 @@ class SyncEngine {
 
     /// Called when app launches or enters foreground
     func syncIfNeeded() {
+        guard UserDefaults.standard.isRegistered() else {
+            print("SyncEngine: Skipping sync — app not yet registered (no local database)")
+            return
+        }
         guard isAutoSyncEnabled else {
             print("SyncEngine: Skipping sync — auto-sync is disabled")
             return

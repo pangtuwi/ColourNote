@@ -66,6 +66,12 @@ class SyncMapping {
         openDatabase()
     }
 
+    /// Closes and reopens the database connection. Call this after the database file has been replaced (e.g. cloud restore).
+    func resetConnection() {
+        db = nil
+        openDatabase()
+    }
+
     private func openDatabase() {
         do {
             let fileURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)

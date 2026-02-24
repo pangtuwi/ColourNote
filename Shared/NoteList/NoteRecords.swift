@@ -390,7 +390,6 @@ class NoteRecords {
             } catch {
                 print("Select failed in NoteRecords.GetNotes() ")
             }
-        print ("got a total of \(notez.count) notes")
         return notez
 
     } //getActivities
@@ -417,7 +416,6 @@ class NoteRecords {
             } catch {
                 print("Select failed in NoteRecords.getDeletedNotes() ")
             }
-        print ("got a total of \(deletedNotez.count) deleted notes")
         return deletedNotez
 
     } //getDeletedNotes
@@ -446,7 +444,6 @@ class NoteRecords {
             } catch {
                 print("Select failed in NoteRecords.getAllNotes() ")
             }
-        print ("got a total of \(allNotez.count) notes (including deleted)")
         return allNotez
 
     } //getAllNotes

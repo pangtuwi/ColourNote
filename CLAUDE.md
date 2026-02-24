@@ -3,7 +3,7 @@
 ## Project Overview
 ColourNote is a feature-rich iOS note-taking application with color-coded organization, category management, and security features. The app is built in Swift using UIKit and uses SQLite for local data persistence.
 
-**Current Version**: 1.1 (Build 4)
+**Current Version**: 1.2.2 (Build 10)
 
 **Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, backup/restore capabilities, and cloud sync. The codebase has been fully cleaned of legacy fitness tracking code and is now 100% focused on note-taking.
 
@@ -174,6 +174,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - **ETag methods (v1.2+)**:
      - `getEtag(localId:entityType:)` - Get stored ETag for entity
      - `updateEtag(localId:entityType:newEtag:)` - Update stored ETag
+   - **`resetConnection()`** — closes the current SQLite connection and reopens it. Used by Cloud Restore after deleting and recreating the database file, since the singleton may have been initialized at launch with a stale connection to the old (now-deleted) file.
 
 6. **CategorySyncService.swift** - Category synchronization
    - `uploadAllCategories()` - Push local categories to cloud
@@ -310,8 +311,13 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - Used for both setting and verifying category passcodes
 
 6. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
-   - Initial registration screen (legacy from fitness app)
-   - Shows on first app launch
+   - Initial registration screen shown on first app launch
+   - Three startup options:
+     - **Start Fresh** — creates a blank local database
+     - **Import Backup** — imports notes/categories from a JSON file
+     - **Cloud Restore** *(shown only when Keychain credentials exist from a previous install)* — silently re-authenticates and downloads all data from the cloud server
+   - Cloud Restore flow: creates blank DB → initialises singletons → calls `SyncMapping.shared.resetConnection()` to fix any stale connection → logs in → calls `SyncEngine.downloadCloudChanges` → navigates home
+   - Spinner overlay with status message ("Signing in..." → "Restoring from cloud...") during restore
 
 
 #### UI Components
@@ -542,7 +548,13 @@ ColourNote/
 
 ## Version History
 
-### 1.02 (Build 3) - Current Release
+### 1.2.2 (Build 10) - Current Release
+- **Cloud Restore** on startup screen: detects Keychain credentials from a previous install and shows a green "Cloud Restore" button; silently re-authenticates and downloads all notes/categories without needing a backup file
+- **Bug fix**: `SyncMapping.resetConnection()` ensures the singleton reconnects to the newly-created database after a Cloud Restore (previously held a stale connection to the deleted file, causing `sync_mappings` table errors)
+- **SyncEngine guard**: `syncAll()` and `syncIfNeeded()` now check `isRegistered()` before proceeding, preventing spurious sync attempts before a database exists
+- **Debug cleanup**: Removed per-call `print` statements from `getNotes()`, `getDeletedNotes()`, `getAllNotes()`, and `getCategories()` that produced dozens of duplicate log lines during sync
+
+### 1.02 (Build 3) - Previous Release
 - Added passcode protection for categories (SHA-256 hashing)
 - Implemented session-based unlocking
 - Enhanced export/backup with passcode validation
@@ -679,7 +691,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: February 22, 2026
+**Last Updated**: February 24, 2026
 **Maintainer**: Paul Williams
 **Current Project**: ColourNote (Note-Taking App)
 **Sync Engine Version**: 1.4

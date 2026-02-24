@@ -17,7 +17,8 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
     @IBOutlet weak var createBlankButton: UIButton!
     @IBOutlet weak var importButton: UIButton!
 
-    
+    private var cloudRestoreButton: UIButton?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -31,6 +32,25 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         // Style buttons
         styleButton(createBlankButton, title: "Start Fresh")
         styleButton(importButton, title: "Import Backup")
+
+        // Show Cloud Restore button if Keychain credentials are available from a previous install
+        if AuthManager.shared.userEmail != nil && AuthManager.shared.userPassword != nil {
+            let button = UIButton(type: .system)
+            button.setTitle("Cloud Restore", for: .normal)
+            button.layer.cornerRadius = 8
+            button.backgroundColor = UIColor.systemGreen
+            button.setTitleColor(.white, for: .normal)
+            button.addTarget(self, action: #selector(cloudRestoreButtonTapped), for: .touchUpInside)
+            cloudRestoreButton = button
+            view.addSubview(button)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                button.topAnchor.constraint(equalTo: importButton.bottomAnchor, constant: 16),
+                button.leadingAnchor.constraint(equalTo: importButton.leadingAnchor),
+                button.trailingAnchor.constraint(equalTo: importButton.trailingAnchor),
+                button.heightAnchor.constraint(equalToConstant: 44)
+            ])
+        }
     }
 
     func styleButton(_ button: UIButton?, title: String) {
@@ -174,6 +194,13 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
     }
 
     func navigateToHome() {
+        // Initialize database singletons now that the database file exists.
+        // AppDelegate only does this when isRegistered() is true at launch,
+        // so after a fresh install we must do it here before any sync can run.
+        _ = NoteRecords.instance
+        _ = CategoryRecords.instance
+        _ = SyncMapping.shared
+
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let homeViewController = storyboard.instantiateViewController(withIdentifier: "ColorNoteHomeID")
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate,
@@ -252,5 +279,88 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             completion?()
         })
         present(alert, animated: true)
+    }
+
+    // MARK: - Cloud Restore
+
+    @objc func cloudRestoreButtonTapped() {
+        guard let email = AuthManager.shared.userEmail,
+              let password = AuthManager.shared.userPassword else { return }
+
+        let spinner = showSpinner(message: "Signing in...")
+
+        // Create a blank database
+        let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        let destinationPath = documents + "/colornote.db"
+        try? FileManager.default.removeItem(atPath: destinationPath)
+        createBlankDatabase(at: destinationPath)
+        UserDefaults.standard.set(2, forKey: "DatabaseVersion")
+        Settings.setRegistered(registered: true)
+
+        // Initialize singletons now that the database file exists.
+        // NoteRecords migrations create the sync_mappings table in the new file.
+        _ = NoteRecords.instance
+        _ = CategoryRecords.instance
+        // SyncMapping may have been initialized at launch with a stale connection to
+        // the old (now deleted) database file. Reconnect it to the new file.
+        SyncMapping.shared.resetConnection()
+
+        // Log in with stored credentials
+        AuthManager.shared.login(email: email, password: password) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .failure(let error):
+                    self?.hideSpinner(spinner)
+                    self?.showAlert(title: "Login Failed",
+                                   message: error.localizedDescription + "\n\nYou can still start fresh or import a backup.")
+                case .success:
+                    SyncEngine.shared.isAutoSyncEnabled = true
+                    self?.updateSpinner(spinner, message: "Restoring from cloud...")
+                    SyncEngine.shared.downloadCloudChanges { downloadResult in
+                        DispatchQueue.main.async {
+                            self?.hideSpinner(spinner)
+                            switch downloadResult {
+                            case .failure(let error):
+                                self?.showAlert(
+                                    title: "Restore Incomplete",
+                                    message: "Signed in but could not download all data: \(error.localizedDescription)\n\nYou can sync again from Settings.",
+                                    completion: { self?.navigateToHome() }
+                                )
+                            case .success:
+                                self?.navigateToHome()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Spinner Helpers
+
+    private func showSpinner(message: String) -> (UIView, UILabel) {
+        let overlay = UIView(frame: view.bounds)
+        overlay.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.color = .white
+        indicator.center = CGPoint(x: overlay.bounds.midX, y: overlay.bounds.midY - 20)
+        indicator.startAnimating()
+        let label = UILabel()
+        label.text = message
+        label.textColor = .white
+        label.textAlignment = .center
+        label.frame = CGRect(x: 0, y: indicator.frame.maxY + 8, width: overlay.bounds.width, height: 30)
+        overlay.addSubview(indicator)
+        overlay.addSubview(label)
+        view.addSubview(overlay)
+        return (overlay, label)
+    }
+
+    private func updateSpinner(_ components: (UIView, UILabel), message: String) {
+        components.1.text = message
+    }
+
+    private func hideSpinner(_ components: (UIView, UILabel)) {
+        components.0.removeFromSuperview()
     }
 }

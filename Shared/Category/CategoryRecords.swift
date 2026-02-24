@@ -182,7 +182,6 @@ class CategoryRecords {
             print("CategoryRecords: Select failed in getCategories() - \(error)")
         }
 
-        print("CategoryRecords: Got \(categoriesList.count) categories")
         return categoriesList
     }
 
