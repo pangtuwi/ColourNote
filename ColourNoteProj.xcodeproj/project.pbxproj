@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -48,7 +48,26 @@
 		E96BC90DEF782AFDEE471A40 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC97A8A9BEA0ADA366358263 /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		001130632F4F9D17009924C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA515CAC29E8B01055C9DA27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D19835A9F1872246EA0C600B;
+			remoteInfo = ColourNote;
+		};
+		001130722F4F9D38009924C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DA515CAC29E8B01055C9DA27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D19835A9F1872246EA0C600B;
+			remoteInfo = ColourNote;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		0011305F2F4F9D17009924C8 /* ColourNoteXCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ColourNoteXCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0011306C2F4F9D38009924C8 /* ColourNoteXCUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ColourNoteXCUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BaiJamjuree-Light.ttf"; sourceTree = "<group>"; };
 		0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrashViewController.swift; path = ColourNote/TrashViewController.swift; sourceTree = "<group>"; };
 		0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeViewController.swift; path = ColourNote/PasscodeViewController.swift; sourceTree = "<group>"; };
@@ -105,7 +124,26 @@
 		FAA608A98F41F901DC3ECB8A /* NoteRecords.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NoteRecords.swift; path = Shared/NoteList/NoteRecords.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		001130602F4F9D17009924C8 /* ColourNoteXCTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ColourNoteXCTests; sourceTree = "<group>"; };
+		0011306D2F4F9D38009924C8 /* ColourNoteXCUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ColourNoteXCUITests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		0011305C2F4F9D17009924C8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		001130692F4F9D38009924C8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		927FE36D1FF6B0086322C019 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -148,6 +186,8 @@
 			isa = PBXGroup;
 			children = (
 				2C7500F1F904471B09BA8446 /* ColourNote.app */,
+				0011305F2F4F9D17009924C8 /* ColourNoteXCTests.xctest */,
+				0011306C2F4F9D38009924C8 /* ColourNoteXCUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -218,6 +258,8 @@
 		E0685716BBF82DCCC912F19A = {
 			isa = PBXGroup;
 			children = (
+				001130602F4F9D17009924C8 /* ColourNoteXCTests */,
+				0011306D2F4F9D38009924C8 /* ColourNoteXCUITests */,
 				2F32D4D360878E2F9D8CE48D /* Products */,
 				D12EABB1CA1BC64AFC72DF13 /* Frameworks */,
 				F3EC00706371DEFD61CA709C /* ColourNote */,
@@ -269,6 +311,52 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0011305E2F4F9D17009924C8 /* ColourNoteXCTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 001130672F4F9D17009924C8 /* Build configuration list for PBXNativeTarget "ColourNoteXCTests" */;
+			buildPhases = (
+				0011305B2F4F9D17009924C8 /* Sources */,
+				0011305C2F4F9D17009924C8 /* Frameworks */,
+				0011305D2F4F9D17009924C8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				001130642F4F9D17009924C8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				001130602F4F9D17009924C8 /* ColourNoteXCTests */,
+			);
+			name = ColourNoteXCTests;
+			packageProductDependencies = (
+			);
+			productName = ColourNoteXCTests;
+			productReference = 0011305F2F4F9D17009924C8 /* ColourNoteXCTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		0011306B2F4F9D38009924C8 /* ColourNoteXCUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 001130742F4F9D38009924C8 /* Build configuration list for PBXNativeTarget "ColourNoteXCUITests" */;
+			buildPhases = (
+				001130682F4F9D38009924C8 /* Sources */,
+				001130692F4F9D38009924C8 /* Frameworks */,
+				0011306A2F4F9D38009924C8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				001130732F4F9D38009924C8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0011306D2F4F9D38009924C8 /* ColourNoteXCUITests */,
+			);
+			name = ColourNoteXCUITests;
+			packageProductDependencies = (
+			);
+			productName = ColourNoteXCUITests;
+			productReference = 0011306C2F4F9D38009924C8 /* ColourNoteXCUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		D19835A9F1872246EA0C600B /* ColourNote */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4CDF34A36E46B0FC1FAAB1B5 /* Build configuration list for PBXNativeTarget "ColourNote" */;
@@ -293,8 +381,18 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					0011305E2F4F9D17009924C8 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = D19835A9F1872246EA0C600B;
+					};
+					0011306B2F4F9D38009924C8 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = D19835A9F1872246EA0C600B;
+					};
+				};
 			};
 			buildConfigurationList = 4577545BFF994EFA88194BA7 /* Build configuration list for PBXProject "ColourNoteProj" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -313,11 +411,27 @@
 			projectRoot = "";
 			targets = (
 				D19835A9F1872246EA0C600B /* ColourNote */,
+				0011305E2F4F9D17009924C8 /* ColourNoteXCTests */,
+				0011306B2F4F9D38009924C8 /* ColourNoteXCUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0011305D2F4F9D17009924C8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0011306A2F4F9D38009924C8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ACEDB393CA7CBACB8DF9EC9E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -333,6 +447,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0011305B2F4F9D17009924C8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		001130682F4F9D38009924C8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		792EC9CF7F31F6C86EE00004 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -374,7 +502,130 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		001130642F4F9D17009924C8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D19835A9F1872246EA0C600B /* ColourNote */;
+			targetProxy = 001130632F4F9D17009924C8 /* PBXContainerItemProxy */;
+		};
+		001130732F4F9D38009924C8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D19835A9F1872246EA0C600B /* ColourNote */;
+			targetProxy = 001130722F4F9D38009924C8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		001130652F4F9D17009924C8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KBXB5A7336;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pangtuwi.ColourNoteXCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ColourNote.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ColourNote";
+			};
+			name = Debug;
+		};
+		001130662F4F9D17009924C8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KBXB5A7336;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pangtuwi.ColourNoteXCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ColourNote.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ColourNote";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		001130752F4F9D38009924C8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KBXB5A7336;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pangtuwi.ColourNoteXCUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ColourNote;
+			};
+			name = Debug;
+		};
+		001130762F4F9D38009924C8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KBXB5A7336;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pangtuwi.ColourNoteXCUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ColourNote;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		0EF3A40EA8AD2FE168858E03 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -544,6 +795,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		001130672F4F9D17009924C8 /* Build configuration list for PBXNativeTarget "ColourNoteXCTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				001130652F4F9D17009924C8 /* Debug */,
+				001130662F4F9D17009924C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		001130742F4F9D38009924C8 /* Build configuration list for PBXNativeTarget "ColourNoteXCUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				001130752F4F9D38009924C8 /* Debug */,
+				001130762F4F9D38009924C8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4577545BFF994EFA88194BA7 /* Build configuration list for PBXProject "ColourNoteProj" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

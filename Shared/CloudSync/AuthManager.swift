@@ -45,16 +45,21 @@ class AuthManager {
     static let shared = AuthManager()
 
     // MARK: - Properties
-    private let networkManager = NetworkManager.shared
+    let networkManager: NetworkManaging
 
     // User email stored in Keychain
     private var _userEmail: String?
     private var _userPassword: String?
 
     // MARK: - Initialization
-    private init() {
+    init(networkManager: NetworkManaging) {
+        self.networkManager = networkManager
         _userEmail = loadUserEmail()
         _userPassword = loadUserPassword()
+    }
+
+    private convenience init() {
+        self.init(networkManager: NetworkManager.shared)
     }
 
     // MARK: - Public Properties

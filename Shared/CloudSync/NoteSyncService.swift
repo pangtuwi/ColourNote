@@ -51,11 +51,17 @@ class NoteSyncService {
     static let shared = NoteSyncService()
 
     // MARK: - Properties
-    private let networkManager = NetworkManager.shared
+    let networkManager: NetworkManaging
     private let syncMapping = SyncMapping.shared
 
     // MARK: - Initialization
-    private init() {}
+    init(networkManager: NetworkManaging) {
+        self.networkManager = networkManager
+    }
+
+    private convenience init() {
+        self.init(networkManager: NetworkManager.shared)
+    }
 
     // MARK: - Upload Methods
 

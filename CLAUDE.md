@@ -485,9 +485,9 @@ Passcode Flow:
    - Hashed passcodes stored securely in database
    - Session unlock state could use more secure storage mechanism
 
-5. **Testing**: Minimal test coverage
-   - Test targets exist but contain minimal tests
-   - Core functionality not comprehensively tested
+5. **Testing**: See **[TESTS.md](TESTS.md)** for full test documentation.
+   - 40 unit tests across 7 suites using Swift Testing framework
+   - `NoteRecords` / `CategoryRecords` singletons are out of scope (hard-coded SQLite path)
 
 ## File Structure
 

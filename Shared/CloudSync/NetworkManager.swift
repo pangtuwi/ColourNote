@@ -61,8 +61,31 @@ struct ResponseWithETag<T> {
     let etag: String?
 }
 
+// MARK: - Network Manager Protocol
+
+protocol NetworkManaging: AnyObject {
+    var isAuthenticated: Bool { get }
+    func get<T: Decodable>(endpoint: String, requiresAuth: Bool,
+        completion: @escaping (Result<T, NetworkError>) -> Void)
+    func get<T: Decodable>(endpoint: String, queryParams: [String: String]?,
+        requiresAuth: Bool, completion: @escaping (Result<T, NetworkError>) -> Void)
+    func post<T: Decodable, B: Encodable>(endpoint: String, body: B, requiresAuth: Bool,
+        completion: @escaping (Result<T, NetworkError>) -> Void)
+    func put<T: Decodable, B: Encodable>(endpoint: String, body: B, requiresAuth: Bool,
+        completion: @escaping (Result<T, NetworkError>) -> Void)
+    func put<T: Decodable, B: Encodable>(endpoint: String, body: B, eTag: String?,
+        requiresAuth: Bool, completion: @escaping (Result<ResponseWithETag<T>, NetworkError>) -> Void)
+    func delete(endpoint: String, requiresAuth: Bool,
+        completion: @escaping (Result<Void, NetworkError>) -> Void)
+    func requestNoResponse(endpoint: String, method: HTTPMethod, body: (any Encodable)?,
+        requiresAuth: Bool, completion: @escaping (Result<Void, NetworkError>) -> Void)
+    func saveToken(_ token: String) -> Bool
+    func getToken() -> String?
+    func deleteToken() -> Bool
+}
+
 // MARK: - Network Manager
-class NetworkManager {
+class NetworkManager: NetworkManaging {
 
     // MARK: - Singleton
     static let shared = NetworkManager()
@@ -76,6 +99,11 @@ class NetworkManager {
         configuration.timeoutIntervalForRequest = APIConfig.Timeouts.request
         configuration.timeoutIntervalForResource = APIConfig.Timeouts.resource
         session = URLSession(configuration: configuration)
+    }
+
+    // For testing only — allows URLProtocol injection
+    internal init(session: URLSession) {
+        self.session = session
     }
 
     // MARK: - Re-authentication

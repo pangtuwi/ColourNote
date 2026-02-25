@@ -65,7 +65,8 @@ extension UIColor {
         guard hex.count == 6 else { return nil }
 
         var rgb: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&rgb)
+        let scanner = Scanner(string: hex)
+        guard scanner.scanHexInt64(&rgb), scanner.isAtEnd else { return nil }
 
         self.init(
             red: CGFloat((rgb & 0xFF0000) >> 16) / 255.0,

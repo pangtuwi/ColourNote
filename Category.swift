@@ -19,7 +19,7 @@ class Category {
 
     init() {
         categoryId = 0
-        uuid = ""
+        uuid = UUID().uuidString
         categoryName = ""
         colorHex = "#FFFFFF"
         sortOrder = 0
@@ -27,9 +27,9 @@ class Category {
         modifiedAt = Int(Date().timeIntervalSince1970 * 1000)
     }
 
-    init(categoryId: Int, uuid: String = "", categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false, modifiedAt: Int? = nil) {
+    init(categoryId: Int, uuid: String? = nil, categoryName: String, colorHex: String, sortOrder: Int, isProtected: Bool = false, modifiedAt: Int? = nil) {
         self.categoryId = categoryId
-        self.uuid = uuid
+        self.uuid = uuid ?? UUID().uuidString
         self.categoryName = categoryName
         self.colorHex = colorHex
         self.sortOrder = sortOrder
@@ -65,7 +65,8 @@ extension UIColor {
         guard hex.count == 6 else { return nil }
 
         var rgb: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&rgb)
+        let scanner = Scanner(string: hex)
+        guard scanner.scanHexInt64(&rgb), scanner.isAtEnd else { return nil }
 
         self.init(
             red: CGFloat((rgb & 0xFF0000) >> 16) / 255.0,
