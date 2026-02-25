@@ -239,10 +239,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2.2 (Build 10)** - Current Release (February 24, 2026)
+- **1.2.2 (Build 10)** - Current Release (February 25, 2026)
   - **New Feature**: Cloud Restore on startup screen
     - Detects Keychain credentials from a previous install and shows a "Cloud Restore" button
     - Silently re-authenticates and downloads all notes and categories without a backup file
+  - **UI Redesign**: Glass-style startup screen (LoginViewController)
+    - Diagonal purple → indigo → azure gradient background with decorative orbs
+    - Frosted glass card (UIVisualEffectView) with app icon, title, and three action buttons
+    - SF Symbols with colour-coded icons, two-line labels, chevrons, and press animations
+    - Cloud Restore button shown in green only when prior account credentials are detected
   - **Bug fix**: `SyncMapping.resetConnection()` resolves stale database connection after Cloud Restore
   - **Bug fix**: `SyncEngine` now guards on `isRegistered()` before attempting any sync
   - **Debug cleanup**: Removed per-call log spam from note/category database read methods

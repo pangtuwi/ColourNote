@@ -11,67 +11,351 @@ import SQLite
 
 class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
+    // MARK: - IBOutlets (storyboard connections — hidden at runtime, replaced by programmatic UI)
     @IBOutlet weak var welcomeLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var logoImageView: UIImageView!
     @IBOutlet weak var createBlankButton: UIButton!
     @IBOutlet weak var importButton: UIButton!
 
-    private var cloudRestoreButton: UIButton?
+    // MARK: - Properties
+    private var gradientLayer: CAGradientLayer?
+
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        gradientLayer?.frame = view.bounds
+    }
+
+    // MARK: - UI Setup
+
     func setupUI() {
-        // Set welcome text
-        welcomeLabel?.text = "Welcome to ColourNote"
-        descriptionLabel?.text = "A simple and elegant notes app.\n\nChoose how to get started:"
+        // Hide storyboard elements — UI is built entirely in code below.
+        // Also disable interaction so they can never fire even if isHidden somehow fails.
+        welcomeLabel?.isHidden = true
+        descriptionLabel?.isHidden = true
+        logoImageView?.isHidden = true
+        createBlankButton?.isHidden = true
+        createBlankButton?.isUserInteractionEnabled = false
+        importButton?.isHidden = true
+        importButton?.isUserInteractionEnabled = false
 
-        // Style buttons
-        styleButton(createBlankButton, title: "Start Fresh")
-        styleButton(importButton, title: "Import Backup")
+        // Dark fallback before gradient renders
+        view.backgroundColor = UIColor(red: 0.10, green: 0.07, blue: 0.22, alpha: 1)
 
-        // Show Cloud Restore button if Keychain credentials are available from a previous install
-        if AuthManager.shared.userEmail != nil && AuthManager.shared.userPassword != nil {
-            let button = UIButton(type: .system)
-            button.setTitle("Cloud Restore", for: .normal)
-            button.layer.cornerRadius = 8
-            button.backgroundColor = UIColor.systemGreen
-            button.setTitleColor(.white, for: .normal)
-            button.addTarget(self, action: #selector(cloudRestoreButtonTapped), for: .touchUpInside)
-            cloudRestoreButton = button
-            view.addSubview(button)
-            button.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                button.topAnchor.constraint(equalTo: importButton.bottomAnchor, constant: 16),
-                button.leadingAnchor.constraint(equalTo: importButton.leadingAnchor),
-                button.trailingAnchor.constraint(equalTo: importButton.trailingAnchor),
-                button.heightAnchor.constraint(equalToConstant: 44)
-            ])
+        setupGradientBackground()
+        setupDecorativeOrbs()
+        setupGlassCard()
+    }
+
+    // MARK: - Background
+
+    private func setupGradientBackground() {
+        let gradient = CAGradientLayer()
+        gradient.colors = [
+            UIColor(red: 0.28, green: 0.12, blue: 0.65, alpha: 1).cgColor,  // deep purple
+            UIColor(red: 0.15, green: 0.28, blue: 0.85, alpha: 1).cgColor,  // indigo
+            UIColor(red: 0.04, green: 0.52, blue: 0.82, alpha: 1).cgColor,  // azure
+        ]
+        gradient.startPoint = CGPoint(x: 0.0, y: 0.0)
+        gradient.endPoint   = CGPoint(x: 1.0, y: 1.0)
+        gradient.frame = view.bounds
+        view.layer.insertSublayer(gradient, at: 0)
+        gradientLayer = gradient
+    }
+
+    private func setupDecorativeOrbs() {
+        // Top-left purple orb
+        let orb1 = UIView()
+        orb1.translatesAutoresizingMaskIntoConstraints = false
+        orb1.backgroundColor = UIColor(red: 0.60, green: 0.20, blue: 1.00, alpha: 0.35)
+        orb1.layer.cornerRadius = 130
+        view.addSubview(orb1)
+        NSLayoutConstraint.activate([
+            orb1.widthAnchor.constraint(equalToConstant: 260),
+            orb1.heightAnchor.constraint(equalToConstant: 260),
+            orb1.centerXAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
+            orb1.topAnchor.constraint(equalTo: view.topAnchor, constant: -40),
+        ])
+
+        // Bottom-right cyan orb
+        let orb2 = UIView()
+        orb2.translatesAutoresizingMaskIntoConstraints = false
+        orb2.backgroundColor = UIColor(red: 0.00, green: 0.75, blue: 0.95, alpha: 0.28)
+        orb2.layer.cornerRadius = 150
+        view.addSubview(orb2)
+        NSLayoutConstraint.activate([
+            orb2.widthAnchor.constraint(equalToConstant: 300),
+            orb2.heightAnchor.constraint(equalToConstant: 300),
+            orb2.centerXAnchor.constraint(equalTo: view.trailingAnchor, constant: 60),
+            orb2.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 60),
+        ])
+    }
+
+    // MARK: - Glass Card
+
+    private func setupGlassCard() {
+        let card = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.layer.cornerRadius = 28
+        card.clipsToBounds = true
+        card.layer.borderWidth = 0.5
+        card.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
+        view.addSubview(card)
+
+        NSLayoutConstraint.activate([
+            card.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            card.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            card.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+        ])
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .fill
+        stack.spacing = 0
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        card.contentView.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: card.contentView.topAnchor, constant: 36),
+            stack.leadingAnchor.constraint(equalTo: card.contentView.leadingAnchor, constant: 20),
+            stack.trailingAnchor.constraint(equalTo: card.contentView.trailingAnchor, constant: -20),
+            stack.bottomAnchor.constraint(equalTo: card.contentView.bottomAnchor, constant: -36),
+        ])
+
+        // Header
+        let header = makeHeaderView()
+        stack.addArrangedSubview(header)
+        stack.setCustomSpacing(28, after: header)
+
+        // Separator
+        let sep = UIView()
+        sep.backgroundColor = UIColor.white.withAlphaComponent(0.18)
+        sep.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
+        stack.addArrangedSubview(sep)
+        stack.setCustomSpacing(20, after: sep)
+
+        // Start Fresh
+        let startFreshBtn = makeGlassButton(
+            title: "Start Fresh",
+            subtitle: "Create a new empty notebook",
+            systemImage: "doc.badge.plus",
+            iconColor: UIColor(red: 0.40, green: 0.80, blue: 1.00, alpha: 1)
+        )
+        startFreshBtn.addTarget(self, action: #selector(createBlankButtonTapped(_:)), for: .touchUpInside)
+        stack.addArrangedSubview(startFreshBtn)
+        stack.setCustomSpacing(10, after: startFreshBtn)
+
+        // Import Backup
+        let importBtn = makeGlassButton(
+            title: "Import Backup",
+            subtitle: "Restore from a JSON backup file",
+            systemImage: "arrow.down.doc.fill",
+            iconColor: UIColor(red: 1.00, green: 0.75, blue: 0.30, alpha: 1)
+        )
+        importBtn.addTarget(self, action: #selector(importButtonTapped(_:)), for: .touchUpInside)
+        stack.addArrangedSubview(importBtn)
+
+        // Cloud Restore (only when Keychain credentials exist from a prior install)
+        if let email = AuthManager.shared.userEmail, AuthManager.shared.userPassword != nil {
+            stack.setCustomSpacing(10, after: importBtn)
+            let cloudBtn = makeGlassButton(
+                title: "Cloud Restore",
+                subtitle: "Sign in as \(email)",
+                systemImage: "icloud.and.arrow.down.fill",
+                iconColor: UIColor(red: 0.20, green: 0.95, blue: 0.55, alpha: 1)
+            )
+            cloudBtn.addTarget(self, action: #selector(cloudRestoreButtonTapped), for: .touchUpInside)
+            stack.addArrangedSubview(cloudBtn)
         }
     }
 
-    func styleButton(_ button: UIButton?, title: String) {
-        button?.setTitle(title, for: .normal)
-        button?.layer.cornerRadius = 8
-        button?.backgroundColor = UIColor.systemBlue
-        button?.setTitleColor(.white, for: .normal)
+    // MARK: - Header View
+
+    private func makeHeaderView() -> UIView {
+        let container = UIView()
+
+        // App icon — rounded rect with gradient background
+        let iconBg = UIView()
+        iconBg.translatesAutoresizingMaskIntoConstraints = false
+        iconBg.layer.cornerRadius = 18
+        iconBg.clipsToBounds = true
+        iconBg.widthAnchor.constraint(equalToConstant: 72).isActive = true
+        iconBg.heightAnchor.constraint(equalToConstant: 72).isActive = true
+
+        let iconGradient = CAGradientLayer()
+        iconGradient.colors = [
+            UIColor(red: 0.55, green: 0.25, blue: 0.95, alpha: 1).cgColor,
+            UIColor(red: 0.20, green: 0.45, blue: 1.00, alpha: 1).cgColor,
+        ]
+        iconGradient.startPoint = CGPoint(x: 0, y: 0)
+        iconGradient.endPoint   = CGPoint(x: 1, y: 1)
+        iconGradient.frame      = CGRect(x: 0, y: 0, width: 72, height: 72)
+        iconGradient.cornerRadius = 18
+        iconBg.layer.insertSublayer(iconGradient, at: 0)
+
+        // Use Splash asset if available, otherwise fall back to SF Symbol
+        let iconView = UIImageView()
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        if let splash = UIImage(named: "Splash") {
+            iconView.image = splash
+            iconView.contentMode = .scaleAspectFit
+        } else {
+            iconView.image = UIImage(systemName: "note.text",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium))
+            iconView.tintColor = .white
+            iconView.contentMode = .scaleAspectFit
+        }
+        iconView.isUserInteractionEnabled = false
+        iconBg.addSubview(iconView)
+        NSLayoutConstraint.activate([
+            iconView.centerXAnchor.constraint(equalTo: iconBg.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconBg.centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 54),
+            iconView.heightAnchor.constraint(equalToConstant: 54),
+        ])
+
+        // Title
+        let titleLabel = UILabel()
+        titleLabel.text = "ColourNote"
+        titleLabel.font = .systemFont(ofSize: 30, weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+
+        // Subtitle
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = "Your notes, beautifully organised"
+        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.65)
+        subtitleLabel.textAlignment = .center
+
+        let vStack = UIStackView(arrangedSubviews: [iconBg, titleLabel, subtitleLabel])
+        vStack.axis = .vertical
+        vStack.alignment = .center
+        vStack.spacing = 10
+        vStack.translatesAutoresizingMaskIntoConstraints = false
+        vStack.setCustomSpacing(16, after: iconBg)
+
+        container.addSubview(vStack)
+        NSLayoutConstraint.activate([
+            vStack.topAnchor.constraint(equalTo: container.topAnchor),
+            vStack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            vStack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            vStack.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        ])
+
+        return container
     }
 
+    // MARK: - Glass Button Factory
+
+    private func makeGlassButton(title: String, subtitle: String, systemImage: String, iconColor: UIColor) -> UIButton {
+        let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        button.layer.cornerRadius = 16
+        button.layer.borderWidth = 0.5
+        button.layer.borderColor = UIColor.white.withAlphaComponent(0.22).cgColor
+        button.heightAnchor.constraint(equalToConstant: 66).isActive = true
+
+        // Subtle press animation
+        button.addTarget(self, action: #selector(buttonTouchDown(_:)), for: .touchDown)
+        button.addTarget(self, action: #selector(buttonTouchUp(_:)),
+                         for: [.touchUpInside, .touchUpOutside, .touchCancel])
+
+        // Icon
+        let iconCfg = UIImage.SymbolConfiguration(pointSize: 21, weight: .semibold)
+        let icon = UIImageView(image: UIImage(systemName: systemImage, withConfiguration: iconCfg))
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        icon.tintColor = iconColor
+        icon.contentMode = .scaleAspectFit
+        icon.isUserInteractionEnabled = false
+
+        // Labels
+        let titleLbl = UILabel()
+        titleLbl.text = title
+        titleLbl.font = .systemFont(ofSize: 16, weight: .semibold)
+        titleLbl.textColor = .white
+        titleLbl.isUserInteractionEnabled = false
+
+        let subtitleLbl = UILabel()
+        subtitleLbl.text = subtitle
+        subtitleLbl.font = .systemFont(ofSize: 12, weight: .regular)
+        subtitleLbl.textColor = UIColor.white.withAlphaComponent(0.55)
+        subtitleLbl.isUserInteractionEnabled = false
+
+        let textStack = UIStackView(arrangedSubviews: [titleLbl, subtitleLbl])
+        textStack.axis = .vertical
+        textStack.spacing = 2
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+        textStack.isUserInteractionEnabled = false
+
+        // Trailing chevron
+        let chevronCfg = UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right", withConfiguration: chevronCfg))
+        chevron.translatesAutoresizingMaskIntoConstraints = false
+        chevron.tintColor = UIColor.white.withAlphaComponent(0.35)
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+        chevron.isUserInteractionEnabled = false
+
+        button.addSubview(icon)
+        button.addSubview(textStack)
+        button.addSubview(chevron)
+
+        NSLayoutConstraint.activate([
+            icon.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+            icon.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 18),
+            icon.widthAnchor.constraint(equalToConstant: 26),
+
+            textStack.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+            textStack.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 14),
+            textStack.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8),
+
+            chevron.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+            chevron.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -18),
+        ])
+
+        return button
+    }
+
+    // MARK: - Button Animations
+
+    @objc private func buttonTouchDown(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.12, delay: 0,
+                       options: [.allowUserInteraction, .beginFromCurrentState]) {
+            sender.alpha = 0.60
+            sender.transform = CGAffineTransform(scaleX: 0.97, y: 0.97)
+        }
+    }
+
+    @objc private func buttonTouchUp(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.20, delay: 0,
+                       options: [.allowUserInteraction, .beginFromCurrentState]) {
+            sender.alpha = 1.0
+            sender.transform = .identity
+        }
+    }
+
+    // MARK: - IBActions
+
     @IBAction func createBlankButtonTapped(_ sender: Any) {
-        // Create a blank database
         initializeAppWithDatabase()
     }
 
     @IBAction func importButtonTapped(_ sender: Any) {
-        // Show document picker to import JSON backup
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.json])
         documentPicker.delegate = self
         documentPicker.allowsMultipleSelection = false
         present(documentPicker, animated: true)
     }
+
+    // MARK: - Database Initialisation
 
     func initializeAppWithDatabase() {
         let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
@@ -81,33 +365,27 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         print("Creating blank database")
         print("Destination: \(destinationPath)")
 
-        // Remove existing database if any
         try? FileManager.default.removeItem(atPath: destinationPath)
         print("Removed existing database")
 
-        // Create blank database
         createBlankDatabase(at: destinationPath)
         print("Created blank database")
 
-        // Set database version to prevent auto-copy
         UserDefaults.standard.set(2, forKey: "DatabaseVersion")
 
         let exists = FileManager.default.fileExists(atPath: destinationPath)
         print("Database exists after init: \(exists)")
 
-        // Mark as registered and navigate to home
         Settings.setRegistered(registered: true)
         navigateToHome()
     }
 
     func createBlankDatabase(at path: String) {
-        // Create a new blank SQLite database
         guard let db = try? Connection(path) else {
             print("Failed to create blank database")
             return
         }
 
-        // Create the notes table
         let createNotesTableSQL = """
         CREATE TABLE IF NOT EXISTS notes (
           _id INTEGER PRIMARY KEY,
@@ -153,7 +431,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         CREATE INDEX idx_note_category ON notes(category_id);
         """
 
-        // Create the categories table
         let createCategoriesTableSQL = """
         CREATE TABLE IF NOT EXISTS categories (
             category_id INTEGER PRIMARY KEY,
@@ -168,8 +445,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             try db.execute(createNotesTableSQL)
             try db.execute(createCategoriesTableSQL)
             print("Blank database created successfully with categories table")
-
-            // Insert default categories
             insertDefaultCategories(db: db)
         } catch {
             print("Error creating blank database: \(error)")
@@ -178,7 +453,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
     func insertDefaultCategories(db: Connection) {
         let defaultCategories = Category.getDefaultCategories()
-
         for category in defaultCategories {
             let sql = """
             INSERT INTO categories (category_id, category_name, color_hex, sort_order)
@@ -222,7 +496,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
         print("Selected file: \(selectedFileURL.path)")
 
-        // Try to start accessing security-scoped resource (may not be needed for Inbox files)
         let needsScopedAccess = selectedFileURL.startAccessingSecurityScopedResource()
         print("Security-scoped access: \(needsScopedAccess)")
 
@@ -238,7 +511,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             let jsonData = try Data(contentsOf: selectedFileURL)
             print("JSON data size: \(jsonData.count) bytes")
 
-            // Create blank database first
             let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
             let destinationPath = documents + "/colornote.db"
             print("Database path: \(destinationPath)")
@@ -247,7 +519,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             print("Creating blank database...")
             createBlankDatabase(at: destinationPath)
 
-            // Import notes from JSON
             print("Importing notes from JSON...")
             let result = NoteBackup.importNotesFromJSON(jsonData: jsonData)
             print("Import result - success: \(result.success), count: \(result.importedCount)")
@@ -269,9 +540,10 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
     }
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        // User cancelled the import
         print("Import cancelled")
     }
+
+    // MARK: - Alert Helper
 
     func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -289,7 +561,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
         let spinner = showSpinner(message: "Signing in...")
 
-        // Create a blank database
         let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         let destinationPath = documents + "/colornote.db"
         try? FileManager.default.removeItem(atPath: destinationPath)
@@ -297,7 +568,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         UserDefaults.standard.set(2, forKey: "DatabaseVersion")
         Settings.setRegistered(registered: true)
 
-        // Initialize singletons now that the database file exists.
         // NoteRecords migrations create the sync_mappings table in the new file.
         _ = NoteRecords.instance
         _ = CategoryRecords.instance
@@ -305,7 +575,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         // the old (now deleted) database file. Reconnect it to the new file.
         SyncMapping.shared.resetConnection()
 
-        // Log in with stored credentials
         AuthManager.shared.login(email: email, password: password) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {

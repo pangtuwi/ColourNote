@@ -312,10 +312,19 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 6. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
    - Initial registration screen shown on first app launch
-   - Three startup options:
-     - **Start Fresh** — creates a blank local database
-     - **Import Backup** — imports notes/categories from a JSON file
-     - **Cloud Restore** *(shown only when Keychain credentials exist from a previous install)* — silently re-authenticates and downloads all data from the cloud server
+   - **Glass UI design** (fully programmatic — storyboard elements hidden at runtime):
+     - `CAGradientLayer` background: deep purple → indigo → azure diagonal gradient
+     - Two semi-transparent decorative orbs (purple top-left, cyan bottom-right)
+     - `UIVisualEffectView(.systemUltraThinMaterial)` frosted glass card centered on screen
+     - App icon (Splash asset or `note.text` SF Symbol fallback) with gradient rounded-rect background
+     - "ColourNote" title + "Your notes, beautifully organised" subtitle
+     - Glass buttons with SF Symbol icon, two-line label, trailing chevron, and press animations (scale + alpha)
+     - `gradientLayer` resized in `viewDidLayoutSubviews()` to handle rotation correctly
+     - Storyboard IBOutlets set to `isHidden = true` AND `isUserInteractionEnabled = false` as belt-and-suspenders
+   - Three startup options (as glass buttons):
+     - **Start Fresh** (`doc.badge.plus`, blue) — creates a blank local database
+     - **Import Backup** (`arrow.down.doc.fill`, amber) — imports notes/categories from a JSON file
+     - **Cloud Restore** (`icloud.and.arrow.down.fill`, green) *(shown only when Keychain credentials exist from a previous install)* — silently re-authenticates and downloads all data from the cloud server
    - Cloud Restore flow: creates blank DB → initialises singletons → calls `SyncMapping.shared.resetConnection()` to fix any stale connection → logs in → calls `SyncEngine.downloadCloudChanges` → navigates home
    - Spinner overlay with status message ("Signing in..." → "Restoring from cloud...") during restore
 
@@ -691,7 +700,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: February 24, 2026
+**Last Updated**: February 25, 2026
 **Maintainer**: Paul Williams
 **Current Project**: ColourNote (Note-Taking App)
 **Sync Engine Version**: 1.4
