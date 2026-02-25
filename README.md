@@ -250,6 +250,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
     - Cloud Restore button shown in green only when prior account credentials are detected
   - **Bug fix**: `SyncMapping.resetConnection()` resolves stale database connection after Cloud Restore
   - **Bug fix**: `SyncEngine` now guards on `isRegistered()` before attempting any sync
+  - **Bug fix**: Paragraph breaks no longer lost when sharing a note — shared text is now clean plain text (markdown syntax stripped) with blank lines preserved
   - **Debug cleanup**: Removed per-call log spam from note/category database read methods
 
 - **1.2 (Build 9)** - (February 22, 2026)

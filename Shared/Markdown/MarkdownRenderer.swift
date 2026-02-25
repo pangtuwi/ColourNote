@@ -373,6 +373,43 @@ class MarkdownRenderer {
         return NSAttributedString(string: code + "\n", attributes: attributes)
     }
 
+    /// Strips Markdown syntax from a string, returning clean plain text.
+    /// Preserves all newlines (including blank lines for paragraph breaks).
+    static func plainText(from markdown: String) -> String {
+        // Step 1: Remove code fences (``` lines) — keep content inside
+        var result = markdown.replacingOccurrences(of: "```[^\\n]*", with: "", options: .regularExpression)
+
+        // Step 2: Process line-by-line to strip per-line syntax
+        let lines = result.components(separatedBy: "\n")
+        let strippedLines = lines.map { line -> String in
+            var l = line
+            // Remove ATX headers (# ## ### etc.) — keep the text
+            if let range = l.range(of: "^#{1,6}\\s+", options: .regularExpression) {
+                l.removeSubrange(range)
+            }
+            // Remove blockquote marker
+            if l.hasPrefix("> ") { l = String(l.dropFirst(2)) }
+            else if l.hasPrefix(">") { l = String(l.dropFirst(1)) }
+            // Convert unordered list markers to bullet
+            if l.hasPrefix("- ") || l.hasPrefix("* ") { l = "• " + String(l.dropFirst(2)) }
+            // Remove horizontal rules (leave as empty line)
+            let trimmed = l.trimmingCharacters(in: .whitespaces)
+            if trimmed == "---" || trimmed == "***" || trimmed == "___" { return "" }
+            return l
+        }
+        result = strippedLines.joined(separator: "\n")
+
+        // Step 3: Strip inline syntax (bold, italic, code, links) — keep inner text
+        result = result.replacingOccurrences(of: "\\*\\*([^*\n]+)\\*\\*", with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "__([^_\n]+)__",          with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "\\*([^*\n]+)\\*",        with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "_([^_\n]+)_",            with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "`([^`\n]+)`",            with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "\\[([^\\]\n]+)\\]\\([^)\n]+\\)", with: "$1", options: .regularExpression)
+
+        return result
+    }
+
     /// Applies category color theme to rendered Markdown
     private func styleForCategory(_ attributedString: NSAttributedString, color: UIColor) -> NSMutableAttributedString {
         let mutableString = NSMutableAttributedString(attributedString: attributedString)

@@ -281,7 +281,8 @@ extension NotesListViewController {
                 return
             }
 
-            let textToShare = "\(note.noteName)\n\n\(note.noteText)"
+            let plainBody = MarkdownRenderer.plainText(from: note.noteText)
+            let textToShare = "\(note.noteName)\n\n\(plainBody)"
             let activityViewController = UIActivityViewController(activityItems: [textToShare], applicationActivities: nil)
 
             // For iPad - set popover source

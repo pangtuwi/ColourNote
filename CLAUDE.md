@@ -562,6 +562,7 @@ ColourNote/
 - **Bug fix**: `SyncMapping.resetConnection()` ensures the singleton reconnects to the newly-created database after a Cloud Restore (previously held a stale connection to the deleted file, causing `sync_mappings` table errors)
 - **SyncEngine guard**: `syncAll()` and `syncIfNeeded()` now check `isRegistered()` before proceeding, preventing spurious sync attempts before a database exists
 - **Debug cleanup**: Removed per-call `print` statements from `getNotes()`, `getDeletedNotes()`, `getAllNotes()`, and `getCategories()` that produced dozens of duplicate log lines during sync
+- **Bug fix**: Paragraph breaks (and markdown syntax) no longer lost when sharing a note via swipe-left → Share. `MarkdownRenderer.plainText(from:)` strips markdown syntax before sharing, so receiving apps see clean plain text with blank lines preserved.
 
 ### 1.02 (Build 3) - Previous Release
 - Added passcode protection for categories (SHA-256 hashing)
