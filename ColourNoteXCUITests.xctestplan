@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "C58351CA-6433-4671-94CC-E972E3310CF6",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:ColourNoteProj.xcodeproj",
+        "identifier" : "0011306B2F4F9D38009924C8",
+        "name" : "ColourNoteXCUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

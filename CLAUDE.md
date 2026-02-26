@@ -486,8 +486,9 @@ Passcode Flow:
    - Session unlock state could use more secure storage mechanism
 
 5. **Testing**: See **[TESTS.md](TESTS.md)** for full test documentation.
-   - 40 unit tests across 7 suites using Swift Testing framework
-   - `NoteRecords` / `CategoryRecords` singletons are out of scope (hard-coded SQLite path)
+   - 40 unit tests across 7 suites using Swift Testing framework (`ColourNoteXCTests/`)
+   - 10 UI tests across 3 suites using XCUITest (`ColourNoteXCUITests/`)
+   - `NoteRecords` / `CategoryRecords` singletons are out of scope for unit tests (hard-coded SQLite path)
 
 ## File Structure
 
@@ -531,6 +532,12 @@ ColourNote/
 │   ├── Globals.swift             # App-wide constants & state
 │   ├── NotesNotification.swift   # Notification system
 │   └── SpinnerViewController.swift
+├── ColourNoteXCUITests/           # UI test target (XCUITest)
+│   ├── Helpers/
+│   │   └── UITestCase.swift      # Base class: fresh-install reset, tapStartFresh()
+│   ├── LaunchTests.swift          # 2 tests: login screen, Start Fresh navigation
+│   ├── NotesListTests.swift       # 4 tests: nav bar, search field, add button, editor open
+│   └── NoteDetailTests.swift      # 4 tests: title edit, content edit, back button, list update
 ├── Category.swift                 # Category model (duplicate - keep in sync)
 ├── Bai_Jamjuree Font/            # Custom font files
 ├── Podfile                        # CocoaPods dependencies
@@ -557,7 +564,17 @@ ColourNote/
 
 ## Version History
 
-### 1.2.2 (Build 10) - Current Release
+### 1.2.3 (Build 11) - Current Release
+- **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys
+  - `LaunchTests` — fresh-install login screen and Start Fresh navigation
+  - `NotesListTests` — nav bar, search field, Add button, note editor opens
+  - `NoteDetailTests` — title editing, content editing, back navigation, note appears in list
+- **Test isolation**: `UI_TESTING_FRESH_INSTALL` launch argument resets `isRegistered`, JWT token, auto-sync flag, both DB schema version keys, and deletes `colornote.db` at app startup
+- **Configurable API server**: `APIConfig.baseURL` now reads `API_BASE_URL` launch environment variable at runtime (tests point to `http://localhost:3002`; production falls back to `https://irids.co.uk`)
+- **Bug fix**: `createBlankDatabase()` now creates the full current categories schema (`uuid`, `is_protected`, `modified_at`) — previously the bare v1 schema caused a fatal crash when `CategoryDatabaseSchemaVersion` was already at 3 in UserDefaults and migrations were skipped
+- **Accessibility identifiers** added for XCUITest: `startFreshButton`, `importBackupButton` (LoginViewController), `noteSearchField` (NotesListViewController), `noteTitleField`, `noteTextView`, `listButton` (NoteDetailViewController)
+
+### 1.2.2 (Build 10) - Previous Release
 - **Cloud Restore** on startup screen: detects Keychain credentials from a previous install and shows a green "Cloud Restore" button; silently re-authenticates and downloads all notes/categories without needing a backup file
 - **Bug fix**: `SyncMapping.resetConnection()` ensures the singleton reconnects to the newly-created database after a Cloud Restore (previously held a stale connection to the deleted file, causing `sync_mappings` table errors)
 - **SyncEngine guard**: `syncAll()` and `syncIfNeeded()` now check `isRegistered()` before proceeding, preventing spurious sync attempts before a database exists
@@ -701,7 +718,7 @@ Potential features to implement:
 
 ---
 
-**Last Updated**: February 25, 2026
+**Last Updated**: February 26, 2026
 **Maintainer**: Paul Williams
 **Current Project**: ColourNote (Note-Taking App)
 **Sync Engine Version**: 1.4

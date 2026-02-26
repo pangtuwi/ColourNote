@@ -10,8 +10,13 @@ import Foundation
 struct APIConfig {
 
     // MARK: - Base URL
-    static let baseURL = "http://localhost:3002"
-    //static let baseURL = "https://irids.co.uk"
+    static let productionURL = "https://irids.co.uk"
+    static let localURL      = "http://localhost:3002"
+
+    /// Active base URL. Tests override this via the `API_BASE_URL` launch environment variable.
+    static var baseURL: String {
+        ProcessInfo.processInfo.environment["API_BASE_URL"] ?? productionURL
+    }
 
     // MARK: - Endpoints
     struct Endpoints {

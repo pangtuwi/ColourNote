@@ -56,6 +56,9 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         super.viewDidLoad()
         textView.delegate = self
         noteTitle.addTarget(self, action: #selector(titleDidChange), for: .editingChanged)
+        noteTitle.accessibilityIdentifier = "noteTitleField"
+        listButton.accessibilityIdentifier = "listButton"
+        textView.accessibilityIdentifier = "noteTextView"
 
         // Enable copy/paste for text editing
         textView.isEditable = true

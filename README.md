@@ -4,7 +4,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Version](https://img.shields.io/badge/version-1.2.2-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-1.2.3-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## Features
@@ -239,7 +239,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2.2 (Build 10)** - Current Release (February 25, 2026)
+- **1.2.3 (Build 11)** - Current Release (February 26, 2026)
+  - **UI Test Suite**: 10 XCUITests covering app launch, notes list, and note editor (all passing)
+  - **Test isolation**: `UI_TESTING_FRESH_INSTALL` launch argument for clean per-test state
+  - **Configurable API server**: `APIConfig.baseURL` reads `API_BASE_URL` env var at runtime
+  - **Bug fix**: `createBlankDatabase()` now creates the full categories schema preventing a fatal crash on simulators with stale migration version keys
+
+- **1.2.2 (Build 10)** - (February 25, 2026)
   - **New Feature**: Cloud Restore on startup screen
     - Detects Keychain credentials from a previous install and shows a "Cloud Restore" button
     - Silently re-authenticates and downloads all notes and categories without a backup file

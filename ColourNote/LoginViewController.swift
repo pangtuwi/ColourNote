@@ -148,6 +148,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             systemImage: "doc.badge.plus",
             iconColor: UIColor(red: 0.40, green: 0.80, blue: 1.00, alpha: 1)
         )
+        startFreshBtn.accessibilityIdentifier = "startFreshButton"
         startFreshBtn.addTarget(self, action: #selector(createBlankButtonTapped(_:)), for: .touchUpInside)
         stack.addArrangedSubview(startFreshBtn)
         stack.setCustomSpacing(10, after: startFreshBtn)
@@ -159,6 +160,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             systemImage: "arrow.down.doc.fill",
             iconColor: UIColor(red: 1.00, green: 0.75, blue: 0.30, alpha: 1)
         )
+        importBtn.accessibilityIdentifier = "importBackupButton"
         importBtn.addTarget(self, action: #selector(importButtonTapped(_:)), for: .touchUpInside)
         stack.addArrangedSubview(importBtn)
 
@@ -434,11 +436,15 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         let createCategoriesTableSQL = """
         CREATE TABLE IF NOT EXISTS categories (
             category_id INTEGER PRIMARY KEY,
+            uuid TEXT,
             category_name TEXT NOT NULL DEFAULT '',
             color_hex TEXT NOT NULL DEFAULT '#FFFFFF',
-            sort_order INTEGER DEFAULT 0
+            sort_order INTEGER DEFAULT 0,
+            is_protected INTEGER DEFAULT 0,
+            modified_at INTEGER DEFAULT NULL
         );
-        CREATE INDEX idx_category_sort ON categories(sort_order);
+        CREATE INDEX IF NOT EXISTS idx_category_sort ON categories(sort_order);
+        CREATE INDEX IF NOT EXISTS idx_categories_uuid ON categories(uuid);
         """
 
         do {
@@ -453,13 +459,15 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
     func insertDefaultCategories(db: Connection) {
         let defaultCategories = Category.getDefaultCategories()
+        let now = Int(Date().timeIntervalSince1970 * 1000)
         for category in defaultCategories {
             let sql = """
-            INSERT INTO categories (category_id, category_name, color_hex, sort_order)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO categories (category_id, uuid, category_name, color_hex, sort_order, modified_at)
+            VALUES (?, ?, ?, ?, ?, ?)
             """
             do {
-                try db.run(sql, category.categoryId, category.categoryName, category.colorHex, category.sortOrder)
+                try db.run(sql, category.categoryId, UUID().uuidString, category.categoryName,
+                           category.colorHex, category.sortOrder, now)
             } catch {
                 print("Error inserting default category: \(error)")
             }

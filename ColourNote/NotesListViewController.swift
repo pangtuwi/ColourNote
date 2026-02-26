@@ -37,6 +37,7 @@ class NotesListViewController: UITableViewController, UITextFieldDelegate {
         SearchTextEditor.delegate = self
         SearchTextEditor.clearButtonMode = .whileEditing
         SearchTextEditor.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
+        SearchTextEditor.accessibilityIdentifier = "noteSearchField"
 
         NotificationCenter.default.addObserver(
             self,

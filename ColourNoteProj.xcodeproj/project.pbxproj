@@ -68,6 +68,7 @@
 /* Begin PBXFileReference section */
 		0011305F2F4F9D17009924C8 /* ColourNoteXCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ColourNoteXCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0011306C2F4F9D38009924C8 /* ColourNoteXCUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ColourNoteXCUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		001130952F51049E009924C8 /* ColourNoteXCUITests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ColourNoteXCUITests.xctestplan; sourceTree = "<group>"; };
 		0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BaiJamjuree-Light.ttf"; sourceTree = "<group>"; };
 		0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrashViewController.swift; path = ColourNote/TrashViewController.swift; sourceTree = "<group>"; };
 		0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeViewController.swift; path = ColourNote/PasscodeViewController.swift; sourceTree = "<group>"; };
@@ -258,6 +259,7 @@
 		E0685716BBF82DCCC912F19A = {
 			isa = PBXGroup;
 			children = (
+				001130952F51049E009924C8 /* ColourNoteXCUITests.xctestplan */,
 				001130602F4F9D17009924C8 /* ColourNoteXCTests */,
 				0011306D2F4F9D38009924C8 /* ColourNoteXCUITests */,
 				2F32D4D360878E2F9D8CE48D /* Products */,

@@ -20,6 +20,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
 
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("UI_TESTING_FRESH_INSTALL") {
+            UserDefaults.standard.removeObject(forKey: "isRegistered")
+            // Clear auth state so the sync engine cannot fire during tests.
+            // Without this, a stale JWT token in the Keychain causes a 60-second
+            // network timeout that prevents XCUITest from detecting the navigation bar.
+            AuthManager.shared.logout()
+            UserDefaults.standard.removeObject(forKey: "autoSyncEnabled")
+            // Clear migration version keys so NoteRecords/CategoryRecords re-run every
+            // migration on the blank DB that createBlankDatabase() creates.  Without
+            // this, a saved version of "10" / "3" from a prior run causes the migration
+            // check to short-circuit, leaving the bare-bones schema in place, and
+            // CategoryRecords then crashes querying the missing `uuid` column.
+            UserDefaults.standard.removeObject(forKey: "DatabaseSchemaVersion")
+            UserDefaults.standard.removeObject(forKey: "CategoryDatabaseSchemaVersion")
+            if let docs = FileManager.default.urls(for: .documentDirectory,
+                                                    in: .userDomainMask).first {
+                try? FileManager.default.removeItem(
+                    at: docs.appendingPathComponent("colornote.db"))
+            }
+        }
+        #endif
+
         // Initialize database synchronously on main thread to avoid race conditions
         // Since database initialization is fast, this provides better startup reliability
         if Settings.isRegistered() {
