@@ -282,17 +282,31 @@ extension NotesListViewController {
                 return
             }
 
-            let plainBody = MarkdownRenderer.plainText(from: note.noteText)
-            let textToShare = "\(note.noteName)\n\n\(plainBody)"
-            let activityViewController = UIActivityViewController(activityItems: [textToShare], applicationActivities: nil)
+            let alert = UIAlertController(title: "Share Note", message: nil, preferredStyle: .actionSheet)
 
-            // For iPad - set popover source
-            if let popoverController = activityViewController.popoverPresentationController {
-                popoverController.sourceView = tableView
-                popoverController.sourceRect = tableView.rectForRow(at: indexPath)
+            alert.addAction(UIAlertAction(title: "Send note contents", style: .default) { _ in
+                let plainBody = MarkdownRenderer.plainText(from: note.noteText)
+                let textToShare = "\(note.noteName)\n\n\(plainBody)"
+                let activityVC = UIActivityViewController(activityItems: [textToShare], applicationActivities: nil)
+                if let popover = activityVC.popoverPresentationController {
+                    popover.sourceView = tableView
+                    popover.sourceRect = tableView.rectForRow(at: indexPath)
+                }
+                self.present(activityVC, animated: true)
+            })
+
+            alert.addAction(UIAlertAction(title: "Share access with another user", style: .default) { _ in
+                self.showShareAccessFlow(note: note, sourceView: tableView, sourceRect: tableView.rectForRow(at: indexPath))
+            })
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+            if let popover = alert.popoverPresentationController {
+                popover.sourceView = tableView
+                popover.sourceRect = tableView.rectForRow(at: indexPath)
             }
 
-            self.present(activityViewController, animated: true)
+            self.present(alert, animated: true)
             completionHandler(true)
         }
         shareAction.image = UIImage(systemName: "square.and.arrow.up")
@@ -802,6 +816,55 @@ extension NotesListViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+
+    private func showShareAccessFlow(note: Note, sourceView: UIView, sourceRect: CGRect) {
+        guard AuthManager.shared.isLoggedIn else {
+            showAlert(title: "Sign in required", message: "You must be signed in to share notes.")
+            return
+        }
+
+        let emailAlert = UIAlertController(
+            title: "Share Note",
+            message: "Enter the email address of the person you want to share with:",
+            preferredStyle: .alert
+        )
+        emailAlert.addTextField { tf in
+            tf.placeholder = "Email address"
+            tf.keyboardType = .emailAddress
+            tf.autocapitalizationType = .none
+        }
+        emailAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        emailAlert.addAction(UIAlertAction(title: "Share", style: .default) { [weak self, weak emailAlert] _ in
+            guard let self = self,
+                  let email = emailAlert?.textFields?.first?.text?.trimmingCharacters(in: .whitespaces),
+                  !email.isEmpty else { return }
+
+            let spinner = SpinnerViewController()
+            self.addChild(spinner)
+            self.view.addSubview(spinner.view)
+            spinner.didMove(toParent: self)
+
+            SharingService.shared.createShare(noteUUID: note.uuid, recipientEmail: email) { result in
+                DispatchQueue.main.async {
+                    spinner.willMove(toParent: nil)
+                    spinner.view.removeFromSuperview()
+                    spinner.removeFromParent()
+                    switch result {
+                    case .success(let shareURL):
+                        let activityVC = UIActivityViewController(activityItems: [shareURL], applicationActivities: nil)
+                        if let popover = activityVC.popoverPresentationController {
+                            popover.sourceView = sourceView
+                            popover.sourceRect = sourceRect
+                        }
+                        self.present(activityVC, animated: true)
+                    case .failure(let error):
+                        self.showAlert(title: "Share Failed", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(emailAlert, animated: true)
     }
 
 }

@@ -147,6 +147,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `AuthResponse` - Login/register response with JWT
    - `CreateNoteRequest` / `CreateCategoryRequest` - Request bodies
    - `SuccessMessageResponse` - For update operations
+   - `ShareNoteRequest` / `ShareNoteResponse` - Request/response for note sharing
    - Timestamp conversion utilities
 
 4. **AuthManager.swift** - Authentication management
@@ -213,7 +214,14 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `handleServerSideDeletions(cloudNoteIds:)` - Handle server-deleted notes
      - `downloadAllNotesWithDeletionHandling(since:)` - Download with deletion detection
 
-8. **SyncEngine.swift** - Orchestrates full sync
+8. **SharingService.swift** - Note sharing API calls
+   - Singleton: `SharingService.shared`
+   - Dependency-injected `NetworkManaging` for testability (same pattern as other services)
+   - `createShare(noteUUID:recipientEmail:completion:)` — POST `/notes/{uuid}/share` → returns share URL string
+   - Used by `NotesListViewController.showShareAccessFlow` to obtain a shareable link
+   - See `SHAREDNOTESSPEC.md` for the full backend implementation spec
+
+9. **SyncEngine.swift** - Orchestrates full sync
    - `syncAll()` - Full bidirectional sync
    - `uploadLocalChanges()` - Upload only
    - `downloadCloudChanges()` - Download only
@@ -246,6 +254,8 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Long-press menu for copy, paste, delete
      - Tap to open note in full screen
      - Passcode protection check for protected categories
+     - Share swipe action presents an action sheet: "Send note contents" (plain text via UIActivityViewController) or "Share access with another user" (calls `showShareAccessFlow`)
+   - `showShareAccessFlow(note:sourceView:sourceRect:)` — guards on login, prompts for recipient email, calls `SharingService.createShare`, then presents system share sheet with the returned URL
    - Outlets: `StatusLabel`, `SearchTextEditor`, `CategoryFilter`
    - Shows locked icon for protected category notes
 
@@ -528,6 +538,7 @@ ColourNote/
 │   │   ├── SyncMapping.swift    # ID mapping
 │   │   ├── CategorySyncService.swift
 │   │   ├── NoteSyncService.swift
+│   │   ├── SharingService.swift # Note sharing API calls
 │   │   └── SyncEngine.swift     # Sync orchestration
 │   ├── Globals.swift             # App-wide constants & state
 │   ├── NotesNotification.swift   # Notification system
@@ -543,6 +554,7 @@ ColourNote/
 ├── Podfile                        # CocoaPods dependencies
 ├── README.md                      # User-facing documentation
 ├── CLAUDE.md                      # Technical documentation (this file)
+├── SHAREDNOTESSPEC.md             # Backend spec for Shared Notes feature (Irids_Web)
 └── .gitignore
 ```
 
@@ -563,6 +575,14 @@ ColourNote/
 - **Deployment**: Configured for App Store distribution
 
 ## Version History
+
+### Shared_Notes branch (in progress)
+- **Shared Note Access** — users can now share collaborative access to a note with another ColourNote user
+  - Share swipe action now presents an action sheet: "Send note contents" (existing plain-text share) or "Share access with another user"
+  - New `SharingService.swift` singleton: `POST /notes/{uuid}/share` → returns a shareable URL
+  - New `ShareNoteRequest` / `ShareNoteResponse` models in `CloudModels.swift`
+  - `NotesListViewController.showShareAccessFlow` — prompts for recipient email, spins while creating the share, then presents iOS share sheet with the link
+  - `SHAREDNOTESSPEC.md` — full backend spec for the Irids_Web Node.js implementation (migration v14, `note_shares` table, 5 new endpoints, server-side propagation)
 
 ### 1.2.3 (Build 11) - Current Release
 - **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys
@@ -636,7 +656,7 @@ Potential features to implement:
 
 **Medium Priority:**
 4. Checklist/todo items within notes
-5. Note sharing (export individual notes)
+5. ~~Note sharing (export individual notes)~~ → Collaborative sharing in progress (see `Shared_Notes` branch)
 6. Export to PDF/Text formats
 7. Improved search (search note content, not just titles)
 8. Tags/labels in addition to categories

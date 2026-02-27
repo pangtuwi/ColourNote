@@ -201,7 +201,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 - [x] ~~Rich text formatting~~ → Implemented via Markdown
 - [x] Cloud sync support (in progress - basic sync working)
-- [ ] Note sharing
+- [ ] Note sharing (iOS app changes done — backend in progress)
 - [ ] Checklist support
 - [ ] Voice notes
 - [ ] Image attachments

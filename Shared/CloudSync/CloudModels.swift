@@ -331,6 +331,17 @@ extension CloudCategory {
     }
 }
 
+// MARK: - Sharing Models
+
+struct ShareNoteRequest: Codable {
+    let recipientEmail: String
+}
+
+struct ShareNoteResponse: Codable {
+    let shareUrl: String
+    let token: String
+}
+
 // MARK: - Create Request Builders
 
 extension CreateNoteRequest {
