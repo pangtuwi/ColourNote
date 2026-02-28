@@ -496,7 +496,7 @@ Passcode Flow:
    - Session unlock state could use more secure storage mechanism
 
 5. **Testing**: See **[TESTS.md](TESTS.md)** for full test documentation.
-   - 40 unit tests across 7 suites using Swift Testing framework (`ColourNoteXCTests/`)
+   - 45 unit tests across 8 suites using Swift Testing framework (`ColourNoteXCTests/`)
    - 10 UI tests across 3 suites using XCUITest (`ColourNoteXCUITests/`)
    - `NoteRecords` / `CategoryRecords` singletons are out of scope for unit tests (hard-coded SQLite path)
 
@@ -543,6 +543,19 @@ ColourNote/
 │   ├── Globals.swift             # App-wide constants & state
 │   ├── NotesNotification.swift   # Notification system
 │   └── SpinnerViewController.swift
+├── ColourNoteXCTests/             # Unit test target (Swift Testing, 45 tests across 8 suites)
+│   ├── Helpers/
+│   │   ├── MockURLProtocol.swift  # URLProtocol subclass for HTTP-level tests
+│   │   ├── MockNetworkManager.swift # NetworkManaging stub (offline, configurable)
+│   │   └── TestFixtures.swift    # Factory methods for model instances
+│   ├── NoteModelTests.swift       # 7 tests: Note model
+│   ├── CategoryModelTests.swift   # 11 tests: Category model + UIColor hex extension
+│   ├── CloudModelsTests.swift     # 12 tests: Codable, conversions, sharing models
+│   ├── NetworkManagerTests.swift  # 6 tests: Keychain + HTTP via URLProtocol
+│   ├── AuthManagerTests.swift     # 7 tests: offline via MockNetworkManager
+│   ├── NoteSyncServiceTests.swift # 5 tests: download paths + permanent delete
+│   ├── CategorySyncServiceTests.swift # 4 tests: download paths + markForUpload
+│   └── SharingServiceTests.swift  # 3 tests: createShare success, error, correct endpoint
 ├── ColourNoteXCUITests/           # UI test target (XCUITest)
 │   ├── Helpers/
 │   │   └── UITestCase.swift      # Base class: fresh-install reset, tapStartFresh()
@@ -583,6 +596,9 @@ ColourNote/
   - New `ShareNoteRequest` / `ShareNoteResponse` models in `CloudModels.swift`
   - `NotesListViewController.showShareAccessFlow` — prompts for recipient email, spins while creating the share, then presents iOS share sheet with the link
   - `SHAREDNOTESSPEC.md` — full backend spec for the Irids_Web Node.js implementation (migration v14, `note_shares` table, 5 new endpoints, server-side propagation)
+- **Bug fix**: `LoginViewController` `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now set `"DatabaseSchemaVersion" = 10` and `"CategoryDatabaseSchemaVersion" = 3` after `createBlankDatabase()` — previously used the wrong key `"DatabaseVersion"`, causing NoteRecords/CategoryRecords to run migrations against an already-complete schema and leaving `CategoryDatabaseSchemaVersion = 3` without the actual columns in place on subsequent runs
+- **Bug fix**: `CategoryRecords.ensureRequiredCategoryColumns()` — new defensive repair called at the end of `migrateCategorySchemaIfNeeded()` every time; uses `PRAGMA table_info(categories)` to detect missing columns (`is_protected`, `uuid`, `modified_at`) and adds them regardless of stored schema version, preventing the `Fatal error: No such column "uuid"` crash
+- **Tests**: `SharingServiceTests.swift` (3 new unit tests: success, network error, correct endpoint) + 2 new Codable tests in `CloudModelsTests.swift` for `ShareNoteRequest`/`ShareNoteResponse` — total 45 unit tests across 8 suites
 
 ### 1.2.3 (Build 11) - Current Release
 - **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys

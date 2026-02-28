@@ -373,7 +373,10 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         createBlankDatabase(at: destinationPath)
         print("Created blank database")
 
-        UserDefaults.standard.set(2, forKey: "DatabaseVersion")
+        // Set the correct migration version keys so NoteRecords and CategoryRecords
+        // skip their migrations on first init (the full schema was already created above).
+        UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
+        UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
 
         let exists = FileManager.default.fileExists(atPath: destinationPath)
         print("Database exists after init: \(exists)")
@@ -573,7 +576,10 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         let destinationPath = documents + "/colornote.db"
         try? FileManager.default.removeItem(atPath: destinationPath)
         createBlankDatabase(at: destinationPath)
-        UserDefaults.standard.set(2, forKey: "DatabaseVersion")
+        // Set the correct migration version keys so NoteRecords and CategoryRecords
+        // skip their migrations on first init (the full schema was already created above).
+        UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
+        UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
         Settings.setRegistered(registered: true)
 
         // NoteRecords migrations create the sync_mappings table in the new file.
