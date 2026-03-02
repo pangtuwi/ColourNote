@@ -500,7 +500,7 @@ class NoteSyncService {
         // Map cloud category to local category
         var localCategoryId = 0
         if let cloudCatId = cloudNote.categoryId {
-            // Try to find local category by cloud mapping, or use the cloud ID directly
+            // Try to find local category by cloud mapping, or use the cloud ID directly as fallback
             if let localId = syncMapping.getLocalId(cloudId: String(cloudCatId), entityType: .category) {
                 localCategoryId = localId
             } else {

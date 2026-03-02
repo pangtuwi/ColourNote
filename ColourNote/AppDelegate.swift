@@ -35,6 +35,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // CategoryRecords then crashes querying the missing `uuid` column.
             UserDefaults.standard.removeObject(forKey: "DatabaseSchemaVersion")
             UserDefaults.standard.removeObject(forKey: "CategoryDatabaseSchemaVersion")
+            UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+            UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
             if let docs = FileManager.default.urls(for: .documentDirectory,
                                                     in: .userDomainMask).first {
                 try? FileManager.default.removeItem(

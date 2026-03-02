@@ -373,15 +373,33 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         createBlankDatabase(at: destinationPath)
         print("Created blank database")
 
-        // Set the correct migration version keys so NoteRecords and CategoryRecords
-        // skip their migrations on first init (the full schema was already created above).
+        // createBlankDatabase() now creates the complete v10 schema for both notes and
+        // sync_mappings, and the full v3 categories schema. Tell both migration systems
+        // to skip their migration chains entirely on this fresh install.
         UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
         UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
+        // Clear sync timestamps so the next sync does a full download (since: null).
+        // Without this, a stale lastNoteSyncTime causes a 304 response and notes
+        // on the server are never downloaded to the fresh local database.
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
 
         let exists = FileManager.default.fileExists(atPath: destinationPath)
         print("Database exists after init: \(exists)")
 
         Settings.setRegistered(registered: true)
+
+        // SyncMapping.shared (and its syncMapping property in CategorySyncService /
+        // NoteSyncService) can be prematurely initialised by the AppDelegate's
+        // 1-second SyncEngine timer, which fires even before the user registers.
+        // At that point colornote.db doesn't exist yet, so SQLite creates an empty
+        // file — meaning SyncMapping.shared.db holds a file descriptor to an empty
+        // database with no tables.  createBlankDatabase() then deletes that empty
+        // file and creates a fresh one, but the stale connection never sees the new
+        // schema.  resetConnection() closes the old handle and opens a fresh one on
+        // the newly-created database, exactly as the Cloud Restore path already does.
+        SyncMapping.shared.resetConnection()
+
         navigateToHome()
     }
 
@@ -391,49 +409,46 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             return
         }
 
+        // Complete v10 schema — matches the schema that NoteRecords arrives at after
+        // running all migrations on a legacy database. Creating it directly here means
+        // NoteRecords can skip every migration on fresh installs.
         let createNotesTableSQL = """
         CREATE TABLE IF NOT EXISTS notes (
           _id INTEGER PRIMARY KEY,
           active_state INTEGER DEFAULT 0,
-          account_id INTEGER DEFAULT 0,
-          folder_id INTEGER DEFAULT 0,
-          status INTEGER DEFAULT 0,
-          space INTEGER DEFAULT 0,
           type INTEGER NOT NULL DEFAULT 0,
           title TEXT NOT NULL DEFAULT '',
           note TEXT NOT NULL DEFAULT '',
-          note_ext TEXT DEFAULT '',
           note_type INTEGER NOT NULL DEFAULT 0,
-          tags TEXT DEFAULT '',
-          importance INTEGER DEFAULT 0,
           created_date INTEGER NOT NULL DEFAULT 0,
           modified_date INTEGER NOT NULL DEFAULT 0,
-          minor_modified_date INTEGER DEFAULT 0,
-          reminder_type INTEGER DEFAULT 0,
-          reminder_option INTEGER DEFAULT 0,
-          reminder_date INTEGER DEFAULT 0,
-          reminder_base INTEGER DEFAULT 0,
-          reminder_last INTEGER DEFAULT 0,
-          reminder_duration INTEGER DEFAULT 0,
-          reminder_repeat INTEGER DEFAULT 0,
-          reminder_repeat_ends INTEGER DEFAULT 0,
-          latitude DOUBLE DEFAULT 0,
-          longitude DOUBLE DEFAULT 0,
           color_index INTEGER NOT NULL DEFAULT 0,
           category_id INTEGER DEFAULT 0,
-          encrypted INTEGER DEFAULT 0,
-          dirty INTEGER DEFAULT 1,
-          staged INTEGER DEFAULT 0,
-          uuid TEXT,
-          revision INTEGER DEFAULT 0
+          deleted_date INTEGER DEFAULT NULL,
+          content_format TEXT DEFAULT 'markdown',
+          uuid TEXT
         );
-        CREATE INDEX idx_note1 ON notes(active_state,account_id,folder_id,space);
-        CREATE INDEX idx_note2 ON notes(reminder_type,reminder_date);
-        CREATE INDEX idx_note3 ON notes(reminder_repeat,reminder_base);
-        CREATE INDEX idx_note4 ON notes(title);
-        CREATE INDEX idx_note_s1 ON notes(dirty);
-        CREATE INDEX idx_note_s2 ON notes(staged);
-        CREATE INDEX idx_note_category ON notes(category_id);
+        CREATE INDEX IF NOT EXISTS idx_note_category ON notes(category_id);
+        CREATE INDEX IF NOT EXISTS idx_notes_uuid ON notes(uuid);
+        """
+
+        // sync_mappings is created by NoteRecords migration v6; v10 adds the etag column.
+        // Build it fully here so migrations can be skipped entirely on fresh installs.
+        let createSyncMappingsSQL = """
+        CREATE TABLE IF NOT EXISTS sync_mappings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            local_id INTEGER NOT NULL,
+            cloud_id TEXT NOT NULL,
+            entity_type TEXT NOT NULL,
+            last_synced INTEGER,
+            sync_status TEXT DEFAULT 'pending_upload',
+            created_at INTEGER NOT NULL,
+            modified_at INTEGER NOT NULL,
+            etag TEXT DEFAULT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_sync_local ON sync_mappings(local_id, entity_type);
+        CREATE INDEX IF NOT EXISTS idx_sync_cloud ON sync_mappings(cloud_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_unique ON sync_mappings(local_id, entity_type);
         """
 
         let createCategoriesTableSQL = """
@@ -452,8 +467,9 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
         do {
             try db.execute(createNotesTableSQL)
+            try db.execute(createSyncMappingsSQL)
             try db.execute(createCategoriesTableSQL)
-            print("Blank database created successfully with categories table")
+            print("Blank database created successfully at v10 schema")
             insertDefaultCategories(db: db)
         } catch {
             print("Error creating blank database: \(error)")
@@ -576,13 +592,15 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         let destinationPath = documents + "/colornote.db"
         try? FileManager.default.removeItem(atPath: destinationPath)
         createBlankDatabase(at: destinationPath)
-        // Set the correct migration version keys so NoteRecords and CategoryRecords
-        // skip their migrations on first init (the full schema was already created above).
+        // createBlankDatabase() now creates the complete v10 schema (notes + sync_mappings)
+        // and the full v3 categories schema — skip all migrations on this fresh install.
         UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
         UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
+        // Clear sync timestamps so the restore does a full download (since: null).
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
         Settings.setRegistered(registered: true)
 
-        // NoteRecords migrations create the sync_mappings table in the new file.
         _ = NoteRecords.instance
         _ = CategoryRecords.instance
         // SyncMapping may have been initialized at launch with a stale connection to

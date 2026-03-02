@@ -598,6 +598,13 @@ ColourNote/
   - `SHAREDNOTESSPEC.md` — full backend spec for the Irids_Web Node.js implementation (migration v14, `note_shares` table, 5 new endpoints, server-side propagation)
 - **Bug fix**: `LoginViewController` `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now set `"DatabaseSchemaVersion" = 10` and `"CategoryDatabaseSchemaVersion" = 3` after `createBlankDatabase()` — previously used the wrong key `"DatabaseVersion"`, causing NoteRecords/CategoryRecords to run migrations against an already-complete schema and leaving `CategoryDatabaseSchemaVersion = 3` without the actual columns in place on subsequent runs
 - **Bug fix**: `CategoryRecords.ensureRequiredCategoryColumns()` — new defensive repair called at the end of `migrateCategorySchemaIfNeeded()` every time; uses `PRAGMA table_info(categories)` to detect missing columns (`is_protected`, `uuid`, `modified_at`) and adds them regardless of stored schema version, preventing the `Fatal error: No such column "uuid"` crash
+- **Bug fix**: Notes downloaded from cloud showing "No Category" after a fresh Start Fresh install
+  - **Root cause**: AppDelegate fires `SyncEngine.shared.syncIfNeeded()` 1 second after launch (even before registration). This chains through stored properties `SyncEngine → CategorySyncService → SyncMapping`, causing `SyncMapping.shared` to call `openDatabase()` while `colornote.db` doesn't yet exist. SQLite creates an empty file. When the user taps "Start Fresh", `createBlankDatabase()` deletes that empty file and creates a proper new one — but `SyncMapping.shared.db` retains a stale file descriptor to the deleted empty file (no `sync_mappings` table), causing every mapping operation to fail with `no such table: sync_mappings`.
+  - **Fix**: `initializeAppWithDatabase()` now calls `SyncMapping.shared.resetConnection()` after `createBlankDatabase()`, matching the pattern already present in `cloudRestoreButtonTapped()`
+- **Bug fix**: `createBlankDatabase()` now creates the complete v10 `notes` schema (removed all legacy columns that existed only for backwards migration compatibility) and creates the `sync_mappings` table inline — previously the `sync_mappings` table was absent from fresh installs until NoteRecords migrations ran, causing early mapping operations to fail
+- **Bug fix**: `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now clear `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults — stale timestamps from a previous install were causing 304 Not Modified responses on the first sync of a fresh install, silently skipping all downloads
+- **Bug fix**: `SyncEngine.syncCategories()` — on first sync (`lastCategorySyncTime == nil`), categories are now downloaded before uploading. Previously, uploading first caused cloud category IDs to be mapped to local IDs, then the subsequent download name-matched those same categories and overwrote the mappings — leaving note downloads unable to resolve their `categoryId` to a local ID
+- **AppDelegate `UI_TESTING_FRESH_INSTALL`**: Now also clears `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults so XCUITests start with a fully clean sync state
 - **Tests**: `SharingServiceTests.swift` (3 new unit tests: success, network error, correct endpoint) + 2 new Codable tests in `CloudModelsTests.swift` for `ShareNoteRequest`/`ShareNoteResponse` — total 45 unit tests across 8 suites
 
 ### 1.2.3 (Build 11) - Current Release
@@ -610,87 +617,6 @@ ColourNote/
 - **Bug fix**: `createBlankDatabase()` now creates the full current categories schema (`uuid`, `is_protected`, `modified_at`) — previously the bare v1 schema caused a fatal crash when `CategoryDatabaseSchemaVersion` was already at 3 in UserDefaults and migrations were skipped
 - **Accessibility identifiers** added for XCUITest: `startFreshButton`, `importBackupButton` (LoginViewController), `noteSearchField` (NotesListViewController), `noteTitleField`, `noteTextView`, `listButton` (NoteDetailViewController)
 
-### 1.2.2 (Build 10) - Previous Release
-- **Cloud Restore** on startup screen: detects Keychain credentials from a previous install and shows a green "Cloud Restore" button; silently re-authenticates and downloads all notes/categories without needing a backup file
-- **Bug fix**: `SyncMapping.resetConnection()` ensures the singleton reconnects to the newly-created database after a Cloud Restore (previously held a stale connection to the deleted file, causing `sync_mappings` table errors)
-- **SyncEngine guard**: `syncAll()` and `syncIfNeeded()` now check `isRegistered()` before proceeding, preventing spurious sync attempts before a database exists
-- **Debug cleanup**: Removed per-call `print` statements from `getNotes()`, `getDeletedNotes()`, `getAllNotes()`, and `getCategories()` that produced dozens of duplicate log lines during sync
-- **Bug fix**: Paragraph breaks (and markdown syntax) no longer lost when sharing a note via swipe-left → Share. `MarkdownRenderer.plainText(from:)` strips markdown syntax before sharing, so receiving apps see clean plain text with blank lines preserved.
-
-### 1.02 (Build 3) - Previous Release
-- Added passcode protection for categories (SHA-256 hashing)
-- Implemented session-based unlocking
-- Enhanced export/backup with passcode validation
-- Added copy/paste functionality in note editor
-- Improved category management UI
-- Toast notifications for note deletion
-
-### 1.01 (Build 2)
-- Implemented soft delete system with trash functionality
-- Added category management with custom colors
-- Created backup/export to JSON
-- Implemented import from JSON
-- Enhanced UI with category filtering
-- Added note restoration from trash
-
-### 1.0 (Build 1) - Initial Release
-- Basic note creation and editing
-- SQLite database integration
-- Color-coded note organization
-- Search and filter functionality
-- Pull-to-refresh
-- Auto-save on text changes
-
-## Completed Features
-
-- [x] Note creation and editing UI
-- [x] Soft delete with trash functionality
-- [x] Category management with custom colors
-- [x] **Inline category creation** - Create categories from note editor
-- [x] Passcode protection for categories (SHA-256)
-- [x] Session-based unlocking
-- [x] Backup/Export to JSON
-- [x] Import from JSON
-- [x] Copy/paste support
-- [x] Search and filter by title
-- [x] Filter by category
-- [x] Database migration system
-- [x] Lined text view for writing
-- [x] Auto-save functionality
-- [x] **Markdown support** - Edit/Preview toggle with native rendering
-- [x] **Cloud sync** - JWT authentication with bidirectional sync
-- [x] **UUID-based sync matching** - Cross-device identification with UUID priority
-
-## Future Enhancements
-
-Potential features to implement:
-
-**High Priority:**
-1. ~~Rich text formatting (bold, italic, lists)~~ → Implemented via Markdown
-2. Note pinning/favorites
-3. Dark mode support
-
-**Medium Priority:**
-4. Checklist/todo items within notes
-5. ~~Note sharing (export individual notes)~~ → Collaborative sharing in progress (see `Shared_Notes` branch)
-6. Export to PDF/Text formats
-7. Improved search (search note content, not just titles)
-8. Tags/labels in addition to categories
-9. Note templates
-10. Widgets for iOS home screen
-11. Home/Dashboard screen with note statistics
-
-**Low Priority/Future:**
-12. ~~Cloud sync (iCloud)~~ → Implemented with custom server
-13. Collaborative notes
-14. Voice notes/audio recording
-15. Image attachments
-16. Siri shortcuts integration
-17. Apple Watch companion app
-18. iPad optimization with split view
-19. Markdown support
-20. Note linking/backlinks
-21. Encryption for individual notes
 
 ## Security Considerations
 
