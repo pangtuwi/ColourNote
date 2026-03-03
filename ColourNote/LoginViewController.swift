@@ -164,9 +164,21 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         importBtn.addTarget(self, action: #selector(importButtonTapped(_:)), for: .touchUpInside)
         stack.addArrangedSubview(importBtn)
 
+        // Cloud Sync — always visible; lets any user sign in and download their data
+        stack.setCustomSpacing(10, after: importBtn)
+        let cloudSyncBtn = makeGlassButton(
+            title: "Cloud Sync",
+            subtitle: "Sign in and download your notes",
+            systemImage: "arrow.triangle.2.circlepath.icloud",
+            iconColor: UIColor(red: 0.55, green: 0.35, blue: 1.00, alpha: 1)
+        )
+        cloudSyncBtn.accessibilityIdentifier = "cloudSyncButton"
+        cloudSyncBtn.addTarget(self, action: #selector(cloudSyncButtonTapped), for: .touchUpInside)
+        stack.addArrangedSubview(cloudSyncBtn)
+
         // Cloud Restore (only when Keychain credentials exist from a prior install)
         if let email = AuthManager.shared.userEmail, AuthManager.shared.userPassword != nil {
-            stack.setCustomSpacing(10, after: importBtn)
+            stack.setCustomSpacing(10, after: cloudSyncBtn)
             let cloudBtn = makeGlassButton(
                 title: "Cloud Restore",
                 subtitle: "Sign in as \(email)",
@@ -578,6 +590,55 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             completion?()
         })
         present(alert, animated: true)
+    }
+
+    // MARK: - Cloud Sync
+
+    @objc private func cloudSyncButtonTapped() {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        guard let cloudLoginVC = sb.instantiateViewController(
+            withIdentifier: "CloudLoginViewController") as? CloudLoginViewController else { return }
+
+        cloudLoginVC.onLoginSuccess = { [weak self] in
+            self?.performCloudSyncRestore()
+        }
+
+        present(cloudLoginVC, animated: true)
+    }
+
+    private func performCloudSyncRestore() {
+        let spinner = showSpinner(message: "Restoring from cloud...")
+
+        let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        let destinationPath = documents + "/colornote.db"
+        try? FileManager.default.removeItem(atPath: destinationPath)
+        createBlankDatabase(at: destinationPath)
+        UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
+        UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
+        Settings.setRegistered(registered: true)
+
+        _ = NoteRecords.instance
+        _ = CategoryRecords.instance
+        SyncMapping.shared.resetConnection()
+
+        SyncEngine.shared.isAutoSyncEnabled = true
+        SyncEngine.shared.downloadCloudChanges { [weak self] result in
+            DispatchQueue.main.async {
+                self?.hideSpinner(spinner)
+                switch result {
+                case .failure(let error):
+                    self?.showAlert(
+                        title: "Restore Incomplete",
+                        message: "Signed in but could not download all data: \(error.localizedDescription)\n\nYou can sync again from Settings.",
+                        completion: { self?.navigateToHome() }
+                    )
+                case .success:
+                    self?.navigateToHome()
+                }
+            }
+        }
     }
 
     // MARK: - Cloud Restore

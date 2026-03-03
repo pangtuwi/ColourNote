@@ -331,12 +331,14 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Glass buttons with SF Symbol icon, two-line label, trailing chevron, and press animations (scale + alpha)
      - `gradientLayer` resized in `viewDidLayoutSubviews()` to handle rotation correctly
      - Storyboard IBOutlets set to `isHidden = true` AND `isUserInteractionEnabled = false` as belt-and-suspenders
-   - Three startup options (as glass buttons):
+   - Four startup options (as glass buttons):
      - **Start Fresh** (`doc.badge.plus`, blue) — creates a blank local database
      - **Import Backup** (`arrow.down.doc.fill`, amber) — imports notes/categories from a JSON file
+     - **Cloud Sync** (`arrow.triangle.2.circlepath.icloud`, indigo/purple) *(always visible)* — presents `CloudLoginViewController` for login/register, then downloads all data from the cloud server; `performCloudSyncRestore()` handles the post-auth DB setup and download
      - **Cloud Restore** (`icloud.and.arrow.down.fill`, green) *(shown only when Keychain credentials exist from a previous install)* — silently re-authenticates and downloads all data from the cloud server
+   - Cloud Sync flow: present `CloudLoginViewController` → `onLoginSuccess` callback → `performCloudSyncRestore()`: creates blank DB → initialises singletons → `resetConnection()` → `SyncEngine.downloadCloudChanges` → navigates home
    - Cloud Restore flow: creates blank DB → initialises singletons → calls `SyncMapping.shared.resetConnection()` to fix any stale connection → logs in → calls `SyncEngine.downloadCloudChanges` → navigates home
-   - Spinner overlay with status message ("Signing in..." → "Restoring from cloud...") during restore
+   - Spinner overlay with status message ("Restoring from cloud...") during restore
 
 
 #### UI Components
@@ -616,6 +618,7 @@ ColourNote/
 - **Configurable API server**: `APIConfig.baseURL` now reads `API_BASE_URL` launch environment variable at runtime (tests point to `http://localhost:3002`; production falls back to `https://irids.co.uk`)
 - **Bug fix**: `createBlankDatabase()` now creates the full current categories schema (`uuid`, `is_protected`, `modified_at`) — previously the bare v1 schema caused a fatal crash when `CategoryDatabaseSchemaVersion` was already at 3 in UserDefaults and migrations were skipped
 - **Accessibility identifiers** added for XCUITest: `startFreshButton`, `importBackupButton` (LoginViewController), `noteSearchField` (NotesListViewController), `noteTitleField`, `noteTextView`, `listButton` (NoteDetailViewController)
+- **New feature: "Cloud Sync" startup button** — `LoginViewController` now shows a permanent "Cloud Sync" button (indigo, `arrow.triangle.2.circlepath.icloud`) between "Import Backup" and the conditional "Cloud Restore" button. Tapping it presents `CloudLoginViewController`; on successful login the `onLoginSuccess` callback fires `performCloudSyncRestore()`, which creates a blank DB, initialises singletons, and runs `SyncEngine.downloadCloudChanges`. Accessibility identifier: `cloudSyncButton`.
 
 
 ## Security Considerations
