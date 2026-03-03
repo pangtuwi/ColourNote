@@ -608,6 +608,7 @@ ColourNote/
 - **Bug fix**: `SyncEngine.syncCategories()` — on first sync (`lastCategorySyncTime == nil`), categories are now downloaded before uploading. Previously, uploading first caused cloud category IDs to be mapped to local IDs, then the subsequent download name-matched those same categories and overwrote the mappings — leaving note downloads unable to resolve their `categoryId` to a local ID
 - **AppDelegate `UI_TESTING_FRESH_INSTALL`**: Now also clears `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults so XCUITests start with a fully clean sync state
 - **Tests**: `SharingServiceTests.swift` (3 new unit tests: success, network error, correct endpoint) + 2 new Codable tests in `CloudModelsTests.swift` for `ShareNoteRequest`/`ShareNoteResponse` — total 45 unit tests across 8 suites
+- **Bug fix**: `NoteDetailViewController` — removed erroneous `canPerformAction(_:withSender:)` override that caused a crash (`NSInvalidArgumentException: unrecognized selector cut:`) when cutting text in preview mode. The override claimed the view controller could handle `cut:` but provided no implementation; `UITextView` handles these actions natively via the responder chain without the override.
 
 ### 1.2.3 (Build 11) - Current Release
 - **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys
