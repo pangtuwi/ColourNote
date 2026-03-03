@@ -326,7 +326,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `CAGradientLayer` background: deep purple → indigo → azure diagonal gradient
      - Two semi-transparent decorative orbs (purple top-left, cyan bottom-right)
      - `UIVisualEffectView(.systemUltraThinMaterial)` frosted glass card centered on screen
-     - App icon (Splash asset or `note.text` SF Symbol fallback) with gradient rounded-rect background
+     - App icon (`irids_bg` asset or `note.text` SF Symbol fallback) displayed as a 72×72 `UIImageView` with `cornerRadius = 18`, `clipsToBounds = true`, and `scaleAspectFill` — no container view or gradient layer
      - "ColourNote" title + "Your notes, beautifully organised" subtitle
      - Glass buttons with SF Symbol icon, two-line label, trailing chevron, and press animations (scale + alpha)
      - `gradientLayer` resized in `viewDidLayoutSubviews()` to handle rotation correctly
@@ -618,6 +618,8 @@ ColourNote/
 - **Configurable API server**: `APIConfig.baseURL` now reads `API_BASE_URL` launch environment variable at runtime (tests point to `http://localhost:3002`; production falls back to `https://irids.co.uk`)
 - **Bug fix**: `createBlankDatabase()` now creates the full current categories schema (`uuid`, `is_protected`, `modified_at`) — previously the bare v1 schema caused a fatal crash when `CategoryDatabaseSchemaVersion` was already at 3 in UserDefaults and migrations were skipped
 - **Accessibility identifiers** added for XCUITest: `startFreshButton`, `importBackupButton` (LoginViewController), `noteSearchField` (NotesListViewController), `noteTitleField`, `noteTextView`, `listButton` (NoteDetailViewController)
+- **UI fix: Login screen app icon** — removed the gradient container view; `cornerRadius`, `clipsToBounds`, and `scaleAspectFill` are now applied directly to the `UIImageView` so the icon displays with properly rounded corners. Asset changed from `Splash` to `irids_bg`.
+- **Launch screen updated** — `LaunchScreen.storyboard` now uses `irids_bg` as a full-screen background (`scaleToFill`) with the "ColourNote" label overlaid at the bottom. New `AppIcon_irids` app icon set added with light/dark variants at all required scales.
 - **New feature: "Cloud Sync" startup button** — `LoginViewController` now shows a permanent "Cloud Sync" button (indigo, `arrow.triangle.2.circlepath.icloud`) between "Import Backup" and the conditional "Cloud Restore" button. Tapping it presents `CloudLoginViewController`; on successful login the `onLoginSuccess` callback fires `performCloudSyncRestore()`, which creates a blank DB, initialises singletons, and runs `SyncEngine.downloadCloudChanges`. Accessibility identifier: `cloudSyncButton`.
 
 

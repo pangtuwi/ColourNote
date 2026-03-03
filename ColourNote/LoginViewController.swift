@@ -195,31 +195,16 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
     private func makeHeaderView() -> UIView {
         let container = UIView()
 
-        // App icon — rounded rect with gradient background
-        let iconBg = UIView()
-        iconBg.translatesAutoresizingMaskIntoConstraints = false
-        iconBg.layer.cornerRadius = 18
-        iconBg.clipsToBounds = true
-        iconBg.widthAnchor.constraint(equalToConstant: 72).isActive = true
-        iconBg.heightAnchor.constraint(equalToConstant: 72).isActive = true
-
-        let iconGradient = CAGradientLayer()
-        iconGradient.colors = [
-            UIColor(red: 0.55, green: 0.25, blue: 0.95, alpha: 1).cgColor,
-            UIColor(red: 0.20, green: 0.45, blue: 1.00, alpha: 1).cgColor,
-        ]
-        iconGradient.startPoint = CGPoint(x: 0, y: 0)
-        iconGradient.endPoint   = CGPoint(x: 1, y: 1)
-        iconGradient.frame      = CGRect(x: 0, y: 0, width: 72, height: 72)
-        iconGradient.cornerRadius = 18
-        iconBg.layer.insertSublayer(iconGradient, at: 0)
-
-        // Use Splash asset if available, otherwise fall back to SF Symbol
+        // App icon — rounded corners applied directly to the image view
         let iconView = UIImageView()
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        if let splash = UIImage(named: "Splash") {
+        iconView.layer.cornerRadius = 18
+        iconView.clipsToBounds = true
+        iconView.contentMode = .scaleAspectFill
+        iconView.widthAnchor.constraint(equalToConstant: 72).isActive = true
+        iconView.heightAnchor.constraint(equalToConstant: 72).isActive = true
+        if let splash = UIImage(named: "irids_bg") {
             iconView.image = splash
-            iconView.contentMode = .scaleAspectFit
         } else {
             iconView.image = UIImage(systemName: "note.text",
                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium))
@@ -227,13 +212,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             iconView.contentMode = .scaleAspectFit
         }
         iconView.isUserInteractionEnabled = false
-        iconBg.addSubview(iconView)
-        NSLayoutConstraint.activate([
-            iconView.centerXAnchor.constraint(equalTo: iconBg.centerXAnchor),
-            iconView.centerYAnchor.constraint(equalTo: iconBg.centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 54),
-            iconView.heightAnchor.constraint(equalToConstant: 54),
-        ])
 
         // Title
         let titleLabel = UILabel()
@@ -249,12 +227,12 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.65)
         subtitleLabel.textAlignment = .center
 
-        let vStack = UIStackView(arrangedSubviews: [iconBg, titleLabel, subtitleLabel])
+        let vStack = UIStackView(arrangedSubviews: [iconView, titleLabel, subtitleLabel])
         vStack.axis = .vertical
         vStack.alignment = .center
         vStack.spacing = 10
         vStack.translatesAutoresizingMaskIntoConstraints = false
-        vStack.setCustomSpacing(16, after: iconBg)
+        vStack.setCustomSpacing(16, after: iconView)
 
         container.addSubview(vStack)
         NSLayoutConstraint.activate([

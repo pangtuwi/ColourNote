@@ -240,6 +240,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Version History
 
 - **Shared_Notes (in progress)** - (March 2026)
+  - **UI fix**: Login screen app icon now displays with proper rounded corners — removed the gradient container; rounded corners applied directly to the image view
+  - **Launch screen**: Updated to use the app icon as a full-screen background with the ColourNote title overlaid; new app icon set with light/dark mode variants
   - **New Feature**: "Cloud Sync" button on startup screen — always-visible option lets any user sign in (or register) and download their existing notes on first launch, without needing stored Keychain credentials
     - Tapping the button presents the Cloud Login screen; after successful authentication the app creates a blank database and downloads all cloud data automatically
     - Button order: Start Fresh → Import Backup → **Cloud Sync** → Cloud Restore (conditional)
