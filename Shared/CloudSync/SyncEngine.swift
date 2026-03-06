@@ -369,43 +369,80 @@ class SyncEngine {
             totalNotes: 0
         )
 
-        progress.phase = .uploadingCategories
-        notifyProgress(progress)
-
         // Get last category sync time for delta sync
         let lastCategorySyncTime = getLastCategorySyncTime()
 
-        // Upload local categories first
-        categorySyncService.uploadAllCategories { [weak self] uploadResult in
-            guard let self = self else { return }
-
-            var uploaded = 0
-            switch uploadResult {
-            case .success(let count):
-                uploaded = count
-            case .failure(let error):
-                print("SyncEngine: Category upload failed - \(error)")
-                // Continue with download even if upload fails
-            }
-
-            progress.categoriesUploaded = uploaded
+        if lastCategorySyncTime == nil {
+            // First sync: download categories first to establish cloud→local mappings
+            // before uploading. Without this, default local categories get uploaded with
+            // new cloud IDs, then the cloud's existing categories are name-matched to the
+            // same local IDs and overwrite those mappings — leaving the original cloud IDs
+            // unmapped when notes are downloaded.
             progress.phase = .downloadingCategories
-            self.notifyProgress(progress)
+            notifyProgress(progress)
 
-            // Then download cloud categories with delta sync using new breakdown API
-            self.categorySyncService.downloadAllCategoriesWithBreakdown(since: lastCategorySyncTime) { downloadResult in
+            categorySyncService.downloadAllCategoriesWithBreakdown(since: nil) { [weak self] downloadResult in
+                guard let self = self else { return }
+
+                var downloaded = 0
                 switch downloadResult {
                 case .success(let breakdown):
-                    // Save current time as last sync time for categories
+                    downloaded = breakdown.added + breakdown.updated
                     let now = Int(Date().timeIntervalSince1970 * 1000)
                     self.saveLastCategorySyncTime(now)
-                    completion(.success((uploaded, breakdown.added + breakdown.updated)))
                 case .failure(let error):
-                    // If upload succeeded but download failed, still return partial success
-                    if uploaded > 0 {
-                        completion(.success((uploaded, 0)))
-                    } else {
-                        completion(.failure(error))
+                    print("SyncEngine: First-sync category download failed - \(error)")
+                }
+
+                progress.phase = .uploadingCategories
+                self.notifyProgress(progress)
+
+                // Upload only truly new local categories (those without a mapping after download)
+                self.categorySyncService.uploadAllCategories { uploadResult in
+                    var uploaded = 0
+                    switch uploadResult {
+                    case .success(let count):
+                        uploaded = count
+                    case .failure(let error):
+                        print("SyncEngine: Category upload failed - \(error)")
+                    }
+                    progress.categoriesUploaded = uploaded
+                    completion(.success((uploaded, downloaded)))
+                }
+            }
+        } else {
+            // Subsequent syncs: upload first to preserve any local changes, then download
+            progress.phase = .uploadingCategories
+            notifyProgress(progress)
+
+            categorySyncService.uploadAllCategories { [weak self] uploadResult in
+                guard let self = self else { return }
+
+                var uploaded = 0
+                switch uploadResult {
+                case .success(let count):
+                    uploaded = count
+                case .failure(let error):
+                    print("SyncEngine: Category upload failed - \(error)")
+                    // Continue with download even if upload fails
+                }
+
+                progress.categoriesUploaded = uploaded
+                progress.phase = .downloadingCategories
+                self.notifyProgress(progress)
+
+                self.categorySyncService.downloadAllCategoriesWithBreakdown(since: lastCategorySyncTime) { downloadResult in
+                    switch downloadResult {
+                    case .success(let breakdown):
+                        let now = Int(Date().timeIntervalSince1970 * 1000)
+                        self.saveLastCategorySyncTime(now)
+                        completion(.success((uploaded, breakdown.added + breakdown.updated)))
+                    case .failure(let error):
+                        if uploaded > 0 {
+                            completion(.success((uploaded, 0)))
+                        } else {
+                            completion(.failure(error))
+                        }
                     }
                 }
             }

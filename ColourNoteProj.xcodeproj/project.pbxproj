@@ -31,6 +31,7 @@
 		06BFA357937C8A1711FC9F4C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3447C1518F622CD945FA0588 /* Foundation.framework */; };
 		0AD24A7246DF253CE8584239 /* NoteRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA608A98F41F901DC3ECB8A /* NoteRecords.swift */; };
 		27C568D29772503FBC3FC133 /* RoundUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151B632C013000F21A31FAA1 /* RoundUIView.swift */; };
+		2F00C068AB4A4199AC75AD68 /* SharingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1130CC6C062410B965946A2 /* SharingService.swift */; };
 		41CF3C2DE1880BBAC66C7B2E /* SpinnerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D3BF69B6FCD65768E7AC4B /* SpinnerViewController.swift */; };
 		45C3B6524DA2B2D05313D493 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EE6029443F754792FA20502 /* Assets.xcassets */; };
 		5A82903C4063D5C6F1E3A1D1 /* audiowide-regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 893F2B21D62D9A6B98FB0810 /* audiowide-regular.ttf */; };
@@ -116,9 +117,11 @@
 		A1957D5890D672FF626E21CC /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ColourNote/AppDelegate.swift; sourceTree = "<group>"; };
 		A2B6E035AADA4DFDB4EAE61B /* Settings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Settings.swift; path = Shared/Settings.swift; sourceTree = "<group>"; };
 		A9D3A7CBB00DC66BE5E50D0C /* NotesListViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotesListViewController.swift; path = ColourNote/NotesListViewController.swift; sourceTree = "<group>"; };
+		AB7BD0C6E7DA44FDB97A4D05 /* SharingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingService.swift; sourceTree = "<group>"; };
 		BA3DFA256052E064C9B72D9A /* LoginViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LoginViewController.swift; path = ColourNote/LoginViewController.swift; sourceTree = "<group>"; };
 		D54728B17D1936CB19250D68 /* NoteDetailViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NoteDetailViewController.swift; path = ColourNote/NoteDetailViewController.swift; sourceTree = "<group>"; };
 		DC97A8A9BEA0ADA366358263 /* Main.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; name = Main.storyboard; path = ColourNote/Storyboards/Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E1130CC6C062410B965946A2 /* SharingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SharingService.swift; path = Shared/CloudSync/SharingService.swift; sourceTree = "<group>"; };
 		E9A299201C9A48605678C2D4 /* Utils.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Utils.swift; path = Shared/Utils.swift; sourceTree = "<group>"; };
 		EF21F2CF327E0B1D5457B750 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ColourNote/Storyboards/Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F90A3689760763D4FEE4112F /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = ColourNote/Info.plist; sourceTree = "<group>"; };
@@ -168,6 +171,7 @@
 				0066ADCE2F30DCF000F75C91 /* NoteSyncService.swift */,
 				0066ADCF2F30DCF000F75C91 /* SyncEngine.swift */,
 				0066ADD02F30DCF000F75C91 /* SyncMapping.swift */,
+				E1130CC6C062410B965946A2 /* SharingService.swift */,
 				00A402F42F07087200D93271 /* MarkdownRenderer.swift */,
 				008799582EC761BA002EC37E /* Category.swift */,
 				0087995C2EC76248002EC37E /* CategoryRecords.swift */,
@@ -275,6 +279,7 @@
 				0066ADC22F30DB5900F75C91 /* NoteSyncService.swift */,
 				0066ADC32F30DB5900F75C91 /* SyncEngine.swift */,
 				0066ADC42F30DB5900F75C91 /* SyncMapping.swift */,
+				AB7BD0C6E7DA44FDB97A4D05 /* SharingService.swift */,
 				0066ADC52F30DB8800F75C91 /* CloudLoginViewController.swift */,
 				0066ADC62F30DB8800F75C91 /* SettingsViewController 2.swift */,
 				0066ADC72F30DB8800F75C91 /* SyncProgressView.swift */,
@@ -495,6 +500,7 @@
 				0066ADD62F30DCF000F75C91 /* SyncEngine.swift in Sources */,
 				0066ADD72F30DCF000F75C91 /* AuthManager.swift in Sources */,
 				0066ADD82F30DCF000F75C91 /* NetworkManager.swift in Sources */,
+				2F00C068AB4A4199AC75AD68 /* SharingService.swift in Sources */,
 				41CF3C2DE1880BBAC66C7B2E /* SpinnerViewController.swift in Sources */,
 				0087995D2EC76248002EC37E /* CategoryRecords.swift in Sources */,
 				E903AFD25AF4908BC5FD8C55 /* NotesNotification.swift in Sources */,
@@ -689,7 +695,8 @@
 		27C6E060177971E0AE59B54D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_irids;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = ColourNote/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
@@ -711,7 +718,8 @@
 		6C7401139BFF6D5380F6FE8D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_irids;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = ColourNote/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";

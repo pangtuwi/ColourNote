@@ -156,6 +156,45 @@ class CategoryRecords {
         } else {
             print("CategoryRecords: Schema is up to date at version \(savedSchemaVersion)")
         }
+
+        // Defensive repair: verify required columns actually exist in the database.
+        // The version-based migrations above can fail silently when they run against
+        // a non-existent table (e.g. if CategoryRecords initialises before NoteRecords
+        // has had a chance to create the categories table). The PRAGMA check below
+        // catches that mismatch and adds any missing columns regardless of the stored
+        // schema version, preventing the fatal crash in getCategories().
+        ensureRequiredCategoryColumns(db: db)
+    }
+
+    private func ensureRequiredCategoryColumns(db: Connection) {
+        var existingColumns: Set<String> = []
+        if let rows = try? db.prepare("PRAGMA table_info(categories)") {
+            for row in rows {
+                if let name = row[1] as? String {
+                    existingColumns.insert(name)
+                }
+            }
+        }
+
+        // Table doesn't exist yet — NoteRecords will create it during its own migration.
+        guard !existingColumns.isEmpty else { return }
+
+        let columnsToAdd: [(String, String)] = [
+            ("is_protected", "ALTER TABLE categories ADD COLUMN is_protected INTEGER DEFAULT 0"),
+            ("uuid",         "ALTER TABLE categories ADD COLUMN uuid TEXT"),
+            ("modified_at",  "ALTER TABLE categories ADD COLUMN modified_at INTEGER DEFAULT NULL"),
+        ]
+
+        for (column, sql) in columnsToAdd {
+            if !existingColumns.contains(column) {
+                do {
+                    try db.execute(sql)
+                    print("CategoryRecords: Repaired missing column '\(column)' in categories table")
+                } catch {
+                    print("CategoryRecords: Failed to add missing column '\(column)': \(error)")
+                }
+            }
+        }
     }
 
     func getCategories() -> [Category] {

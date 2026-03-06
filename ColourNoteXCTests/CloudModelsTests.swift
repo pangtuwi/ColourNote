@@ -155,4 +155,26 @@ struct CloudModelsTests {
         let nilIso: String? = nil
         #expect(TimestampConverter.cloudToLocal(nilIso) == nil)
     }
+
+    // MARK: - Sharing Models
+
+    @Test func shareNoteRequestEncodesRecipientEmail() throws {
+        let request = ShareNoteRequest(recipientEmail: "bob@example.com")
+        let data = try JSONEncoder().encode(request)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: String]
+        #expect(json?["recipientEmail"] == "bob@example.com")
+    }
+
+    @Test func shareNoteResponseDecodesShareUrlAndToken() throws {
+        let json = """
+        {
+            "shareUrl": "https://irids.co.uk/share/abc123",
+            "token": "abc123"
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder().decode(ShareNoteResponse.self, from: json)
+        #expect(response.shareUrl == "https://irids.co.uk/share/abc123")
+        #expect(response.token == "abc123")
+    }
 }

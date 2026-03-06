@@ -164,9 +164,21 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         importBtn.addTarget(self, action: #selector(importButtonTapped(_:)), for: .touchUpInside)
         stack.addArrangedSubview(importBtn)
 
+        // Cloud Sync — always visible; lets any user sign in and download their data
+        stack.setCustomSpacing(10, after: importBtn)
+        let cloudSyncBtn = makeGlassButton(
+            title: "Cloud Sync",
+            subtitle: "Sign in and download your notes",
+            systemImage: "arrow.triangle.2.circlepath.icloud",
+            iconColor: UIColor(red: 0.55, green: 0.35, blue: 1.00, alpha: 1)
+        )
+        cloudSyncBtn.accessibilityIdentifier = "cloudSyncButton"
+        cloudSyncBtn.addTarget(self, action: #selector(cloudSyncButtonTapped), for: .touchUpInside)
+        stack.addArrangedSubview(cloudSyncBtn)
+
         // Cloud Restore (only when Keychain credentials exist from a prior install)
         if let email = AuthManager.shared.userEmail, AuthManager.shared.userPassword != nil {
-            stack.setCustomSpacing(10, after: importBtn)
+            stack.setCustomSpacing(10, after: cloudSyncBtn)
             let cloudBtn = makeGlassButton(
                 title: "Cloud Restore",
                 subtitle: "Sign in as \(email)",
@@ -183,31 +195,16 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
     private func makeHeaderView() -> UIView {
         let container = UIView()
 
-        // App icon — rounded rect with gradient background
-        let iconBg = UIView()
-        iconBg.translatesAutoresizingMaskIntoConstraints = false
-        iconBg.layer.cornerRadius = 18
-        iconBg.clipsToBounds = true
-        iconBg.widthAnchor.constraint(equalToConstant: 72).isActive = true
-        iconBg.heightAnchor.constraint(equalToConstant: 72).isActive = true
-
-        let iconGradient = CAGradientLayer()
-        iconGradient.colors = [
-            UIColor(red: 0.55, green: 0.25, blue: 0.95, alpha: 1).cgColor,
-            UIColor(red: 0.20, green: 0.45, blue: 1.00, alpha: 1).cgColor,
-        ]
-        iconGradient.startPoint = CGPoint(x: 0, y: 0)
-        iconGradient.endPoint   = CGPoint(x: 1, y: 1)
-        iconGradient.frame      = CGRect(x: 0, y: 0, width: 72, height: 72)
-        iconGradient.cornerRadius = 18
-        iconBg.layer.insertSublayer(iconGradient, at: 0)
-
-        // Use Splash asset if available, otherwise fall back to SF Symbol
+        // App icon — rounded corners applied directly to the image view
         let iconView = UIImageView()
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        if let splash = UIImage(named: "Splash") {
+        iconView.layer.cornerRadius = 18
+        iconView.clipsToBounds = true
+        iconView.contentMode = .scaleAspectFill
+        iconView.widthAnchor.constraint(equalToConstant: 72).isActive = true
+        iconView.heightAnchor.constraint(equalToConstant: 72).isActive = true
+        if let splash = UIImage(named: "irids_bg") {
             iconView.image = splash
-            iconView.contentMode = .scaleAspectFit
         } else {
             iconView.image = UIImage(systemName: "note.text",
                 withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium))
@@ -215,13 +212,6 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             iconView.contentMode = .scaleAspectFit
         }
         iconView.isUserInteractionEnabled = false
-        iconBg.addSubview(iconView)
-        NSLayoutConstraint.activate([
-            iconView.centerXAnchor.constraint(equalTo: iconBg.centerXAnchor),
-            iconView.centerYAnchor.constraint(equalTo: iconBg.centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 54),
-            iconView.heightAnchor.constraint(equalToConstant: 54),
-        ])
 
         // Title
         let titleLabel = UILabel()
@@ -237,12 +227,12 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.65)
         subtitleLabel.textAlignment = .center
 
-        let vStack = UIStackView(arrangedSubviews: [iconBg, titleLabel, subtitleLabel])
+        let vStack = UIStackView(arrangedSubviews: [iconView, titleLabel, subtitleLabel])
         vStack.axis = .vertical
         vStack.alignment = .center
         vStack.spacing = 10
         vStack.translatesAutoresizingMaskIntoConstraints = false
-        vStack.setCustomSpacing(16, after: iconBg)
+        vStack.setCustomSpacing(16, after: iconView)
 
         container.addSubview(vStack)
         NSLayoutConstraint.activate([
@@ -373,12 +363,33 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         createBlankDatabase(at: destinationPath)
         print("Created blank database")
 
-        UserDefaults.standard.set(2, forKey: "DatabaseVersion")
+        // createBlankDatabase() now creates the complete v10 schema for both notes and
+        // sync_mappings, and the full v3 categories schema. Tell both migration systems
+        // to skip their migration chains entirely on this fresh install.
+        UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
+        UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
+        // Clear sync timestamps so the next sync does a full download (since: null).
+        // Without this, a stale lastNoteSyncTime causes a 304 response and notes
+        // on the server are never downloaded to the fresh local database.
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
 
         let exists = FileManager.default.fileExists(atPath: destinationPath)
         print("Database exists after init: \(exists)")
 
         Settings.setRegistered(registered: true)
+
+        // SyncMapping.shared (and its syncMapping property in CategorySyncService /
+        // NoteSyncService) can be prematurely initialised by the AppDelegate's
+        // 1-second SyncEngine timer, which fires even before the user registers.
+        // At that point colornote.db doesn't exist yet, so SQLite creates an empty
+        // file — meaning SyncMapping.shared.db holds a file descriptor to an empty
+        // database with no tables.  createBlankDatabase() then deletes that empty
+        // file and creates a fresh one, but the stale connection never sees the new
+        // schema.  resetConnection() closes the old handle and opens a fresh one on
+        // the newly-created database, exactly as the Cloud Restore path already does.
+        SyncMapping.shared.resetConnection()
+
         navigateToHome()
     }
 
@@ -388,49 +399,46 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
             return
         }
 
+        // Complete v10 schema — matches the schema that NoteRecords arrives at after
+        // running all migrations on a legacy database. Creating it directly here means
+        // NoteRecords can skip every migration on fresh installs.
         let createNotesTableSQL = """
         CREATE TABLE IF NOT EXISTS notes (
           _id INTEGER PRIMARY KEY,
           active_state INTEGER DEFAULT 0,
-          account_id INTEGER DEFAULT 0,
-          folder_id INTEGER DEFAULT 0,
-          status INTEGER DEFAULT 0,
-          space INTEGER DEFAULT 0,
           type INTEGER NOT NULL DEFAULT 0,
           title TEXT NOT NULL DEFAULT '',
           note TEXT NOT NULL DEFAULT '',
-          note_ext TEXT DEFAULT '',
           note_type INTEGER NOT NULL DEFAULT 0,
-          tags TEXT DEFAULT '',
-          importance INTEGER DEFAULT 0,
           created_date INTEGER NOT NULL DEFAULT 0,
           modified_date INTEGER NOT NULL DEFAULT 0,
-          minor_modified_date INTEGER DEFAULT 0,
-          reminder_type INTEGER DEFAULT 0,
-          reminder_option INTEGER DEFAULT 0,
-          reminder_date INTEGER DEFAULT 0,
-          reminder_base INTEGER DEFAULT 0,
-          reminder_last INTEGER DEFAULT 0,
-          reminder_duration INTEGER DEFAULT 0,
-          reminder_repeat INTEGER DEFAULT 0,
-          reminder_repeat_ends INTEGER DEFAULT 0,
-          latitude DOUBLE DEFAULT 0,
-          longitude DOUBLE DEFAULT 0,
           color_index INTEGER NOT NULL DEFAULT 0,
           category_id INTEGER DEFAULT 0,
-          encrypted INTEGER DEFAULT 0,
-          dirty INTEGER DEFAULT 1,
-          staged INTEGER DEFAULT 0,
-          uuid TEXT,
-          revision INTEGER DEFAULT 0
+          deleted_date INTEGER DEFAULT NULL,
+          content_format TEXT DEFAULT 'markdown',
+          uuid TEXT
         );
-        CREATE INDEX idx_note1 ON notes(active_state,account_id,folder_id,space);
-        CREATE INDEX idx_note2 ON notes(reminder_type,reminder_date);
-        CREATE INDEX idx_note3 ON notes(reminder_repeat,reminder_base);
-        CREATE INDEX idx_note4 ON notes(title);
-        CREATE INDEX idx_note_s1 ON notes(dirty);
-        CREATE INDEX idx_note_s2 ON notes(staged);
-        CREATE INDEX idx_note_category ON notes(category_id);
+        CREATE INDEX IF NOT EXISTS idx_note_category ON notes(category_id);
+        CREATE INDEX IF NOT EXISTS idx_notes_uuid ON notes(uuid);
+        """
+
+        // sync_mappings is created by NoteRecords migration v6; v10 adds the etag column.
+        // Build it fully here so migrations can be skipped entirely on fresh installs.
+        let createSyncMappingsSQL = """
+        CREATE TABLE IF NOT EXISTS sync_mappings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            local_id INTEGER NOT NULL,
+            cloud_id TEXT NOT NULL,
+            entity_type TEXT NOT NULL,
+            last_synced INTEGER,
+            sync_status TEXT DEFAULT 'pending_upload',
+            created_at INTEGER NOT NULL,
+            modified_at INTEGER NOT NULL,
+            etag TEXT DEFAULT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_sync_local ON sync_mappings(local_id, entity_type);
+        CREATE INDEX IF NOT EXISTS idx_sync_cloud ON sync_mappings(cloud_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_unique ON sync_mappings(local_id, entity_type);
         """
 
         let createCategoriesTableSQL = """
@@ -449,8 +457,9 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
 
         do {
             try db.execute(createNotesTableSQL)
+            try db.execute(createSyncMappingsSQL)
             try db.execute(createCategoriesTableSQL)
-            print("Blank database created successfully with categories table")
+            print("Blank database created successfully at v10 schema")
             insertDefaultCategories(db: db)
         } catch {
             print("Error creating blank database: \(error)")
@@ -561,6 +570,55 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         present(alert, animated: true)
     }
 
+    // MARK: - Cloud Sync
+
+    @objc private func cloudSyncButtonTapped() {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        guard let cloudLoginVC = sb.instantiateViewController(
+            withIdentifier: "CloudLoginViewController") as? CloudLoginViewController else { return }
+
+        cloudLoginVC.onLoginSuccess = { [weak self] in
+            self?.performCloudSyncRestore()
+        }
+
+        present(cloudLoginVC, animated: true)
+    }
+
+    private func performCloudSyncRestore() {
+        let spinner = showSpinner(message: "Restoring from cloud...")
+
+        let documents = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        let destinationPath = documents + "/colornote.db"
+        try? FileManager.default.removeItem(atPath: destinationPath)
+        createBlankDatabase(at: destinationPath)
+        UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
+        UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
+        Settings.setRegistered(registered: true)
+
+        _ = NoteRecords.instance
+        _ = CategoryRecords.instance
+        SyncMapping.shared.resetConnection()
+
+        SyncEngine.shared.isAutoSyncEnabled = true
+        SyncEngine.shared.downloadCloudChanges { [weak self] result in
+            DispatchQueue.main.async {
+                self?.hideSpinner(spinner)
+                switch result {
+                case .failure(let error):
+                    self?.showAlert(
+                        title: "Restore Incomplete",
+                        message: "Signed in but could not download all data: \(error.localizedDescription)\n\nYou can sync again from Settings.",
+                        completion: { self?.navigateToHome() }
+                    )
+                case .success:
+                    self?.navigateToHome()
+                }
+            }
+        }
+    }
+
     // MARK: - Cloud Restore
 
     @objc func cloudRestoreButtonTapped() {
@@ -573,10 +631,15 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         let destinationPath = documents + "/colornote.db"
         try? FileManager.default.removeItem(atPath: destinationPath)
         createBlankDatabase(at: destinationPath)
-        UserDefaults.standard.set(2, forKey: "DatabaseVersion")
+        // createBlankDatabase() now creates the complete v10 schema (notes + sync_mappings)
+        // and the full v3 categories schema — skip all migrations on this fresh install.
+        UserDefaults.standard.set(10, forKey: "DatabaseSchemaVersion")
+        UserDefaults.standard.set(3, forKey: "CategoryDatabaseSchemaVersion")
+        // Clear sync timestamps so the restore does a full download (since: null).
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastNoteSyncTime)
+        UserDefaults.standard.removeObject(forKey: APIConfig.UserDefaultsKeys.lastCategorySyncTime)
         Settings.setRegistered(registered: true)
 
-        // NoteRecords migrations create the sync_mappings table in the new file.
         _ = NoteRecords.instance
         _ = CategoryRecords.instance
         // SyncMapping may have been initialized at launch with a stale connection to

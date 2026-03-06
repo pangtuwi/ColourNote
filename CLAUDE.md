@@ -147,6 +147,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `AuthResponse` - Login/register response with JWT
    - `CreateNoteRequest` / `CreateCategoryRequest` - Request bodies
    - `SuccessMessageResponse` - For update operations
+   - `ShareNoteRequest` / `ShareNoteResponse` - Request/response for note sharing
    - Timestamp conversion utilities
 
 4. **AuthManager.swift** - Authentication management
@@ -213,7 +214,14 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `handleServerSideDeletions(cloudNoteIds:)` - Handle server-deleted notes
      - `downloadAllNotesWithDeletionHandling(since:)` - Download with deletion detection
 
-8. **SyncEngine.swift** - Orchestrates full sync
+8. **SharingService.swift** - Note sharing API calls
+   - Singleton: `SharingService.shared`
+   - Dependency-injected `NetworkManaging` for testability (same pattern as other services)
+   - `createShare(noteUUID:recipientEmail:completion:)` — POST `/notes/{uuid}/share` → returns share URL string
+   - Used by `NotesListViewController.showShareAccessFlow` to obtain a shareable link
+   - See `SHAREDNOTESSPEC.md` for the full backend implementation spec
+
+9. **SyncEngine.swift** - Orchestrates full sync
    - `syncAll()` - Full bidirectional sync
    - `uploadLocalChanges()` - Upload only
    - `downloadCloudChanges()` - Download only
@@ -246,6 +254,8 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Long-press menu for copy, paste, delete
      - Tap to open note in full screen
      - Passcode protection check for protected categories
+     - Share swipe action presents an action sheet: "Send note contents" (plain text via UIActivityViewController) or "Share access with another user" (calls `showShareAccessFlow`)
+   - `showShareAccessFlow(note:sourceView:sourceRect:)` — guards on login, prompts for recipient email, calls `SharingService.createShare`, then presents system share sheet with the returned URL
    - Outlets: `StatusLabel`, `SearchTextEditor`, `CategoryFilter`
    - Shows locked icon for protected category notes
 
@@ -316,17 +326,19 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `CAGradientLayer` background: deep purple → indigo → azure diagonal gradient
      - Two semi-transparent decorative orbs (purple top-left, cyan bottom-right)
      - `UIVisualEffectView(.systemUltraThinMaterial)` frosted glass card centered on screen
-     - App icon (Splash asset or `note.text` SF Symbol fallback) with gradient rounded-rect background
+     - App icon (`irids_bg` asset or `note.text` SF Symbol fallback) displayed as a 72×72 `UIImageView` with `cornerRadius = 18`, `clipsToBounds = true`, and `scaleAspectFill` — no container view or gradient layer
      - "ColourNote" title + "Your notes, beautifully organised" subtitle
      - Glass buttons with SF Symbol icon, two-line label, trailing chevron, and press animations (scale + alpha)
      - `gradientLayer` resized in `viewDidLayoutSubviews()` to handle rotation correctly
      - Storyboard IBOutlets set to `isHidden = true` AND `isUserInteractionEnabled = false` as belt-and-suspenders
-   - Three startup options (as glass buttons):
+   - Four startup options (as glass buttons):
      - **Start Fresh** (`doc.badge.plus`, blue) — creates a blank local database
      - **Import Backup** (`arrow.down.doc.fill`, amber) — imports notes/categories from a JSON file
+     - **Cloud Sync** (`arrow.triangle.2.circlepath.icloud`, indigo/purple) *(always visible)* — presents `CloudLoginViewController` for login/register, then downloads all data from the cloud server; `performCloudSyncRestore()` handles the post-auth DB setup and download
      - **Cloud Restore** (`icloud.and.arrow.down.fill`, green) *(shown only when Keychain credentials exist from a previous install)* — silently re-authenticates and downloads all data from the cloud server
+   - Cloud Sync flow: present `CloudLoginViewController` → `onLoginSuccess` callback → `performCloudSyncRestore()`: creates blank DB → initialises singletons → `resetConnection()` → `SyncEngine.downloadCloudChanges` → navigates home
    - Cloud Restore flow: creates blank DB → initialises singletons → calls `SyncMapping.shared.resetConnection()` to fix any stale connection → logs in → calls `SyncEngine.downloadCloudChanges` → navigates home
-   - Spinner overlay with status message ("Signing in..." → "Restoring from cloud...") during restore
+   - Spinner overlay with status message ("Restoring from cloud...") during restore
 
 
 #### UI Components
@@ -486,7 +498,7 @@ Passcode Flow:
    - Session unlock state could use more secure storage mechanism
 
 5. **Testing**: See **[TESTS.md](TESTS.md)** for full test documentation.
-   - 40 unit tests across 7 suites using Swift Testing framework (`ColourNoteXCTests/`)
+   - 45 unit tests across 8 suites using Swift Testing framework (`ColourNoteXCTests/`)
    - 10 UI tests across 3 suites using XCUITest (`ColourNoteXCUITests/`)
    - `NoteRecords` / `CategoryRecords` singletons are out of scope for unit tests (hard-coded SQLite path)
 
@@ -528,10 +540,24 @@ ColourNote/
 │   │   ├── SyncMapping.swift    # ID mapping
 │   │   ├── CategorySyncService.swift
 │   │   ├── NoteSyncService.swift
+│   │   ├── SharingService.swift # Note sharing API calls
 │   │   └── SyncEngine.swift     # Sync orchestration
 │   ├── Globals.swift             # App-wide constants & state
 │   ├── NotesNotification.swift   # Notification system
 │   └── SpinnerViewController.swift
+├── ColourNoteXCTests/             # Unit test target (Swift Testing, 45 tests across 8 suites)
+│   ├── Helpers/
+│   │   ├── MockURLProtocol.swift  # URLProtocol subclass for HTTP-level tests
+│   │   ├── MockNetworkManager.swift # NetworkManaging stub (offline, configurable)
+│   │   └── TestFixtures.swift    # Factory methods for model instances
+│   ├── NoteModelTests.swift       # 7 tests: Note model
+│   ├── CategoryModelTests.swift   # 11 tests: Category model + UIColor hex extension
+│   ├── CloudModelsTests.swift     # 12 tests: Codable, conversions, sharing models
+│   ├── NetworkManagerTests.swift  # 6 tests: Keychain + HTTP via URLProtocol
+│   ├── AuthManagerTests.swift     # 7 tests: offline via MockNetworkManager
+│   ├── NoteSyncServiceTests.swift # 5 tests: download paths + permanent delete
+│   ├── CategorySyncServiceTests.swift # 4 tests: download paths + markForUpload
+│   └── SharingServiceTests.swift  # 3 tests: createShare success, error, correct endpoint
 ├── ColourNoteXCUITests/           # UI test target (XCUITest)
 │   ├── Helpers/
 │   │   └── UITestCase.swift      # Base class: fresh-install reset, tapStartFresh()
@@ -543,6 +569,7 @@ ColourNote/
 ├── Podfile                        # CocoaPods dependencies
 ├── README.md                      # User-facing documentation
 ├── CLAUDE.md                      # Technical documentation (this file)
+├── SHAREDNOTESSPEC.md             # Backend spec for Shared Notes feature (Irids_Web)
 └── .gitignore
 ```
 
@@ -564,6 +591,25 @@ ColourNote/
 
 ## Version History
 
+### Shared_Notes branch (in progress)
+- **Shared Note Access** — users can now share collaborative access to a note with another ColourNote user
+  - Share swipe action now presents an action sheet: "Send note contents" (existing plain-text share) or "Share access with another user"
+  - New `SharingService.swift` singleton: `POST /notes/{uuid}/share` → returns a shareable URL
+  - New `ShareNoteRequest` / `ShareNoteResponse` models in `CloudModels.swift`
+  - `NotesListViewController.showShareAccessFlow` — prompts for recipient email, spins while creating the share, then presents iOS share sheet with the link
+  - `SHAREDNOTESSPEC.md` — full backend spec for the Irids_Web Node.js implementation (migration v14, `note_shares` table, 5 new endpoints, server-side propagation)
+- **Bug fix**: `LoginViewController` `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now set `"DatabaseSchemaVersion" = 10` and `"CategoryDatabaseSchemaVersion" = 3` after `createBlankDatabase()` — previously used the wrong key `"DatabaseVersion"`, causing NoteRecords/CategoryRecords to run migrations against an already-complete schema and leaving `CategoryDatabaseSchemaVersion = 3` without the actual columns in place on subsequent runs
+- **Bug fix**: `CategoryRecords.ensureRequiredCategoryColumns()` — new defensive repair called at the end of `migrateCategorySchemaIfNeeded()` every time; uses `PRAGMA table_info(categories)` to detect missing columns (`is_protected`, `uuid`, `modified_at`) and adds them regardless of stored schema version, preventing the `Fatal error: No such column "uuid"` crash
+- **Bug fix**: Notes downloaded from cloud showing "No Category" after a fresh Start Fresh install
+  - **Root cause**: AppDelegate fires `SyncEngine.shared.syncIfNeeded()` 1 second after launch (even before registration). This chains through stored properties `SyncEngine → CategorySyncService → SyncMapping`, causing `SyncMapping.shared` to call `openDatabase()` while `colornote.db` doesn't yet exist. SQLite creates an empty file. When the user taps "Start Fresh", `createBlankDatabase()` deletes that empty file and creates a proper new one — but `SyncMapping.shared.db` retains a stale file descriptor to the deleted empty file (no `sync_mappings` table), causing every mapping operation to fail with `no such table: sync_mappings`.
+  - **Fix**: `initializeAppWithDatabase()` now calls `SyncMapping.shared.resetConnection()` after `createBlankDatabase()`, matching the pattern already present in `cloudRestoreButtonTapped()`
+- **Bug fix**: `createBlankDatabase()` now creates the complete v10 `notes` schema (removed all legacy columns that existed only for backwards migration compatibility) and creates the `sync_mappings` table inline — previously the `sync_mappings` table was absent from fresh installs until NoteRecords migrations ran, causing early mapping operations to fail
+- **Bug fix**: `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now clear `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults — stale timestamps from a previous install were causing 304 Not Modified responses on the first sync of a fresh install, silently skipping all downloads
+- **Bug fix**: `SyncEngine.syncCategories()` — on first sync (`lastCategorySyncTime == nil`), categories are now downloaded before uploading. Previously, uploading first caused cloud category IDs to be mapped to local IDs, then the subsequent download name-matched those same categories and overwrote the mappings — leaving note downloads unable to resolve their `categoryId` to a local ID
+- **AppDelegate `UI_TESTING_FRESH_INSTALL`**: Now also clears `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults so XCUITests start with a fully clean sync state
+- **Tests**: `SharingServiceTests.swift` (3 new unit tests: success, network error, correct endpoint) + 2 new Codable tests in `CloudModelsTests.swift` for `ShareNoteRequest`/`ShareNoteResponse` — total 45 unit tests across 8 suites
+- **Bug fix**: `NoteDetailViewController` — removed erroneous `canPerformAction(_:withSender:)` override that caused a crash (`NSInvalidArgumentException: unrecognized selector cut:`) when cutting text in preview mode. The override claimed the view controller could handle `cut:` but provided no implementation; `UITextView` handles these actions natively via the responder chain without the override.
+
 ### 1.2.3 (Build 11) - Current Release
 - **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys
   - `LaunchTests` — fresh-install login screen and Start Fresh navigation
@@ -573,88 +619,10 @@ ColourNote/
 - **Configurable API server**: `APIConfig.baseURL` now reads `API_BASE_URL` launch environment variable at runtime (tests point to `http://localhost:3002`; production falls back to `https://irids.co.uk`)
 - **Bug fix**: `createBlankDatabase()` now creates the full current categories schema (`uuid`, `is_protected`, `modified_at`) — previously the bare v1 schema caused a fatal crash when `CategoryDatabaseSchemaVersion` was already at 3 in UserDefaults and migrations were skipped
 - **Accessibility identifiers** added for XCUITest: `startFreshButton`, `importBackupButton` (LoginViewController), `noteSearchField` (NotesListViewController), `noteTitleField`, `noteTextView`, `listButton` (NoteDetailViewController)
+- **UI fix: Login screen app icon** — removed the gradient container view; `cornerRadius`, `clipsToBounds`, and `scaleAspectFill` are now applied directly to the `UIImageView` so the icon displays with properly rounded corners. Asset changed from `Splash` to `irids_bg`.
+- **Launch screen updated** — `LaunchScreen.storyboard` now uses `irids_bg` as a full-screen background (`scaleToFill`) with the "ColourNote" label overlaid at the bottom. New `AppIcon_irids` app icon set added with light/dark variants at all required scales.
+- **New feature: "Cloud Sync" startup button** — `LoginViewController` now shows a permanent "Cloud Sync" button (indigo, `arrow.triangle.2.circlepath.icloud`) between "Import Backup" and the conditional "Cloud Restore" button. Tapping it presents `CloudLoginViewController`; on successful login the `onLoginSuccess` callback fires `performCloudSyncRestore()`, which creates a blank DB, initialises singletons, and runs `SyncEngine.downloadCloudChanges`. Accessibility identifier: `cloudSyncButton`.
 
-### 1.2.2 (Build 10) - Previous Release
-- **Cloud Restore** on startup screen: detects Keychain credentials from a previous install and shows a green "Cloud Restore" button; silently re-authenticates and downloads all notes/categories without needing a backup file
-- **Bug fix**: `SyncMapping.resetConnection()` ensures the singleton reconnects to the newly-created database after a Cloud Restore (previously held a stale connection to the deleted file, causing `sync_mappings` table errors)
-- **SyncEngine guard**: `syncAll()` and `syncIfNeeded()` now check `isRegistered()` before proceeding, preventing spurious sync attempts before a database exists
-- **Debug cleanup**: Removed per-call `print` statements from `getNotes()`, `getDeletedNotes()`, `getAllNotes()`, and `getCategories()` that produced dozens of duplicate log lines during sync
-- **Bug fix**: Paragraph breaks (and markdown syntax) no longer lost when sharing a note via swipe-left → Share. `MarkdownRenderer.plainText(from:)` strips markdown syntax before sharing, so receiving apps see clean plain text with blank lines preserved.
-
-### 1.02 (Build 3) - Previous Release
-- Added passcode protection for categories (SHA-256 hashing)
-- Implemented session-based unlocking
-- Enhanced export/backup with passcode validation
-- Added copy/paste functionality in note editor
-- Improved category management UI
-- Toast notifications for note deletion
-
-### 1.01 (Build 2)
-- Implemented soft delete system with trash functionality
-- Added category management with custom colors
-- Created backup/export to JSON
-- Implemented import from JSON
-- Enhanced UI with category filtering
-- Added note restoration from trash
-
-### 1.0 (Build 1) - Initial Release
-- Basic note creation and editing
-- SQLite database integration
-- Color-coded note organization
-- Search and filter functionality
-- Pull-to-refresh
-- Auto-save on text changes
-
-## Completed Features
-
-- [x] Note creation and editing UI
-- [x] Soft delete with trash functionality
-- [x] Category management with custom colors
-- [x] **Inline category creation** - Create categories from note editor
-- [x] Passcode protection for categories (SHA-256)
-- [x] Session-based unlocking
-- [x] Backup/Export to JSON
-- [x] Import from JSON
-- [x] Copy/paste support
-- [x] Search and filter by title
-- [x] Filter by category
-- [x] Database migration system
-- [x] Lined text view for writing
-- [x] Auto-save functionality
-- [x] **Markdown support** - Edit/Preview toggle with native rendering
-- [x] **Cloud sync** - JWT authentication with bidirectional sync
-- [x] **UUID-based sync matching** - Cross-device identification with UUID priority
-
-## Future Enhancements
-
-Potential features to implement:
-
-**High Priority:**
-1. ~~Rich text formatting (bold, italic, lists)~~ → Implemented via Markdown
-2. Note pinning/favorites
-3. Dark mode support
-
-**Medium Priority:**
-4. Checklist/todo items within notes
-5. Note sharing (export individual notes)
-6. Export to PDF/Text formats
-7. Improved search (search note content, not just titles)
-8. Tags/labels in addition to categories
-9. Note templates
-10. Widgets for iOS home screen
-11. Home/Dashboard screen with note statistics
-
-**Low Priority/Future:**
-12. ~~Cloud sync (iCloud)~~ → Implemented with custom server
-13. Collaborative notes
-14. Voice notes/audio recording
-15. Image attachments
-16. Siri shortcuts integration
-17. Apple Watch companion app
-18. iPad optimization with split view
-19. Markdown support
-20. Note linking/backlinks
-21. Encryption for individual notes
 
 ## Security Considerations
 

@@ -478,20 +478,6 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         // Keyboard will appear
     }
 
-    // MARK: - Copy/Paste Support
-
-    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        // Enable copy, cut, paste, select, and select all actions
-        if action == #selector(UIResponderStandardEditActions.copy(_:)) ||
-           action == #selector(UIResponderStandardEditActions.cut(_:)) ||
-           action == #selector(UIResponderStandardEditActions.paste(_:)) ||
-           action == #selector(UIResponderStandardEditActions.select(_:)) ||
-           action == #selector(UIResponderStandardEditActions.selectAll(_:)) {
-            return true
-        }
-        return super.canPerformAction(action, withSender: sender)
-    }
-
     deinit {
         // Remove notification observers
         NotificationCenter.default.removeObserver(self)
