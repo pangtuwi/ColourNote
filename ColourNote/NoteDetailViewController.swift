@@ -20,8 +20,10 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
     @IBOutlet weak var listButton: UIButton!
     @IBOutlet weak var categoryButton: UIButton!
 
-    // Markdown mode toggle - created programmatically
-    private var modeSegmentedControl: UISegmentedControl!
+    private var modeToggleItem: UIBarButtonItem!
+    private var bottomToolbar: UIToolbar!
+    private let toolbarHeight: CGFloat = 44
+    private var toolbarBottomConstraint: NSLayoutConstraint!
 
     @IBAction func DeleteButtonPressed(_ sender: Any) {
         showDeleteConfirmation()
@@ -49,7 +51,7 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         case preview
     }
 
-    private var currentMode: DisplayMode = .preview
+    private var currentMode: DisplayMode = .edit
     private var markdownContent: String = ""
     
     override func viewDidLoad() {
@@ -65,6 +67,9 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         textView.isSelectable = true
         noteTitle.isEnabled = true
 
+        // Drag down on the text view to dismiss the keyboard interactively
+        textView.keyboardDismissMode = .interactive
+
         // Style the list button as a round button
         styleListButton()
 
@@ -75,8 +80,17 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         // Add observer for app backgrounding to ensure note is saved
         notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
 
+        // Set up bottom toolbar with delete, share, and mode toggle
+        setupBottomToolbar()
+
         // Set up Markdown editing/preview views
         setupMarkdownViews()
+
+        // Hide storyboard delete button (delete is now in bottom toolbar)
+        deleteButton.isHidden = true
+
+        // Initial text view inset to clear the toolbar
+        textView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: toolbarHeight, right: 0)
 
     } //viewDidLoad
 
@@ -104,13 +118,23 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
         let keyboardScreenEndFrame = keyboardValue.cgRectValue
         let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: view.window)
 
+        let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+
         if notification.name == UIResponder.keyboardWillHideNotification {
-            textView.contentInset = .zero
+            toolbarBottomConstraint.constant = 0
+            textView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: toolbarHeight, right: 0)
         } else {
-            textView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height - view.safeAreaInsets.bottom, right: 0)
+            let keyboardOffset = keyboardViewEndFrame.height - view.safeAreaInsets.bottom + 8
+            toolbarBottomConstraint.constant = -keyboardOffset
+            textView.contentInset = UIEdgeInsets(top: 0, left: 0,
+                bottom: keyboardOffset + toolbarHeight, right: 0)
         }
 
         textView.scrollIndicatorInsets = textView.contentInset
+
+        UIView.animate(withDuration: duration) {
+            self.view.layoutIfNeeded()
+        }
 
         let selectedRange = textView.selectedRange
         textView.scrollRangeToVisible(selectedRange)
@@ -485,136 +509,66 @@ class NoteDetailViewController: UIViewController, UITextViewDelegate, UIColorPic
 
     // MARK: - Markdown Support
 
-    /// Style Segmented Control
-    ///
-    func styleSegmentedControl(_ control: UISegmentedControl?) {
-        guard let control = control else { return }
-
-        // 1. Remove the default solid backgrounds
-        let transparentImage = UIImage()
-        control.setBackgroundImage(transparentImage, for: .normal, barMetrics: .default)
-        control.setBackgroundImage(transparentImage, for: .selected, barMetrics: .default)
-        control.setDividerImage(transparentImage, forLeftSegmentState: .normal, rightSegmentState: .normal, barMetrics: .default)
-
-        // 2. Style the text for Liquid Glass (Vibrant look)
-        let normalAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.secondaryLabel
-        ]
-        let selectedAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.label,
-            .font: UIFont.systemFont(ofSize: 13, weight: .semibold)
-        ]
-        control.setTitleTextAttributes(normalAttributes, for: .normal)
-        control.setTitleTextAttributes(selectedAttributes, for: .selected)
-
-        // 3. Add the Glass Container
-        let glassEffect = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
-        glassEffect.layer.cornerRadius = 10
-        glassEffect.clipsToBounds = true
-        glassEffect.isUserInteractionEnabled = false // Let touches pass to the control
-        
-        // 4. Add a subtle "Rim Light" border
-        glassEffect.layer.borderWidth = 0.5
-        glassEffect.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
-
-        // Layout Logic (Assuming it's in a view hierarchy)
-        control.insertSubview(glassEffect, at: 0)
-        glassEffect.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        glassEffect.frame = control.bounds
-    }
-    
-    
-    func styleIconSegmentedControl(_ control: UISegmentedControl) {
-        // 1. Create a consistent symbol configuration
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold, scale: .medium)
-        
-        // 2. Re-apply icons with the configuration
-        control.setImage(UIImage(systemName: "pencil.and.outline", withConfiguration: config), forSegmentAt: 0)
-        control.setImage(UIImage(systemName: "eye", withConfiguration: config), forSegmentAt: 1)
-        
-        // 3. Set the icon colors
-        // In Liquid Glass, 'secondaryLabel' is used for inactive states
-        control.setTitleTextAttributes([.foregroundColor: UIColor.secondaryLabel], for: .normal)
-        
-        // 'label' or a specific tint color is used for the active state
-        control.setTitleTextAttributes([.foregroundColor: UIColor.systemBlue], for: .selected)
-        
-        // 4. Apply your glass background logic from before
-     
-        let glassEffect = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
-        glassEffect.layer.cornerRadius = 10
-        glassEffect.clipsToBounds = true
-        glassEffect.isUserInteractionEnabled = false // Let touches pass to the control
-        
-        // 4. Add a subtle "Rim Light" border
-        glassEffect.layer.borderWidth = 0.5
-        glassEffect.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
-
-        // Layout Logic (Assuming it's in a view hierarchy)
-        control.insertSubview(glassEffect, at: 0)
-        glassEffect.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        glassEffect.frame = control.bounds
-    }
-    /// Set up Markdown edit/preview toggle
+    /// Set up Markdown edit/preview toggle (minimal stub — toggle is in bottom toolbar)
     private func setupMarkdownViews() {
-        // Create segmented control programmatically
-        
-        let editIcon = UIImage(systemName: "pencil.and.outline")
-        let previewIcon = UIImage(systemName: "eye")
-
-        // Initialize with the images instead of strings
-        let modeSegmentedControl = UISegmentedControl(items: [editIcon as Any, previewIcon as Any])
-        //modeSegmentedControl = UISegmentedControl(items: ["Edit", "Preview"])
-        modeSegmentedControl.selectedSegmentIndex = 0  // Default to edit mode
-        modeSegmentedControl.addTarget(self, action: #selector(modeSegmentChanged), for: .valueChanged)
-        modeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        
-        modeSegmentedControl.subviews[0].accessibilityLabel = "Edit Mode"
-        modeSegmentedControl.subviews[1].accessibilityLabel = "Preview Mode"
-        
-        // Setting width to 0 allows the segment to auto-size to the icon,
-        // but you can provide a specific value (e.g., 50) for a tighter look.
-        modeSegmentedControl.setWidth(50, forSegmentAt: 0)
-        modeSegmentedControl.setWidth(50, forSegmentAt: 1)
-       
-        // Ensure it doesn't stretch to fill the screen
-        modeSegmentedControl.apportionsSegmentWidthsByContent = true
-
-        styleIconSegmentedControl(modeSegmentedControl)
-        
-        // Add to view
-        view.addSubview(modeSegmentedControl)
-
-        // Position on the controls row (Row 2), aligned with category button
-        if let categoryBtn = categoryButton {
-            NSLayoutConstraint.activate([
-                modeSegmentedControl.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
-                modeSegmentedControl.centerYAnchor.constraint(equalTo: categoryBtn.centerYAnchor),
-                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 100),
-                modeSegmentedControl.heightAnchor.constraint(equalToConstant: 32)
-            ])
-        } else {
-            // Fallback if category button isn't connected
-            NSLayoutConstraint.activate([
-                modeSegmentedControl.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
-                modeSegmentedControl.topAnchor.constraint(equalTo: noteTitle.bottomAnchor, constant: 8),
-                modeSegmentedControl.widthAnchor.constraint(equalToConstant: 100)
-            ])
-        }
-
-        // Start in edit mode (default for new/existing notes)
         currentMode = .edit
     }
 
-    /// Handle mode segmented control changes
-    @objc private func modeSegmentChanged(_ sender: UISegmentedControl) {
-        // Save any pending changes before switching modes
-        if currentMode == .edit {
-            markdownContent = textView.text
-        }
+    // MARK: - Bottom Toolbar
 
-        let newMode: DisplayMode = sender.selectedSegmentIndex == 0 ? .edit : .preview
+    private func setupBottomToolbar() {
+        bottomToolbar = UIToolbar()
+        bottomToolbar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(bottomToolbar)
+
+        toolbarBottomConstraint = bottomToolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        NSLayoutConstraint.activate([
+            bottomToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            toolbarBottomConstraint
+        ])
+
+        let deleteItem = UIBarButtonItem(image: UIImage(systemName: "trash"),
+                                         style: .plain, target: self,
+                                         action: #selector(DeleteButtonPressed(_:)))
+        deleteItem.tintColor = .systemRed
+
+        let shareItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"),
+                                        style: .plain, target: self,
+                                        action: #selector(shareNote))
+
+        let flex1 = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let flex2 = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+
+        modeToggleItem = UIBarButtonItem(image: nil, style: .plain, target: self, action: #selector(modeToggleTapped))
+        updateToggleButtonIcon()
+
+        bottomToolbar.items = [deleteItem, flex1, shareItem, flex2, modeToggleItem]
+    }
+
+    private func updateToggleButtonIcon() {
+        let name = currentMode == .edit ? "eye" : "pencil.and.outline"
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+        modeToggleItem.image = UIImage(systemName: name, withConfiguration: config)
+    }
+
+    @objc private func modeToggleTapped() {
+        let newMode: DisplayMode = currentMode == .edit ? .preview : .edit
+        if currentMode == .edit { markdownContent = textView.text }
         switchMode(to: newMode)
+        updateToggleButtonIcon()
+    }
+
+    @objc private func shareNote() {
+        let content = currentMode == .edit ? (textView.text ?? "") : markdownContent
+        let title = noteTitle.text ?? ""
+        let shareText = title.isEmpty ? content : "\(title)\n\n\(content)"
+        let vc = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+        if let popover = vc.popoverPresentationController {
+            popover.sourceView = bottomToolbar
+            popover.sourceRect = bottomToolbar.bounds
+        }
+        present(vc, animated: true)
     }
 
     /// Switch between edit and preview modes

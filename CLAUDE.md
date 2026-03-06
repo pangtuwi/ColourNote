@@ -611,6 +611,14 @@ ColourNote/
 - **Bug fix**: `NoteDetailViewController` — removed erroneous `canPerformAction(_:withSender:)` override that caused a crash (`NSInvalidArgumentException: unrecognized selector cut:`) when cutting text in preview mode. The override claimed the view controller could handle `cut:` but provided no implementation; `UITextView` handles these actions natively via the responder chain without the override.
 
 ### 1.2.3 (Build 11) - Current Release
+- **Note editor UI redesign** (`NoteDetailViewController`):
+  - **New layout**: back button and category pill share row 1; title is full-width on row 2
+  - **Bottom toolbar** replaces the old segmented control row: delete (red), share, and edit/preview toggle evenly distributed via flexible spaces
+  - **Edit/preview toggle** is a plain `UIBarButtonItem` (eye icon in edit mode, pencil in preview mode); tapping switches modes and updates the icon
+  - **Share button** in toolbar sends note title + content via `UIActivityViewController`
+  - **Keyboard handling**: toolbar slides up with the keyboard (animated, 8 pt gap), stays visible; `keyboardDismissMode = .interactive` replaces the swipe gesture so scrollable notes dismiss the keyboard correctly
+  - **Notes open in edit mode** with keyboard hidden — keyboard only appears when the user taps the text area
+  - **Bug fix**: removed erroneous `canPerformAction(_:withSender:)` override that caused a crash when cutting text in preview mode
 - **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys
   - `LaunchTests` — fresh-install login screen and Start Fresh navigation
   - `NotesListTests` — nav bar, search field, Add button, note editor opens

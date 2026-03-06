@@ -289,23 +289,23 @@
                         <viewLayoutGuide key="safeArea" id="LhO-0W-MLj"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <!-- List button - left of title, vertically centered with title -->
+                            <!-- List button - top left -->
                             <constraint firstItem="VxD-Za-Zxv" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" constant="8" id="ESH-D3-LFH"/>
-                            <constraint firstItem="VxD-Za-Zxv" firstAttribute="centerY" secondItem="qN5-N0-1NX" secondAttribute="centerY" id="list-btn-centery"/>
-                            <!-- Title field - Row 1, after list button -->
-                            <constraint firstItem="qN5-N0-1NX" firstAttribute="leading" secondItem="VxD-Za-Zxv" secondAttribute="trailing" constant="8" id="H9q-D7-Jwu"/>
-                            <constraint firstItem="qN5-N0-1NX" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="-8" id="title-trailing"/>
-                            <constraint firstItem="qN5-N0-1NX" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="8" id="cYV-ra-idu"/>
-                            <!-- Category button - Row 2, right of center -->
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="top" secondItem="qN5-N0-1NX" secondAttribute="bottom" constant="8" id="cat-top"/>
-                            <constraint firstItem="6V1-Y5-buY" firstAttribute="trailing" secondItem="gjg-ai-Z5a" secondAttribute="leading" constant="-8" id="cat-trailing"/>
-                            <!-- Delete button - Row 2, far right -->
+                            <constraint firstItem="VxD-Za-Zxv" firstAttribute="top" secondItem="LhO-0W-MLj" secondAttribute="top" constant="8" id="list-btn-top"/>
+                            <!-- Category button - top right, aligned with listButton -->
+                            <constraint firstItem="6V1-Y5-buY" firstAttribute="centerY" secondItem="VxD-Za-Zxv" secondAttribute="centerY" id="cat-centery-list"/>
+                            <constraint firstItem="6V1-Y5-buY" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="-8" id="cat-trailing-safe"/>
+                            <!-- Delete button - hidden, harmless constraints kept -->
                             <constraint firstItem="gjg-ai-Z5a" firstAttribute="centerY" secondItem="6V1-Y5-buY" secondAttribute="centerY" id="del-centery"/>
                             <constraint firstItem="gjg-ai-Z5a" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="-8" id="del-trailing"/>
-                            <!-- TextView - Row 3 and below -->
+                            <!-- Title field - full width below listButton -->
+                            <constraint firstItem="qN5-N0-1NX" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" constant="8" id="title-leading-safe"/>
+                            <constraint firstItem="qN5-N0-1NX" firstAttribute="trailing" secondItem="LhO-0W-MLj" secondAttribute="trailing" constant="-8" id="title-trailing"/>
+                            <constraint firstItem="qN5-N0-1NX" firstAttribute="top" secondItem="VxD-Za-Zxv" secondAttribute="bottom" constant="8" id="title-top-listbtn"/>
+                            <!-- TextView - full width below title -->
                             <constraint firstItem="BRL-3j-bfH" firstAttribute="leading" secondItem="LhO-0W-MLj" secondAttribute="leading" id="ULh-tc-uUV"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="trailing" secondItem="BRL-3j-bfH" secondAttribute="trailing" id="fbD-be-oe7"/>
-                            <constraint firstItem="BRL-3j-bfH" firstAttribute="top" secondItem="6V1-Y5-buY" secondAttribute="bottom" constant="8" id="gfo-tB-3mK"/>
+                            <constraint firstItem="BRL-3j-bfH" firstAttribute="top" secondItem="qN5-N0-1NX" secondAttribute="bottom" constant="8" id="tv-top-title"/>
                             <constraint firstItem="LhO-0W-MLj" firstAttribute="bottom" secondItem="BRL-3j-bfH" secondAttribute="bottom" id="R0I-S9-tcw"/>
                         </constraints>
                     </view>
