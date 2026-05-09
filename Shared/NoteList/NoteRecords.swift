@@ -769,9 +769,10 @@ class NoteRecords {
     
     func updateNoteText (changedNoteId : Int, newText : String) -> Int {
         var result : Int = -1
+        let semaphore = DispatchSemaphore(value: 0)
         concurrentDBQueue.async(flags: .barrier) { [weak self] in
-            // 1
             guard let self = self else {
+                semaphore.signal()
                 return
             }
 
@@ -784,24 +785,19 @@ class NoteRecords {
                     UPDATE notes SET note = ?, modified_date = ? WHERE _id = ?
                     """
                     try self.db!.run(sql, newText, saveTime, changedNoteId)
-                  /*  DispatchQueue.main.async {
-                        NotificationCenter.default.post(name: NotesNotification.contentUpdated, object: nil)
-                    }
-                   */
                     print ("Updated Note in local DB with ID \(changedNoteId)")
                     result = changedNoteId
-                    // return //id
                 } catch {
                     print("update failed in updateNoteText: \(error)")
-                    // return
                 }
             } else {
-
                 print("Cant find Note to update in NoteRecords.updateNoteText")
             }
+            semaphore.signal()
         }
+        semaphore.wait()
         return result
-    } //updateActivity(efrt)
+    } //updateNoteText
 
     func insertNote(note: Note) -> Int64 {
         var result: Int64 = -1
@@ -835,8 +831,10 @@ class NoteRecords {
 
     func updateNoteTitle(changedNoteId: Int, newTitle: String) -> Int {
         var result: Int = -1
+        let semaphore = DispatchSemaphore(value: 0)
         concurrentDBQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else {
+                semaphore.signal()
                 return
             }
 
@@ -857,7 +855,9 @@ class NoteRecords {
             } else {
                 print("Can't find Note to update in NoteRecords.updateNoteTitle")
             }
+            semaphore.signal()
         }
+        semaphore.wait()
         return result
     } //updateNoteTitle
 
