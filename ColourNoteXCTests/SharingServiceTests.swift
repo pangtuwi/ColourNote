@@ -72,4 +72,38 @@ struct SharingServiceTests {
 
         #expect(mock.calledEndpoints.contains("/notes/uuid-abc/share"))
     }
+
+    @Test func createShareSendsRecipientEmailInBody() async {
+        let (svc, mock) = makeSUT()
+        mock.stubbedPOSTData = ShareNoteResponse(
+            shareUrl: "https://irids.co.uk/share/tok",
+            token: "tok"
+        )
+
+        let _: Result<String, Error> = await withCheckedContinuation { cont in
+            svc.createShare(noteUUID: "uuid-xyz", recipientEmail: "carol@example.com") { r in
+                cont.resume(returning: r)
+            }
+        }
+
+        let body = mock.lastBody as? ShareNoteRequest
+        #expect(body?.recipientEmail == "carol@example.com")
+    }
+
+    @Test func createShareHttpErrorPropagatesFailure() async {
+        let (svc, mock) = makeSUT()
+        mock.stubbedPOSTError = .httpError(statusCode: 404, message: "Note not found")
+
+        let result: Result<String, Error> = await withCheckedContinuation { cont in
+            svc.createShare(noteUUID: "uuid-missing", recipientEmail: "nobody@example.com") { r in
+                cont.resume(returning: r)
+            }
+        }
+
+        if case .failure = result {
+            // expected
+        } else {
+            Issue.record("Expected failure for 404 server error, got \(result)")
+        }
+    }
 }

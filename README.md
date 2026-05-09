@@ -242,7 +242,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **1.2.3 (Build 11)** - Current Release (March 6, 2026)
   - **Note editor UI redesign**: back button + category pill on row 1; full-width title on row 2; bottom toolbar with delete, share, and edit/preview toggle
   - **Keyboard UX**: toolbar slides up with keyboard (stays visible); interactive dismiss on scroll; keyboard hidden on open until user taps
-  - **UI Test Suite**: 10 XCUITests covering app launch, notes list, and note editor (all passing)
+  - **UI Test Suite**: 13 XCUITests across 4 suites covering app launch, notes list, note editor, and note sharing (all passing)
   - **Test isolation**: `UI_TESTING_FRESH_INSTALL` launch argument for clean per-test state
   - **Configurable API server**: `APIConfig.baseURL` reads `API_BASE_URL` env var at runtime
   - **Bug fix**: `createBlankDatabase()` now creates the full categories schema preventing a fatal crash on simulators with stale migration version keys

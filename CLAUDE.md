@@ -1,5 +1,12 @@
 # ColourNote iOS App
 
+## Repository Layout
+
+This project spans two directories:
+
+- `/Users/paulwilliams/Documents/Programming/ColourNote/` — iOS Swift frontend (this repo)
+- `/Users/paulwilliams/Documents/Programming/Irids_Web/` — Node.js backend
+
 ## Project Overview
 ColourNote is a feature-rich iOS note-taking application with color-coded organization, category management, and security features. The app is built in Swift using UIKit and uses SQLite for local data persistence.
 
@@ -498,8 +505,8 @@ Passcode Flow:
    - Session unlock state could use more secure storage mechanism
 
 5. **Testing**: See **[TESTS.md](TESTS.md)** for full test documentation.
-   - 45 unit tests across 8 suites using Swift Testing framework (`ColourNoteXCTests/`)
-   - 10 UI tests across 3 suites using XCUITest (`ColourNoteXCUITests/`)
+   - 47 unit tests across 8 suites using Swift Testing framework (`ColourNoteXCTests/`)
+   - 13 UI tests across 4 suites using XCUITest (`ColourNoteXCUITests/`)
    - `NoteRecords` / `CategoryRecords` singletons are out of scope for unit tests (hard-coded SQLite path)
 
 ## File Structure
@@ -545,7 +552,7 @@ ColourNote/
 │   ├── Globals.swift             # App-wide constants & state
 │   ├── NotesNotification.swift   # Notification system
 │   └── SpinnerViewController.swift
-├── ColourNoteXCTests/             # Unit test target (Swift Testing, 45 tests across 8 suites)
+├── ColourNoteXCTests/             # Unit test target (Swift Testing, 47 tests across 8 suites)
 │   ├── Helpers/
 │   │   ├── MockURLProtocol.swift  # URLProtocol subclass for HTTP-level tests
 │   │   ├── MockNetworkManager.swift # NetworkManaging stub (offline, configurable)
@@ -557,13 +564,14 @@ ColourNote/
 │   ├── AuthManagerTests.swift     # 7 tests: offline via MockNetworkManager
 │   ├── NoteSyncServiceTests.swift # 5 tests: download paths + permanent delete
 │   ├── CategorySyncServiceTests.swift # 4 tests: download paths + markForUpload
-│   └── SharingServiceTests.swift  # 3 tests: createShare success, error, correct endpoint
-├── ColourNoteXCUITests/           # UI test target (XCUITest)
+│   └── SharingServiceTests.swift  # 5 tests: createShare success, error, endpoint, body, HTTP error
+├── ColourNoteXCUITests/           # UI test target (XCUITest, 13 tests across 4 suites)
 │   ├── Helpers/
 │   │   └── UITestCase.swift      # Base class: fresh-install reset, tapStartFresh()
 │   ├── LaunchTests.swift          # 2 tests: login screen, Start Fresh navigation
 │   ├── NotesListTests.swift       # 4 tests: nav bar, search field, add button, editor open
-│   └── NoteDetailTests.swift      # 4 tests: title edit, content edit, back button, list update
+│   ├── NoteDetailTests.swift      # 4 tests: title edit, content edit, back button, list update
+│   └── SharingUITests.swift       # 3 tests: swipe share button, action sheet options, sign-in guard
 ├── Category.swift                 # Category model (duplicate - keep in sync)
 ├── Bai_Jamjuree Font/            # Custom font files
 ├── Podfile                        # CocoaPods dependencies
@@ -608,6 +616,7 @@ ColourNote/
 - **Bug fix**: `SyncEngine.syncCategories()` — on first sync (`lastCategorySyncTime == nil`), categories are now downloaded before uploading. Previously, uploading first caused cloud category IDs to be mapped to local IDs, then the subsequent download name-matched those same categories and overwrote the mappings — leaving note downloads unable to resolve their `categoryId` to a local ID
 - **AppDelegate `UI_TESTING_FRESH_INSTALL`**: Now also clears `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults so XCUITests start with a fully clean sync state
 - **Tests**: `SharingServiceTests.swift` (3 new unit tests: success, network error, correct endpoint) + 2 new Codable tests in `CloudModelsTests.swift` for `ShareNoteRequest`/`ShareNoteResponse` — total 45 unit tests across 8 suites
+- **Tests expanded**: Added 2 further unit tests to `SharingServiceTests.swift` (body verification + HTTP error propagation) and new `SharingUITests.swift` (3 XCUITests: swipe share button, action sheet options, sign-in guard) — total 47 unit tests, 13 UI tests across 4 suites
 - **Bug fix**: `NoteDetailViewController` — removed erroneous `canPerformAction(_:withSender:)` override that caused a crash (`NSInvalidArgumentException: unrecognized selector cut:`) when cutting text in preview mode. The override claimed the view controller could handle `cut:` but provided no implementation; `UITextView` handles these actions natively via the responder chain without the override.
 
 ### 1.2.3 (Build 11) - Current Release
