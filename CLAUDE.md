@@ -10,7 +10,7 @@ This project spans two directories:
 ## Project Overview
 ColourNote is a feature-rich iOS note-taking application with color-coded organization, category management, and security features. The app is built in Swift using UIKit and uses SQLite for local data persistence.
 
-**Current Version**: 1.2.2 (Build 10)
+**Current Version**: 1.3.0 (Build 12)
 
 **Current Status**: The app has comprehensive note-taking functionality including category management, passcode protection, soft delete with trash, backup/restore capabilities, and cloud sync. The codebase has been fully cleaned of legacy fitness tracking code and is now 100% focused on note-taking.
 
@@ -129,7 +129,8 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
 
 1. **APIConfig.swift** - API configuration constants
    - Base URL: `https://irids.co.uk`
-   - Endpoint paths for auth, notes, and categories
+   - Endpoint paths for auth, notes, categories, sharing, and inbox
+   - Sharing endpoints (v1.3+): `registerDeviceToken`, `sharesInbox`, `shareAccept(token:)`, `shareDecline(token:)`
    - Keychain keys for JWT token storage
    - Request timeout settings
 
@@ -155,6 +156,11 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - `CreateNoteRequest` / `CreateCategoryRequest` - Request bodies
    - `SuccessMessageResponse` - For update operations
    - `ShareNoteRequest` / `ShareNoteResponse` - Request/response for note sharing
+   - `DeviceTokenRequest` - APNs device token registration body (v1.3+)
+   - `InboxShare` - Single share entry with `isExpired` computed property (v1.3+)
+   - `InboxResponse` - Inbox response with `receivedPending`, `receivedAccepted`, `sent` arrays (v1.3+)
+   - `AcceptShareResponse` - Accept response containing recipient note UUID (v1.3+)
+   - `EmptyBody` - Encodable stub for POST endpoints with no request body (v1.3+)
    - Timestamp conversion utilities
 
 4. **AuthManager.swift** - Authentication management
@@ -221,10 +227,14 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - `handleServerSideDeletions(cloudNoteIds:)` - Handle server-deleted notes
      - `downloadAllNotesWithDeletionHandling(since:)` - Download with deletion detection
 
-8. **SharingService.swift** - Note sharing API calls
+8. **SharingService.swift** - Note sharing and inbox API calls
    - Singleton: `SharingService.shared`
    - Dependency-injected `NetworkManaging` for testability (same pattern as other services)
    - `createShare(noteUUID:recipientEmail:completion:)` — POST `/notes/{uuid}/share` → returns share URL string
+   - `registerDeviceToken(_:completion:)` — POST `/auth/device-token` → registers APNs token with server (hex-encoded)
+   - `fetchInbox(completion:)` — GET `/shares/inbox` → returns `InboxResponse` (received pending, received accepted, sent sub-arrays)
+   - `acceptShare(token:completion:)` — POST `/share/{token}/accept` → returns `AcceptShareResponse` with recipient note UUID
+   - `declineShare(token:completion:)` — POST `/share/{token}/decline` → marks share as declined
    - Used by `NotesListViewController.showShareAccessFlow` to obtain a shareable link
    - See `SHAREDNOTESSPEC.md` for the full backend implementation spec
 
@@ -262,7 +272,9 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Tap to open note in full screen
      - Passcode protection check for protected categories
      - Share swipe action presents an action sheet: "Send note contents" (plain text via UIActivityViewController) or "Share access with another user" (calls `showShareAccessFlow`)
+     - Hamburger menu includes "Shared Notes" item → `showSharedInbox()` → pushes `SharedInboxViewController`
    - `showShareAccessFlow(note:sourceView:sourceRect:)` — guards on login, prompts for recipient email, calls `SharingService.createShare`, then presents system share sheet with the returned URL
+   - `showSharedInbox()` — pushes `SharedInboxViewController` onto the navigation stack
    - Outlets: `StatusLabel`, `SearchTextEditor`, `CategoryFilter`
    - Shows locked icon for protected category notes
 
@@ -327,7 +339,20 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Session-based unlocking (stays unlocked during app session)
    - Used for both setting and verifying category passcodes
 
-6. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
+6. **SharedInboxViewController.swift** (`ColourNote/SharedInboxViewController.swift`)
+   - In-app inbox for shared notes (v1.3+)
+   - Three-section `UITableViewController`: **Received** (pending/declined), **Accepted**, **Sent by Me**
+   - Section headers hidden when their data array is empty
+   - `viewWillAppear`: clears app badge (`applicationIconBadgeNumber = 0`) and calls `loadInbox()`
+   - `loadInbox()`: guards on `AuthManager.shared.isLoggedIn`, calls `SharingService.shared.fetchInbox`, reloads table
+   - Pull-to-refresh via `UIRefreshControl`
+   - Empty state label when no shares exist or user is not logged in
+   - **Received section**: pending non-expired rows have `.disclosureIndicator`; tap shows accept/decline alert; trailing swipe shows green Accept + red Decline actions
+   - **`acceptShare(share:indexPath:)`**: calls `SharingService.shared.acceptShare(token:)`, shows toast, triggers `SyncEngine.shared.syncIfNeeded()`, reloads inbox
+   - **`declineShare(share:indexPath:)`**: calls `SharingService.shared.declineShare(token:)`, reloads inbox
+   - Accessible via hamburger menu → "Shared Notes", or via notification tap → `AppDelegate.navigateToInbox()`
+
+7. **LoginViewController.swift** (`ColourNote/LoginViewController.swift`)
    - Initial registration screen shown on first app launch
    - **Glass UI design** (fully programmatic — storyboard elements hidden at runtime):
      - `CAGradientLayer` background: deep purple → indigo → azure diagonal gradient
@@ -343,8 +368,8 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - **Import Backup** (`arrow.down.doc.fill`, amber) — imports notes/categories from a JSON file
      - **Cloud Sync** (`arrow.triangle.2.circlepath.icloud`, indigo/purple) *(always visible)* — presents `CloudLoginViewController` for login/register, then downloads all data from the cloud server; `performCloudSyncRestore()` handles the post-auth DB setup and download
      - **Cloud Restore** (`icloud.and.arrow.down.fill`, green) *(shown only when Keychain credentials exist from a previous install)* — silently re-authenticates and downloads all data from the cloud server
-   - Cloud Sync flow: present `CloudLoginViewController` → `onLoginSuccess` callback → `performCloudSyncRestore()`: creates blank DB → initialises singletons → `resetConnection()` → `SyncEngine.downloadCloudChanges` → navigates home
-   - Cloud Restore flow: creates blank DB → initialises singletons → calls `SyncMapping.shared.resetConnection()` to fix any stale connection → logs in → calls `SyncEngine.downloadCloudChanges` → navigates home
+   - Cloud Sync flow: present `CloudLoginViewController` → `onLoginSuccess` callback → `performCloudSyncRestore()`: creates blank DB → initialises singletons → `resetConnection()` → `registerForPushAfterLogin()` → `SyncEngine.downloadCloudChanges` → navigates home
+   - Cloud Restore flow: creates blank DB → initialises singletons → calls `SyncMapping.shared.resetConnection()` to fix any stale connection → logs in → `registerForPushAfterLogin()` → calls `SyncEngine.downloadCloudChanges` → navigates home
    - Spinner overlay with status message ("Restoring from cloud...") during restore
 
 
@@ -373,6 +398,15 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
    - Launches to `ColorNoteHomeID` (navigation controller) if registered, else `loginViewControllerID`
    - Pre-initializes database on background thread for faster startup
    - Handles app termination and passcode session cleanup
+   - **Push Notifications (v1.3+)**:
+     - Conforms to `UNUserNotificationCenterDelegate`
+     - `requestPushPermissionsIfNeeded()` — requests `.alert .sound .badge` permission if not yet determined; calls `registerForRemoteNotifications()` if already authorised
+     - `registerForPushAfterLogin()` — public entry point called by `LoginViewController` and `CloudLoginViewController` immediately after successful auth
+     - `didRegisterForRemoteNotificationsWithDeviceToken` — uploads token to server via `SharingService.shared.registerDeviceToken(_:)`; silently logs on failure
+     - `didFailToRegisterForRemoteNotificationsWithError` — logs error to console
+     - `willPresent(_:withCompletionHandler:)` — shows banner + sound + badge when notification arrives in foreground
+     - `didReceive(_:withCompletionHandler:)` — tapping a `type == "note_share"` notification calls `navigateToInbox()`
+     - `navigateToInbox()` — pushes `SharedInboxViewController` onto the root navigation controller; deduplicates if already on stack
 
 4. **Info.plist**
    - Bundle identifier: `$(PRODUCT_BUNDLE_IDENTIFIER)`
@@ -520,6 +554,7 @@ ColourNote/
 │   │   ├── CategoriesViewController.swift     # Category management
 │   │   ├── TrashViewController.swift          # Deleted notes
 │   │   ├── PasscodeViewController.swift       # Passcode UI
+│   │   ├── SharedInboxViewController.swift    # Shared notes inbox (v1.3+)
 │   │   ├── SettingsViewController.swift       # Settings & backup
 │   │   ├── LoginViewController.swift          # Initial registration
 │   │   ├── CloudLoginViewController.swift     # Cloud sync login/register
@@ -578,6 +613,7 @@ ColourNote/
 ├── README.md                      # User-facing documentation
 ├── CLAUDE.md                      # Technical documentation (this file)
 ├── SHAREDNOTESSPEC.md             # Backend spec for Shared Notes feature (Irids_Web)
+├── NOTIFICATION_SETUP.md          # APNs setup guide: Developer Portal, Xcode, env vars, server
 └── .gitignore
 ```
 
@@ -599,48 +635,47 @@ ColourNote/
 
 ## Version History
 
-### Shared_Notes branch (in progress)
-- **Shared Note Access** — users can now share collaborative access to a note with another ColourNote user
-  - Share swipe action now presents an action sheet: "Send note contents" (existing plain-text share) or "Share access with another user"
+### 1.3.0 (Build 12) - Current Release
+- **APNs Push Notifications** — recipient receives a push notification the moment a note is shared with them
+  - `AppDelegate` conforms to `UNUserNotificationCenterDelegate`; requests permission and registers for remote notifications after login
+  - `AppDelegate.registerForPushAfterLogin()` called by both `LoginViewController` and `CloudLoginViewController` immediately after successful auth, ensuring token is uploaded on first login regardless of app state
+  - `didRegisterForRemoteNotificationsWithDeviceToken` uploads hex-encoded token via `SharingService.registerDeviceToken(_:)` → `POST /auth/device-token`
+  - Tapping a `type == "note_share"` notification opens the app directly to `SharedInboxViewController` via `AppDelegate.navigateToInbox()`
+  - Foreground notifications display as banner + sound + badge
+  - Token upload failure is silent (logged to console); token is automatically re-uploaded on next cold launch since `requestPushPermissionsIfNeeded()` runs every launch when registered
+- **In-App Shared Notes Inbox** (`SharedInboxViewController`) — three-section table view accessible from the hamburger menu → "Shared Notes"
+  - **Received** section: pending and declined shares from other users; pending non-expired rows can be accepted (green swipe / alert) or declined (red swipe / alert)
+  - **Accepted** section: previously accepted shares (read-only)
+  - **Sent by Me** section: outgoing shares with current status
+  - Badge clears to 0 on `viewWillAppear`; pull-to-refresh supported
+  - Accept triggers `SyncEngine.shared.syncIfNeeded()` so the shared note appears immediately after accepting
+- **Backend: APNs service** (`Irids_Web/utils/apnsService.js`) — lazy-initialised `@parse/node-apn` provider; silently disabled when env vars absent; `POST /share/{uuid}/share` triggers fire-and-forget push to all of recipient's registered devices
+- **Backend: device token endpoint** (`POST /auth/device-token`) — upserts token with `ON CONFLICT(user_id, token) DO UPDATE SET updated_at`; supports multiple devices per user
+- **Backend: inbox endpoint** (`GET /shares/inbox`) — returns enriched `received_pending`, `received_accepted`, `sent` sub-arrays with note titles and owner/recipient emails
+- **Backend: decline endpoint** (`POST /share/:token/decline`) — recipient marks a pending share as declined; validated against `recipient_email`
+- **Backend: migration 15** — `device_tokens` table with `UNIQUE(user_id, token)` index
+- **New models** (`CloudModels.swift`): `DeviceTokenRequest`, `InboxShare` (with `isExpired`), `InboxResponse`, `AcceptShareResponse`, `EmptyBody`
+- **New endpoint constants** (`APIConfig.swift`): `registerDeviceToken`, `sharesInbox`, `shareAccept(token:)`, `shareDecline(token:)`
+- **New `SharingService` methods**: `registerDeviceToken(_:)`, `fetchInbox()`, `acceptShare(token:)`, `declineShare(token:)`
+- **`NOTIFICATION_SETUP.md`** — step-by-step guide: Apple Developer Portal key generation, Xcode capability, local env vars, production server setup, troubleshooting
+
+### 1.2.3 (Build 11) — Merged (Shared_Notes branch)
+- **Shared Note Access** — users can share collaborative access to a note with another ColourNote user
+  - Share swipe action presents an action sheet: "Send note contents" (existing plain-text share) or "Share access with another user"
   - New `SharingService.swift` singleton: `POST /notes/{uuid}/share` → returns a shareable URL
   - New `ShareNoteRequest` / `ShareNoteResponse` models in `CloudModels.swift`
   - `NotesListViewController.showShareAccessFlow` — prompts for recipient email, spins while creating the share, then presents iOS share sheet with the link
   - `SHAREDNOTESSPEC.md` — full backend spec for the Irids_Web Node.js implementation (migration v14, `note_shares` table, 5 new endpoints, server-side propagation)
 - **Bug fix**: `LoginViewController` `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now set `"DatabaseSchemaVersion" = 10` and `"CategoryDatabaseSchemaVersion" = 3` after `createBlankDatabase()` — previously used the wrong key `"DatabaseVersion"`, causing NoteRecords/CategoryRecords to run migrations against an already-complete schema and leaving `CategoryDatabaseSchemaVersion = 3` without the actual columns in place on subsequent runs
 - **Bug fix**: `CategoryRecords.ensureRequiredCategoryColumns()` — new defensive repair called at the end of `migrateCategorySchemaIfNeeded()` every time; uses `PRAGMA table_info(categories)` to detect missing columns (`is_protected`, `uuid`, `modified_at`) and adds them regardless of stored schema version, preventing the `Fatal error: No such column "uuid"` crash
-- **Bug fix**: Notes downloaded from cloud showing "No Category" after a fresh Start Fresh install
-  - **Root cause**: AppDelegate fires `SyncEngine.shared.syncIfNeeded()` 1 second after launch (even before registration). This chains through stored properties `SyncEngine → CategorySyncService → SyncMapping`, causing `SyncMapping.shared` to call `openDatabase()` while `colornote.db` doesn't yet exist. SQLite creates an empty file. When the user taps "Start Fresh", `createBlankDatabase()` deletes that empty file and creates a proper new one — but `SyncMapping.shared.db` retains a stale file descriptor to the deleted empty file (no `sync_mappings` table), causing every mapping operation to fail with `no such table: sync_mappings`.
-  - **Fix**: `initializeAppWithDatabase()` now calls `SyncMapping.shared.resetConnection()` after `createBlankDatabase()`, matching the pattern already present in `cloudRestoreButtonTapped()`
-- **Bug fix**: `createBlankDatabase()` now creates the complete v10 `notes` schema (removed all legacy columns that existed only for backwards migration compatibility) and creates the `sync_mappings` table inline — previously the `sync_mappings` table was absent from fresh installs until NoteRecords migrations ran, causing early mapping operations to fail
-- **Bug fix**: `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now clear `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults — stale timestamps from a previous install were causing 304 Not Modified responses on the first sync of a fresh install, silently skipping all downloads
-- **Bug fix**: `SyncEngine.syncCategories()` — on first sync (`lastCategorySyncTime == nil`), categories are now downloaded before uploading. Previously, uploading first caused cloud category IDs to be mapped to local IDs, then the subsequent download name-matched those same categories and overwrote the mappings — leaving note downloads unable to resolve their `categoryId` to a local ID
-- **AppDelegate `UI_TESTING_FRESH_INSTALL`**: Now also clears `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults so XCUITests start with a fully clean sync state
-- **Tests**: `SharingServiceTests.swift` (3 new unit tests: success, network error, correct endpoint) + 2 new Codable tests in `CloudModelsTests.swift` for `ShareNoteRequest`/`ShareNoteResponse` — total 45 unit tests across 8 suites
-- **Tests expanded**: Added 2 further unit tests to `SharingServiceTests.swift` (body verification + HTTP error propagation) and new `SharingUITests.swift` (3 XCUITests: swipe share button, action sheet options, sign-in guard) — total 47 unit tests, 13 UI tests across 4 suites
-- **Bug fix**: `NoteDetailViewController` — removed erroneous `canPerformAction(_:withSender:)` override that caused a crash (`NSInvalidArgumentException: unrecognized selector cut:`) when cutting text in preview mode. The override claimed the view controller could handle `cut:` but provided no implementation; `UITextView` handles these actions natively via the responder chain without the override.
-- **Bug fix**: `NoteRecords.updateNoteText` and `NoteRecords.updateNoteTitle` — both now use `DispatchSemaphore` to wait for the barrier write to complete before returning, matching the pattern already used by `insertNote`, `softDeleteNote`, etc. Previously both were fire-and-forget, causing a race condition: the sync engine downloaded shared-note edits, queued the writes, then the sync-completion notification fired and `updateNotesList()` read stale data from SQLite before the writes had committed. This was the root cause of shared note edits not appearing in the receiving user's app after a single cloud sync.
-
-### 1.2.3 (Build 11) - Current Release
-- **Note editor UI redesign** (`NoteDetailViewController`):
-  - **New layout**: back button and category pill share row 1; title is full-width on row 2
-  - **Bottom toolbar** replaces the old segmented control row: delete (red), share, and edit/preview toggle evenly distributed via flexible spaces
-  - **Edit/preview toggle** is a plain `UIBarButtonItem` (eye icon in edit mode, pencil in preview mode); tapping switches modes and updates the icon
-  - **Share button** in toolbar sends note title + content via `UIActivityViewController`
-  - **Keyboard handling**: toolbar slides up with the keyboard (animated, 8 pt gap), stays visible; `keyboardDismissMode = .interactive` replaces the swipe gesture so scrollable notes dismiss the keyboard correctly
-  - **Notes open in edit mode** with keyboard hidden — keyboard only appears when the user taps the text area
-  - **Bug fix**: removed erroneous `canPerformAction(_:withSender:)` override that caused a crash when cutting text in preview mode
-- **UI test suite**: 10 XCUITests across 3 suites covering app launch, notes list, and note editor journeys
-  - `LaunchTests` — fresh-install login screen and Start Fresh navigation
-  - `NotesListTests` — nav bar, search field, Add button, note editor opens
-  - `NoteDetailTests` — title editing, content editing, back navigation, note appears in list
-- **Test isolation**: `UI_TESTING_FRESH_INSTALL` launch argument resets `isRegistered`, JWT token, auto-sync flag, both DB schema version keys, and deletes `colornote.db` at app startup
-- **Configurable API server**: `APIConfig.baseURL` now reads `API_BASE_URL` launch environment variable at runtime (tests point to `http://localhost:3002`; production falls back to `https://irids.co.uk`)
-- **Bug fix**: `createBlankDatabase()` now creates the full current categories schema (`uuid`, `is_protected`, `modified_at`) — previously the bare v1 schema caused a fatal crash when `CategoryDatabaseSchemaVersion` was already at 3 in UserDefaults and migrations were skipped
-- **Accessibility identifiers** added for XCUITest: `startFreshButton`, `importBackupButton` (LoginViewController), `noteSearchField` (NotesListViewController), `noteTitleField`, `noteTextView`, `listButton` (NoteDetailViewController)
-- **UI fix: Login screen app icon** — removed the gradient container view; `cornerRadius`, `clipsToBounds`, and `scaleAspectFill` are now applied directly to the `UIImageView` so the icon displays with properly rounded corners. Asset changed from `Splash` to `irids_bg`.
-- **Launch screen updated** — `LaunchScreen.storyboard` now uses `irids_bg` as a full-screen background (`scaleToFill`) with the "ColourNote" label overlaid at the bottom. New `AppIcon_irids` app icon set added with light/dark variants at all required scales.
-- **New feature: "Cloud Sync" startup button** — `LoginViewController` now shows a permanent "Cloud Sync" button (indigo, `arrow.triangle.2.circlepath.icloud`) between "Import Backup" and the conditional "Cloud Restore" button. Tapping it presents `CloudLoginViewController`; on successful login the `onLoginSuccess` callback fires `performCloudSyncRestore()`, which creates a blank DB, initialises singletons, and runs `SyncEngine.downloadCloudChanges`. Accessibility identifier: `cloudSyncButton`.
-
+- **Bug fix**: Notes downloaded from cloud showing "No Category" after a fresh Start Fresh install — `initializeAppWithDatabase()` now calls `SyncMapping.shared.resetConnection()` after `createBlankDatabase()`
+- **Bug fix**: `createBlankDatabase()` now creates the complete v10 `notes` schema and `sync_mappings` table inline
+- **Bug fix**: `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now clear `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults to force full download on fresh install
+- **Bug fix**: `SyncEngine.syncCategories()` — on first sync downloads categories before uploading to prevent mapping collisions
+- **AppDelegate `UI_TESTING_FRESH_INSTALL`**: Now also clears `lastNoteSyncTime` and `lastCategorySyncTime` from UserDefaults
+- **Tests**: `SharingServiceTests.swift` (5 tests) + 2 Codable tests in `CloudModelsTests.swift` + `SharingUITests.swift` (3 XCUITests) — total 47 unit tests, 13 UI tests across 4 suites
+- **Bug fix**: `NoteDetailViewController` — removed erroneous `canPerformAction(_:withSender:)` override that caused a crash when cutting text in preview mode
+- **Bug fix**: `NoteRecords.updateNoteText` and `NoteRecords.updateNoteTitle` — both now use `DispatchSemaphore` to wait for the barrier write before returning, fixing a race condition where sync-downloaded edits were not visible after a single sync cycle
 
 ## Security Considerations
 
@@ -704,7 +739,7 @@ ColourNote/
 
 ---
 
-**Last Updated**: February 26, 2026
+**Last Updated**: June 3, 2026
 **Maintainer**: Paul Williams
 **Current Project**: ColourNote (Note-Taking App)
 **Sync Engine Version**: 1.4

@@ -342,6 +342,65 @@ struct ShareNoteResponse: Codable {
     let token: String
 }
 
+// MARK: - Device Token
+
+struct DeviceTokenRequest: Encodable {
+    let token: String
+    let platform: String = "ios"
+}
+
+// MARK: - Inbox
+
+struct InboxShare: Codable {
+    let id: Int
+    let token: String
+    let ownerNoteUUID: String?
+    let recipientNoteUUID: String?
+    let recipientEmail: String?
+    let ownerEmail: String?
+    let noteTitle: String?
+    let status: String
+    let createdAt: Int
+    let acceptedAt: Int?
+    let expiresAt: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case id, token, status
+        case ownerNoteUUID     = "owner_note_uuid"
+        case recipientNoteUUID = "recipient_note_uuid"
+        case recipientEmail    = "recipient_email"
+        case ownerEmail        = "owner_email"
+        case noteTitle         = "note_title"
+        case createdAt         = "created_at"
+        case acceptedAt        = "accepted_at"
+        case expiresAt         = "expires_at"
+    }
+
+    var isExpired: Bool {
+        guard let exp = expiresAt else { return false }
+        return Int(Date().timeIntervalSince1970 * 1000) > exp
+    }
+}
+
+struct InboxResponse: Codable {
+    let receivedPending: [InboxShare]
+    let receivedAccepted: [InboxShare]
+    let sent: [InboxShare]
+    enum CodingKeys: String, CodingKey {
+        case receivedPending  = "received_pending"
+        case receivedAccepted = "received_accepted"
+        case sent
+    }
+}
+
+struct AcceptShareResponse: Codable {
+    let message: String?
+    let noteUuid: String?
+}
+
+// Used when a POST endpoint requires no request body
+struct EmptyBody: Encodable {}
+
 // MARK: - Create Request Builders
 
 extension CreateNoteRequest {

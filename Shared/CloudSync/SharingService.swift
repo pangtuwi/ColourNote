@@ -36,4 +36,51 @@ class SharingService {
             }
         }
     }
+
+    // MARK: - Device Token Registration
+
+    func registerDeviceToken(_ deviceToken: Data,
+                              completion: @escaping (Result<Void, Error>) -> Void) {
+        let hex = deviceToken.map { String(format: "%02x", $0) }.joined()
+        let body = DeviceTokenRequest(token: hex)
+        networkManager.requestNoResponse(
+            endpoint: APIConfig.Endpoints.registerDeviceToken,
+            method: .POST, body: body, requiresAuth: true
+        ) { result in
+            completion(result.mapError { $0 as Error })
+        }
+    }
+
+    // MARK: - Inbox
+
+    func fetchInbox(completion: @escaping (Result<InboxResponse, Error>) -> Void) {
+        networkManager.get(
+            endpoint: APIConfig.Endpoints.sharesInbox,
+            requiresAuth: true
+        ) { (result: Result<InboxResponse, NetworkError>) in
+            completion(result.mapError { $0 as Error })
+        }
+    }
+
+    // MARK: - Accept / Decline
+
+    func acceptShare(token: String,
+                      completion: @escaping (Result<AcceptShareResponse, Error>) -> Void) {
+        networkManager.post(
+            endpoint: APIConfig.Endpoints.shareAccept(token: token),
+            body: EmptyBody(), requiresAuth: true
+        ) { (result: Result<AcceptShareResponse, NetworkError>) in
+            completion(result.mapError { $0 as Error })
+        }
+    }
+
+    func declineShare(token: String,
+                       completion: @escaping (Result<Void, Error>) -> Void) {
+        networkManager.requestNoResponse(
+            endpoint: APIConfig.Endpoints.shareDecline(token: token),
+            method: .POST, body: EmptyBody(), requiresAuth: true
+        ) { result in
+            completion(result.mapError { $0 as Error })
+        }
+    }
 }

@@ -514,6 +514,11 @@ extension NotesListViewController {
             self?.showTrash()
         }
 
+        // Shared Notes action
+        let sharedInboxAction = UIAlertAction(title: "Shared Notes", style: .default) { [weak self] _ in
+            self?.showSharedInbox()
+        }
+
         // Backup action
         let backupAction = UIAlertAction(title: "Backup", style: .default) { [weak self] _ in
             self?.performBackup()
@@ -544,6 +549,7 @@ extension NotesListViewController {
 
         alertController.addAction(categoriesAction)
         alertController.addAction(trashAction)
+        alertController.addAction(sharedInboxAction)
         alertController.addAction(backupAction)
         alertController.addAction(importAction)
         alertController.addAction(passcodeAction)
@@ -680,6 +686,10 @@ extension NotesListViewController {
     func showTrash() {
         let trashVC = TrashViewController(style: .plain)
         navigationController?.pushViewController(trashVC, animated: true)
+    }
+
+    func showSharedInbox() {
+        navigationController?.pushViewController(SharedInboxViewController(style: .plain), animated: true)
     }
 
     func showPasscodeSettings() {

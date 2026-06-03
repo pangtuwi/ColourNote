@@ -4,7 +4,7 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 
 ![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
-![Version](https://img.shields.io/badge/version-1.2.3-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## Features
@@ -24,6 +24,9 @@ A beautiful and simple iOS note-taking app with color-coded organization. Create
 - 📱 **Pull-to-Refresh** - Easy sync and update interface
 - 📝 **Markdown Support** - Write in Markdown with Edit/Preview toggle for formatted text
 - ☁️ **Cloud Sync** - Sync notes and categories across devices with secure JWT authentication
+- 🔗 **Note Sharing** - Share collaborative access to a note with another ColourNote user by email
+- 📬 **Shared Notes Inbox** - In-app inbox to accept or decline incoming shared notes
+- 🔔 **Push Notifications** - Receive an instant notification when someone shares a note with you
 
 ## Screenshots
 
@@ -196,12 +199,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [x] Markdown support with Edit/Preview toggle
 - [x] Cloud sync with JWT authentication
 - [x] Cloud Restore on fresh install (auto-detects previous account credentials)
+- [x] Note sharing (share access with another user by email)
+- [x] In-app Shared Notes inbox (accept/decline shares without a browser)
+- [x] APNs push notifications on note share
 
 ### Planned Features
 
 - [x] ~~Rich text formatting~~ → Implemented via Markdown
 - [x] Cloud sync support (in progress - basic sync working)
-- [ ] Note sharing (iOS app changes done — backend in progress)
+- [x] Note sharing — complete (iOS + backend)
 - [ ] Checklist support
 - [ ] Voice notes
 - [ ] Image attachments
@@ -239,7 +245,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Version History
 
-- **1.2.3 (Build 11)** - Current Release (March 6, 2026)
+- **1.3.0 (Build 12)** - Current Release (June 3, 2026)
+  - **Push Notifications**: APNs support via `@parse/node-apn`; device token registered automatically after login; instant notification sent to recipient when a note is shared with them
+  - **In-App Shared Notes Inbox**: three-section table view (Received, Accepted, Sent) accessible from the hamburger menu → "Shared Notes"; accept/decline shares with swipe actions or alert; badge clears on open; tapping a notification opens the inbox directly
+  - **Decline shares**: new `POST /share/:token/decline` backend endpoint; declined status displayed in inbox
+  - **Backend: migration 15**: `device_tokens` table with upsert support (multiple devices per user)
+  - **NOTIFICATION_SETUP.md**: step-by-step APNs configuration guide (Apple Developer Portal, Xcode, local dev, production server)
+
+- **1.2.3 (Build 11)** - (March 6, 2026)
   - **Note editor UI redesign**: back button + category pill on row 1; full-width title on row 2; bottom toolbar with delete, share, and edit/preview toggle
   - **Keyboard UX**: toolbar slides up with keyboard (stays visible); interactive dismiss on scroll; keyboard hidden on open until user taps
   - **UI Test Suite**: 13 XCUITests across 4 suites covering app launch, notes list, note editor, and note sharing (all passing)

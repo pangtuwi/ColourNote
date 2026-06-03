@@ -602,6 +602,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
         SyncMapping.shared.resetConnection()
 
         SyncEngine.shared.isAutoSyncEnabled = true
+        (UIApplication.shared.delegate as? AppDelegate)?.registerForPushAfterLogin()
         SyncEngine.shared.downloadCloudChanges { [weak self] result in
             DispatchQueue.main.async {
                 self?.hideSpinner(spinner)
@@ -655,6 +656,7 @@ class LoginViewController: UIViewController, UIDocumentPickerDelegate {
                                    message: error.localizedDescription + "\n\nYou can still start fresh or import a backup.")
                 case .success:
                     SyncEngine.shared.isAutoSyncEnabled = true
+                    (UIApplication.shared.delegate as? AppDelegate)?.registerForPushAfterLogin()
                     self?.updateSpinner(spinner, message: "Restoring from cloud...")
                     SyncEngine.shared.downloadCloudChanges { downloadResult in
                         DispatchQueue.main.async {

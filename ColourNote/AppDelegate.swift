@@ -12,7 +12,7 @@ import UserNotifications
 
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
@@ -68,6 +68,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = rootViewController
         window?.makeKeyAndVisible()
 
+        UNUserNotificationCenter.current().delegate = self
+        if Settings.isRegistered() { requestPushPermissionsIfNeeded() }
+
         if !Settings.hasDefaultsSet() {
             Settings.setInitialDefaults()
         }
@@ -119,6 +122,81 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Clear passcode session
         PasscodeManager.shared.clearSession()
+    }
+
+    // MARK: - Push Notification Setup
+
+    private func requestPushPermissionsIfNeeded() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                UNUserNotificationCenter.current().requestAuthorization(
+                    options: [.alert, .sound, .badge]
+                ) { granted, _ in
+                    if granted {
+                        DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() }
+                    }
+                }
+            case .authorized, .provisional:
+                DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() }
+            default: break
+            }
+        }
+    }
+
+    /// Call after any successful login/register so the device token is uploaded immediately.
+    func registerForPushAfterLogin() {
+        requestPushPermissionsIfNeeded()
+    }
+
+    // MARK: - APNs Token Callbacks
+
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        guard AuthManager.shared.isLoggedIn else { return }
+        SharingService.shared.registerDeviceToken(deviceToken) { result in
+            if case .failure(let err) = result {
+                print("AppDelegate: Device token upload failed: \(err)")
+            }
+        }
+    }
+
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("AppDelegate: Push registration failed: \(error)")
+    }
+
+    // MARK: - Notification Display (Foreground)
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                 willPresent notification: UNNotification,
+                                 withCompletionHandler handler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        handler([.banner, .sound, .badge])
+    }
+
+    // MARK: - Notification Tap
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                 didReceive response: UNNotificationResponse,
+                                 withCompletionHandler handler: @escaping () -> Void) {
+        if let type = response.notification.request.content.userInfo["type"] as? String,
+           type == "note_share" {
+            navigateToInbox()
+        }
+        handler()
+    }
+
+    // MARK: - Navigation Helper
+
+    func navigateToInbox() {
+        DispatchQueue.main.async {
+            guard let nav = self.window?.rootViewController as? UINavigationController else { return }
+            if let existing = nav.viewControllers.first(where: { $0 is SharedInboxViewController }) {
+                nav.popToViewController(existing, animated: true)
+                return
+            }
+            nav.pushViewController(SharedInboxViewController(style: .plain), animated: true)
+        }
     }
 
 }

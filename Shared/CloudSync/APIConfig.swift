@@ -23,6 +23,7 @@ struct APIConfig {
         // Authentication
         static let register = "/auth/register"
         static let login = "/auth/login"
+        static let registerDeviceToken = "/auth/device-token"
 
         // Categories
         static let categories = "/categories"
@@ -32,6 +33,11 @@ struct APIConfig {
         static let notes = "/notes"
         static func note(id: String) -> String { "/notes/\(id)" }
         static func notePermanent(id: String) -> String { "/notes/\(id)/permanent" }
+
+        // Sharing / Inbox
+        static let sharesInbox = "/shares/inbox"
+        static func shareAccept(token: String) -> String { "/share/\(token)/accept" }
+        static func shareDecline(token: String) -> String { "/share/\(token)/decline" }
     }
 
     // MARK: - Timeouts

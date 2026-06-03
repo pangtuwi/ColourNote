@@ -333,6 +333,7 @@ class CloudLoginViewController: UIViewController {
 
     private func handleLoginSuccess() {
         SyncEngine.shared.isAutoSyncEnabled = true
+        (UIApplication.shared.delegate as? AppDelegate)?.registerForPushAfterLogin()
         onLoginSuccess?()
         dismiss(animated: true)
     }

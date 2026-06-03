@@ -10,6 +10,7 @@
 		000C08872EC5B7F200ACC394 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 000C08862EC5B7F200ACC394 /* SQLite */; };
 		0060C5A32EC79FBE008CDE44 /* BaiJamjuree-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */; };
 		0060C5A52EC8E4B5008CDE44 /* TrashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */; };
+		7FC105E19DF049B7AE6F7CAD /* SharedInboxViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14FF709795254E85ADE550EF /* SharedInboxViewController.swift */; };
 		0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */; };
 		0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */; };
 		0066ADD12F30DCF000F75C91 /* SyncMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0066ADD02F30DCF000F75C91 /* SyncMapping.swift */; };
@@ -72,6 +73,7 @@
 		001130952F51049E009924C8 /* ColourNoteXCUITests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ColourNoteXCUITests.xctestplan; sourceTree = "<group>"; };
 		0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BaiJamjuree-Light.ttf"; sourceTree = "<group>"; };
 		0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TrashViewController.swift; path = ColourNote/TrashViewController.swift; sourceTree = "<group>"; };
+		14FF709795254E85ADE550EF /* SharedInboxViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SharedInboxViewController.swift; path = ColourNote/SharedInboxViewController.swift; sourceTree = "<group>"; };
 		0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeViewController.swift; path = ColourNote/PasscodeViewController.swift; sourceTree = "<group>"; };
 		0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasscodeManager.swift; path = Shared/Security/PasscodeManager.swift; sourceTree = "<group>"; };
 		0066ADBD2F30DB5900F75C91 /* APIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConfig.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 		009C1A392F3129720050403F /* SyncProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncProgressView.swift; path = ColourNote/SyncProgressView.swift; sourceTree = "<group>"; };
 		009C1A3B2F3129890050403F /* SyncSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SyncSettingsViewController.swift; path = ColourNote/SyncSettingsViewController.swift; sourceTree = "<group>"; };
 		00A402F42F07087200D93271 /* MarkdownRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MarkdownRenderer.swift; path = Shared/Markdown/MarkdownRenderer.swift; sourceTree = "<group>"; };
+		00D8CC412FB283C2009C092B /* ColourNote.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ColourNote.entitlements; path = ColourNote/ColourNote.entitlements; sourceTree = "<group>"; };
 		113DFBC7CC6EE89A79068DA1 /* Pods-ColourNote.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColourNote.debug.xcconfig"; path = "Target Support Files/Pods-ColourNote/Pods-ColourNote.debug.xcconfig"; sourceTree = "<group>"; };
 		151B632C013000F21A31FAA1 /* RoundUIView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoundUIView.swift; path = ColourNote/RoundUIView.swift; sourceTree = "<group>"; };
 		2C7500F1F904471B09BA8446 /* ColourNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColourNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -290,6 +293,7 @@
 		F3EC00706371DEFD61CA709C /* ColourNote */ = {
 			isa = PBXGroup;
 			children = (
+				00D8CC412FB283C2009C092B /* ColourNote.entitlements */,
 				009C1A3B2F3129890050403F /* SyncSettingsViewController.swift */,
 				009C1A392F3129720050403F /* SyncProgressView.swift */,
 				009C1A372F3129540050403F /* CloudLoginViewController.swift */,
@@ -297,6 +301,7 @@
 				0060C5A82EC8F29F008CDE44 /* PasscodeManager.swift */,
 				0060C5A62EC8F206008CDE44 /* PasscodeViewController.swift */,
 				0060C5A42EC8E4B5008CDE44 /* TrashViewController.swift */,
+				14FF709795254E85ADE550EF /* SharedInboxViewController.swift */,
 				0060C5A22EC79FBE008CDE44 /* BaiJamjuree-Light.ttf */,
 				0087995E2EC76281002EC37E /* CategoriesViewController.swift */,
 				A1957D5890D672FF626E21CC /* AppDelegate.swift */,
@@ -474,6 +479,7 @@
 			files = (
 				B7A62156D1044269201E043A /* AppDelegate.swift in Sources */,
 				0060C5A52EC8E4B5008CDE44 /* TrashViewController.swift in Sources */,
+				7FC105E19DF049B7AE6F7CAD /* SharedInboxViewController.swift in Sources */,
 				9834C92EC49252303E75C06F /* NotesListViewController.swift in Sources */,
 				0060C5A92EC8F29F008CDE44 /* PasscodeManager.swift in Sources */,
 				0060C5A72EC8F206008CDE44 /* PasscodeViewController.swift in Sources */,
@@ -697,6 +703,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_irids;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = ColourNote/ColourNote.entitlements;
 				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = ColourNote/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
@@ -720,6 +727,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon_irids;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = ColourNote/ColourNote.entitlements;
 				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = ColourNote/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
