@@ -80,7 +80,7 @@ Set these in the `.env` file on the **production server** (not just locally).
 - [ ] `GOOGLE_CALLBACK_URL` points to the production domain
 
 ### Security
-- [ ] **`.env` is not committed to the repository** — confirm it is in `.gitignore` (the file currently appears to be tracked; remove it with `git rm --cached .env`)
+- [ ] **`.env` is not committed to the repository** — confirmed: `.env` is listed in `.gitignore` and is not tracked ✓
 - [ ] Server is behind HTTPS — session cookies use `secure: true` only when `NODE_ENV=production`, so HTTPS must be terminating traffic
 - [ ] Production server is not exposing any debug endpoints publicly
 
