@@ -861,13 +861,8 @@ extension NotesListViewController {
                     spinner.view.removeFromSuperview()
                     spinner.removeFromParent()
                     switch result {
-                    case .success(let shareURL):
-                        let activityVC = UIActivityViewController(activityItems: [shareURL], applicationActivities: nil)
-                        if let popover = activityVC.popoverPresentationController {
-                            popover.sourceView = sourceView
-                            popover.sourceRect = sourceRect
-                        }
-                        self.present(activityVC, animated: true)
+                    case .success:
+                        self.showToast(message: "Note shared with \(email)")
                     case .failure(let error):
                         self.showAlert(title: "Share Failed", message: error.localizedDescription)
                     }

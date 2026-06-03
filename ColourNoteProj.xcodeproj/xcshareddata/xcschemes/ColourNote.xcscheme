@@ -78,7 +78,7 @@
          <EnvironmentVariable
             key = "API_BASE_URL"
             value = "http://localhost:3002"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

@@ -273,7 +273,7 @@ ColourNote is a feature-rich iOS note-taking application with color-coded organi
      - Passcode protection check for protected categories
      - Share swipe action presents an action sheet: "Send note contents" (plain text via UIActivityViewController) or "Share access with another user" (calls `showShareAccessFlow`)
      - Hamburger menu includes "Shared Notes" item → `showSharedInbox()` → pushes `SharedInboxViewController`
-   - `showShareAccessFlow(note:sourceView:sourceRect:)` — guards on login, prompts for recipient email, calls `SharingService.createShare`, then presents system share sheet with the returned URL
+   - `showShareAccessFlow(note:sourceView:sourceRect:)` — guards on login, prompts for recipient email, calls `SharingService.createShare`, then shows a toast "Note shared with [email]" on success (push notification handles delivery; no share sheet presented)
    - `showSharedInbox()` — pushes `SharedInboxViewController` onto the navigation stack
    - Outlets: `StatusLabel`, `SearchTextEditor`, `CategoryFilter`
    - Shows locked icon for protected category notes
@@ -659,12 +659,19 @@ ColourNote/
 - **New `SharingService` methods**: `registerDeviceToken(_:)`, `fetchInbox()`, `acceptShare(token:)`, `declineShare(token:)`
 - **`NOTIFICATION_SETUP.md`** — step-by-step guide: Apple Developer Portal key generation, Xcode capability, local env vars, production server setup, troubleshooting
 
+### Post-1.3.0 Bug Fixes (Backend + iOS)
+- **Bug fix (backend)**: `POST /share/:token/accept` — recipient's note copy now uses `modified_date = Date.now()` instead of copying the owner's `modified_date`; the old value was older than the recipient's `lastNoteSyncTime`, causing delta sync to silently skip the note
+- **Bug fix (backend)**: `POST /share/:token/accept` — accepted notes are now automatically placed in a "Shared" category (created with `color_hex = '#4A86E8'` if it doesn't exist for the recipient); previously `category_id` was NULL and the note appeared uncategorised
+- **Bug fix (backend)**: `POST /notes/:uuid/share` — duplicate shares are now prevented; if a non-expired pending share already exists for the same note + recipient, the existing token/URL is returned instead of creating a new row and sending a duplicate push notification
+- **Bug fix (iOS)**: `showShareAccessFlow` — removed erroneous `UIActivityViewController` presentation after successful share creation; the share sheet (meant for "Send note contents") was incorrectly appearing after "Share access with another user" completed; replaced with a toast message
+- **Bug fix (backend)**: APNS `[APNS] Failed` log now includes `f.response` alongside `f.error` so rejection reasons (e.g. `TopicDisallowed`) are visible in logs
+
 ### 1.2.3 (Build 11) — Merged (Shared_Notes branch)
 - **Shared Note Access** — users can share collaborative access to a note with another ColourNote user
   - Share swipe action presents an action sheet: "Send note contents" (existing plain-text share) or "Share access with another user"
   - New `SharingService.swift` singleton: `POST /notes/{uuid}/share` → returns a shareable URL
   - New `ShareNoteRequest` / `ShareNoteResponse` models in `CloudModels.swift`
-  - `NotesListViewController.showShareAccessFlow` — prompts for recipient email, spins while creating the share, then presents iOS share sheet with the link
+  - `NotesListViewController.showShareAccessFlow` — prompts for recipient email, spins while creating the share, then shows a toast on success (push notification handles delivery)
   - `SHAREDNOTESSPEC.md` — full backend spec for the Irids_Web Node.js implementation (migration v14, `note_shares` table, 5 new endpoints, server-side propagation)
 - **Bug fix**: `LoginViewController` `initializeAppWithDatabase()` and `cloudRestoreButtonTapped()` now set `"DatabaseSchemaVersion" = 10` and `"CategoryDatabaseSchemaVersion" = 3` after `createBlankDatabase()` — previously used the wrong key `"DatabaseVersion"`, causing NoteRecords/CategoryRecords to run migrations against an already-complete schema and leaving `CategoryDatabaseSchemaVersion = 3` without the actual columns in place on subsequent runs
 - **Bug fix**: `CategoryRecords.ensureRequiredCategoryColumns()` — new defensive repair called at the end of `migrateCategorySchemaIfNeeded()` every time; uses `PRAGMA table_info(categories)` to detect missing columns (`is_protected`, `uuid`, `modified_at`) and adds them regardless of stored schema version, preventing the `Fatal error: No such column "uuid"` crash
