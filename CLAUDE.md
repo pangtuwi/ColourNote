@@ -660,6 +660,11 @@ ColourNote/
 - **`NOTIFICATION_SETUP.md`** — step-by-step guide: Apple Developer Portal key generation, Xcode capability, local env vars, production server setup, troubleshooting
 
 ### Post-1.3.0 Bug Fixes (Backend + iOS)
+- **Bug fix (backend)**: `DELETE /notes/:id` and `DELETE /notes/:id/permanent` — when the owner deletes a shared note, associated `note_shares` rows are now marked `'owner_deleted'` instead of being left as orphaned records; soft delete marks `pending` shares; permanent delete marks `pending` and `declined` shares
+- **Bug fix (backend)**: `GET /shares/inbox` — all three sub-array queries now use `LEFT JOIN` (previously `INNER JOIN`) on the owner's note, with `COALESCE(n.title, 'Deleted note')` for the title; `received_pending` now also includes `'owner_deleted'` shares so User B's inbox no longer silently loses entries when the owner deletes their note
+- **Bug fix (backend)**: `GET /share/:token` (web page) — JOIN changed to `LEFT JOIN`; added `'owner_deleted'` status check that returns a "Note deleted" error page
+- **Bug fix (backend)**: `POST /share/:token/accept` — added explicit 410 response for `'owner_deleted'` status before the generic "already accepted or revoked" check
+- **Bug fix (iOS)**: `SharedInboxViewController` — `'owner_deleted'` status now displays "Note deleted" in both the Received and Sent sections; previously `.capitalized` produced "Owner_deleted"
 - **Bug fix (backend)**: `POST /share/:token/accept` — recipient's note copy now uses `modified_date = Date.now()` instead of copying the owner's `modified_date`; the old value was older than the recipient's `lastNoteSyncTime`, causing delta sync to silently skip the note
 - **Bug fix (backend)**: `POST /share/:token/accept` — accepted notes are now automatically placed in a "Shared" category (created with `color_hex = '#4A86E8'` if it doesn't exist for the recipient); previously `category_id` was NULL and the note appeared uncategorised
 - **Bug fix (backend)**: `POST /notes/:uuid/share` — duplicate shares are now prevented; if a non-expired pending share already exists for the same note + recipient, the existing token/URL is returned instead of creating a new row and sending a duplicate push notification

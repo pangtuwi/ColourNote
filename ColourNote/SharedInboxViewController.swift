@@ -129,7 +129,12 @@ class SharedInboxViewController: UITableViewController {
         switch Section(rawValue: indexPath.section) {
         case .receivedPending:
             let ownerText = share.ownerEmail ?? "Unknown"
-            let statusText = share.status == "declined" ? "Declined" : (share.isExpired ? "Expired" : "Pending")
+            let statusText: String
+            switch share.status {
+            case "owner_deleted": statusText = "Note deleted"
+            case "declined":      statusText = "Declined"
+            default:              statusText = share.isExpired ? "Expired" : "Pending"
+            }
             cell.detailTextLabel?.text = "From: \(ownerText) — \(statusText)"
             cell.accessoryType = (share.status == "pending" && !share.isExpired) ? .disclosureIndicator : .none
         case .receivedAccepted:
@@ -137,7 +142,8 @@ class SharedInboxViewController: UITableViewController {
             cell.accessoryType = .none
         case .sent:
             let recipientText = share.recipientEmail ?? "Unknown"
-            cell.detailTextLabel?.text = "To: \(recipientText) — \(share.status.capitalized)"
+            let sentStatusText = share.status == "owner_deleted" ? "Note deleted" : share.status.capitalized
+            cell.detailTextLabel?.text = "To: \(recipientText) — \(sentStatusText)"
             cell.accessoryType = .none
         case .none:
             break
