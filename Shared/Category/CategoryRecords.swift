@@ -349,6 +349,19 @@ class CategoryRecords {
         }
 
         semaphore.wait()
+
+        if result {
+            // Notes that belonged to the deleted category would otherwise keep a
+            // category_id pointing at nothing. Move them to "No Category" (id 0),
+            // the same sentinel already used everywhere else in the UI, so they
+            // don't end up permanently orphaned/hidden from category filtering.
+            let orphanedNotes = NoteRecords.instance.getAllNotes().filter { $0.categoryId == categoryId }
+            for note in orphanedNotes {
+                _ = NoteRecords.instance.updateNoteCategory(changedNoteId: note.noteId, newCategoryId: 0)
+                NoteSyncService.shared.markForUpload(noteId: note.noteId)
+            }
+        }
+
         return result
     }
 

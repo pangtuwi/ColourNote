@@ -368,23 +368,47 @@ class NoteRecords {
     }  //NoteExists
 
     
+    // Row's non-optional subscript (note[self.categoryId], etc.) force-tries internally
+    // and traps the process on a NULL/malformed column instead of throwing a catchable
+    // error - a do/catch around the surrounding loop can't stop it. Legacy rows (e.g.
+    // pre-migration data) can have NULL in columns that aren't NOT NULL at the DB level
+    // (category_id, active_state), so decode defensively via the throwing get() API.
+    private func safeNote(from row: Row, forcedIsDeleted: Bool? = nil) -> Note? {
+        guard let id = try? row.get(self.noteId) else {
+            print("NoteRecords: skipping unreadable note row (missing/invalid _id)")
+            return nil
+        }
+        let uuid = (try? row.get(self.noteUUID)) ?? nil
+        let title = (try? row.get(self.noteName)) ?? ""
+        let modifiedTime = (try? row.get(self.editedTime)) ?? 0
+        let text = (try? row.get(self.noteText)) ?? ""
+        let categoryId = (try? row.get(self.categoryId)) ?? 0
+        let activeStateValue = (try? row.get(self.activeState)) ?? 0
+        let deletedDate = (try? row.get(self.deletedDate)) ?? nil
+        let format = ((try? row.get(self.contentFormat)) ?? nil) ?? "markdown"
+
+        return Note(
+            noteId: id,
+            uuid: uuid,
+            noteName: title,
+            editedTime: modifiedTime,
+            noteText: text,
+            categoryId: categoryId,
+            isDeleted: forcedIsDeleted ?? (activeStateValue == 1),
+            deletedDate: deletedDate,
+            contentFormat: format
+        )
+    }
+
     func getNotes() -> [Note] {
         var notez = [Note]()
 
             do {
                 // Only get active notes (not deleted)
                 for note in try self.db!.prepare(self.notes.filter(self.activeState == 0)) {
-                        notez.append(Note(
-                        noteId : note[self.noteId],
-                        uuid: note[self.noteUUID],
-                        noteName : note[self.noteName],
-                        editedTime: note[self.editedTime],
-                        noteText: note[self.noteText],
-                        categoryId: note[self.categoryId],
-                        isDeleted: false,
-                        deletedDate: nil,
-                        contentFormat: note[self.contentFormat] ?? "markdown"))
-
+                    if let parsed = safeNote(from: note, forcedIsDeleted: false) {
+                        notez.append(parsed)
+                    }
                 }
 
             } catch {
@@ -400,17 +424,9 @@ class NoteRecords {
             do {
                 // Only get deleted notes (active_state = 1), ordered by deleted_date descending
                 for note in try self.db!.prepare(self.notes.filter(self.activeState == 1).order(self.deletedDate.desc)) {
-                        deletedNotez.append(Note(
-                        noteId : note[self.noteId],
-                        uuid: note[self.noteUUID],
-                        noteName : note[self.noteName],
-                        editedTime: note[self.editedTime],
-                        noteText: note[self.noteText],
-                        categoryId: note[self.categoryId],
-                        isDeleted: true,
-                        deletedDate: note[self.deletedDate],
-                        contentFormat: note[self.contentFormat] ?? "markdown"))
-
+                    if let parsed = safeNote(from: note, forcedIsDeleted: true) {
+                        deletedNotez.append(parsed)
+                    }
                 }
 
             } catch {
@@ -427,18 +443,9 @@ class NoteRecords {
             do {
                 // Get all notes without filtering by active_state
                 for note in try self.db!.prepare(self.notes) {
-                        let isDeleted = (note[self.activeState] == 1)
-                        allNotez.append(Note(
-                        noteId : note[self.noteId],
-                        uuid: note[self.noteUUID],
-                        noteName : note[self.noteName],
-                        editedTime: note[self.editedTime],
-                        noteText: note[self.noteText],
-                        categoryId: note[self.categoryId],
-                        isDeleted: isDeleted,
-                        deletedDate: note[self.deletedDate],
-                        contentFormat: note[self.contentFormat] ?? "markdown"))
-
+                    if let parsed = safeNote(from: note) {
+                        allNotez.append(parsed)
+                    }
                 }
 
             } catch {
@@ -623,21 +630,12 @@ class NoteRecords {
     } //getActivity (searchActivityId)
      */
      func getNote(searchNoteId : Int) -> Note? {
-         //ToDo : Fix bug where this fucntion throws Thread 1: Fatal error: 'try!' expression unexpectedly raised an error: database is locked (code: 5)
          var notesFound = [Note]()
          do {
              for note in try self.db!.prepare(self.notes.filter(self.noteId == searchNoteId)) {
-                let isDeleted = (note[self.activeState] == 1)
-                notesFound.append(Note(
-                noteId : note[self.noteId],
-                uuid: note[self.noteUUID],
-                noteName : note[self.noteName],
-                editedTime: note[self.editedTime],
-                noteText: note[self.noteText],
-                categoryId: note[self.categoryId],
-                isDeleted: isDeleted,
-                deletedDate: note[self.deletedDate],
-                contentFormat: note[self.contentFormat] ?? "markdown"))
+                if let parsed = safeNote(from: note) {
+                    notesFound.append(parsed)
+                }
              }
          } catch {
              print("Select failed")

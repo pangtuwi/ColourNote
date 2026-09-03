@@ -496,7 +496,7 @@ Passcode Flow:
    - `CategoriesViewController` displays all categories
    - Add: `NoteRecords.addCategory()` creates new category
    - Edit: `NoteRecords.updateCategory()` modifies properties
-   - Delete: Reassigns notes to default category, then deletes
+   - Delete: Deletes the category, then reassigns its notes to "No Category" (category_id 0)
    - Toggle protection: Shows passcode UI to set/remove passcode
 
 9. **Passcode Protection**:
